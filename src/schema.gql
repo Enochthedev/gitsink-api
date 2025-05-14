@@ -1,0 +1,18 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Project {
+  demoUrl: String
+  description: String!
+  featured: Boolean
+  id: ID!
+  published: Boolean
+  repoUrl: String
+  tags: [String!]
+  title: String!
+}
+
+type Query {
+  projects: [Project!]!
+}
