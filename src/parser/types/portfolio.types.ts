@@ -7,8 +7,10 @@ export interface PortfolioMetadata {
   demoUrl?: string;
   repoUrl?: string;
   icon?: string;
+  image?: string;
   category?: string;
   order?: number;
   githubSync?: boolean;
+  custom?: Record<string, unknown>;
   body?: string;
 }

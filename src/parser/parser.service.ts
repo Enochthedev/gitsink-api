@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import * as matter from 'gray-matter';
-import { PortfolioMetadata } from './types/portfolio.types';
+import matter from 'gray-matter';
+import {
+  PortfolioMetadataSchema,
+  PortfolioMetadata,
+} from './types/portfolio.schema';
 
 @Injectable()
 export class ParserService {
   parseMarkdown(md: string): PortfolioMetadata {
-    const { data, content } = matter(md);
+    const parsedMatter = matter(md);
+    const rawData = {
+      ...parsedMatter.data,
+      body: parsedMatter.content.trim(),
+    };
 
-    return {
-      ...data,
-      body: content.trim(),
-    } as PortfolioMetadata;
+    const result = PortfolioMetadataSchema.safeParse(rawData);
+
+    if (!result.success) {
+      throw new Error(`Invalid Portfolio.md format: ${result.error.message}`);
+    }
+
+    return result.data;
   }
 }

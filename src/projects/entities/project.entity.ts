@@ -1,28 +1,74 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { GraphQLJSON } from 'graphql-type-json';
 
 @ObjectType()
 export class Project {
   @Field(() => ID)
-  id: string;
+  id!: string;
 
-  @Field()
-  title: string;
+  @Field(() => String)
+  title!: string;
 
-  @Field()
-  description: string;
+  @Field(() => String)
+  description!: string;
 
-  @Field(() => [String], { nullable: true })
-  tags?: string[];
+  @Field(() => [String])
+  tags!: string[];
 
-  @Field({ nullable: true })
-  demoUrl?: string;
+  @Field(() => String, { nullable: true })
+  icon!: string | null;
 
-  @Field({ nullable: true })
-  repoUrl?: string;
+  @Field(() => String, { nullable: true })
+  image!: string | null;
 
-  @Field({ nullable: true })
-  featured?: boolean;
+  @Field(() => String, { nullable: true })
+  demoUrl!: string | null;
 
-  @Field({ nullable: true })
-  published?: boolean;
+  @Field(() => String, { nullable: true })
+  repoUrl!: string | null;
+
+  @Field(() => Boolean, { nullable: true })
+  featured!: boolean | null;
+
+  @Field(() => Boolean, { nullable: true })
+  published!: boolean | null;
+
+  @Field(() => Number, { nullable: true })
+  order!: number | null;
+
+  @Field(() => String, { nullable: true })
+  category!: string | null;
+
+  @Field(() => Boolean, { nullable: true })
+  githubSync!: boolean | null;
+
+  @Field(() => String, { nullable: true })
+  markdown!: string | null;
+
+  @Field(() => [String])
+  collaborators!: string[];
+
+  @Field(() => Date, { nullable: true })
+  firstCommitAt!: Date | null;
+
+  @Field(() => Date, { nullable: true })
+  lastCommitAt!: Date | null;
+
+  @Field(() => GraphQLJSON, { nullable: true, description: 'GitHub metadata' })
+  githubMetadata!: any;
+
+  @Field(() => GraphQLJSON, {
+    nullable: true,
+    description: 'User-defined custom metadata parsed from Portfolio.md',
+  })
+  customMetadata!: any;
+
+  @Field(() => Date, { nullable: true })
+  syncedAt!: Date | null;
+
+  @Field(() => Date)
+  createdAt!: Date;
+
+  @Field(() => Date)
+  updatedAt!: Date;
 }

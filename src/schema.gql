@@ -2,17 +2,59 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+type Mutation {
+  syncAllProjects: [Project!]!
+  syncProject(input: SyncProjectInput!): Project!
+}
+
 type Project {
+  allGithubKeys: [String!]!
+  category: String
+  collaborators: [String!]!
+  createdAt: DateTime!
+
+  """User-defined custom metadata parsed from Portfolio.md"""
+  customMetadata: JSON
   demoUrl: String
   description: String!
   featured: Boolean
+  firstCommitAt: DateTime
+  github(key: String!): String
+
+  """GitHub metadata"""
+  githubMetadata: JSON
+  githubSync: Boolean
+  icon: String
   id: ID!
+  image: String
+  lastCommitAt: DateTime
+  markdown: String
+  order: Float
   published: Boolean
   repoUrl: String
-  tags: [String!]
+  syncedAt: DateTime
+  tags: [String!]!
   title: String!
+  updatedAt: DateTime!
 }
 
 type Query {
+  ping: String!
+  project(repoUrl: String!): Project
   projects: [Project!]!
+}
+
+input SyncProjectInput {
+  branch: String
+  repoUrl: String!
 }

@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  githubId  String?  @unique
+  apiKey    String?  @unique
+  projects  Project[]
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id             String   @id @default(uuid())
+
+  title          String
+  description    String
+
+  tags           String[]        // ← can be empty, but not optional
+  icon           String?         // optional
+  image          String?         // optional
+
+  demoUrl        String?         // optional
+  repoUrl        String?         // optional
+
+  featured       Boolean? @default(false)
+  published      Boolean? @default(false)
+  order          Int?            // optional UI sort order
+  category       String?         // optional
+
+  githubSync     Boolean? @default(true)
+  markdown       String?         // optional, raw md body
+
+  collaborators  String[]        // ← can be empty, but not optional
+  firstCommitAt  DateTime?       // optional
+  lastCommitAt   DateTime?       // optional
+
+  githubMetadata Json?           // optional
+  customMetadata Json?           // optional
+
+  syncedAt       DateTime?       // optional
+
+  ownerId        String
+  owner          User     @relation(fields: [ownerId], references: [id])
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([published, featured])
+  @@index([category])
+  @@index([title])
+  @@index([tags])
+  @@index([lastCommitAt])
+  
+  @@unique([ownerId, repoUrl])
+}
