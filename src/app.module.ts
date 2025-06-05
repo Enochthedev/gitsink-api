@@ -12,6 +12,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { UserContextGuard } from './auth/user-context.guard';
 
 @Module({
   imports: [
@@ -33,12 +35,19 @@ import { ConfigModule } from '@nestjs/config';
       playground: true,
       introspection: true,
       csrfPrevention: false,
+      context: ({ req, res }) => ({ req, res }),
     }),
     ProjectsModule,
     PrismaModule,
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: UserContextGuard,
+    },
+  ],
 })
 export class AppModule {}
