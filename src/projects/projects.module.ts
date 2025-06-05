@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { ProjectsResolver } from './projects.resolver';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -16,5 +16,19 @@ import { GitHubWebhookController } from './github-webhook.controller';
     ProjectsScheduler,
   ],
   controllers: [GitHubWebhookController],
+import { ProjectsController } from './projects.controller';
+import { ApiKeyMiddleware } from '../auth/api-key.middleware';
+import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
+@Module({
+  imports: [PrismaModule, ParserModule, ConfigModule],
+  controllers: [ProjectsController],
+  providers: [ProjectsService, ProjectsResolver, ProjectFieldsResolver, ApiKeyAuthGuard],
 })
-export class ProjectsModule {}
+export class ProjectsModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ApiKeyMiddleware).forRoutes(ProjectsController, {
+      path: 'sync',
+      method: RequestMethod.POST,
+    });
+  }
+}
