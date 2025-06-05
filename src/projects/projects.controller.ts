@@ -22,7 +22,12 @@ export class ProjectsController {
 
   @Post('sync')
   async sync(@Body() input: SyncProjectInput, @Req() req: RequestWithUser): Promise<Project> {
-    return this.projectsService.syncProjectFromGitHub(input.repoUrl, input.branch, req.user.id);
+    // Branch is optional; default handled in service
+    return this.projectsService.syncProjectFromGitHub(
+      req.user.id,
+      input.repoUrl,
+      input.branch,
+    );
   }
 
   @Post('sync-all')
