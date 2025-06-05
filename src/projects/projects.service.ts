@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
@@ -8,6 +8,8 @@ import { parseGitHubRepoUrl } from '../utils/github.utils';
 import { GitHubRepo } from '../types/github.types';
 import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProjectsService {
@@ -15,6 +17,7 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
+    @Inject(CACHE_MANAGER) private cache: Cache,
   ) {}
 
   async syncProjectFromGitHub(
@@ -62,7 +65,7 @@ export class ProjectsService {
       customMetadata = parsedMd.custom;
     }
 
-    return await this.prisma.project.upsert({
+    const project = await this.prisma.project.upsert({
       where: {
         ownerId_repoUrl: {
           ownerId: 'mock-user-id',
@@ -108,20 +111,37 @@ export class ProjectsService {
         syncedAt: new Date(),
       },
     });
+
+    const cacheKey = `user:${project.ownerId}:repo:${repoUrl}`;
+    await this.cache.del(cacheKey);
+    await this.cache.del(`user:${project.ownerId}:projects`);
+    await this.cache.set(cacheKey, project);
+
+    return project;
   }
 
   async getAllProjectsForUser(userId: string): Promise<Project[]> {
-    return this.prisma.project.findMany({
+    const cacheKey = `user:${userId}:projects`;
+    const cached = await this.cache.get<Project[]>(cacheKey);
+    if (cached) return cached;
+
+    const projects = await this.prisma.project.findMany({
       where: { ownerId: userId },
       orderBy: { updatedAt: 'desc' },
     });
+    await this.cache.set(cacheKey, projects);
+    return projects;
   }
 
   async getProjectByRepoUrl(
     repoUrl: string,
     userId: string,
   ): Promise<Project | null> {
-    return this.prisma.project.findUnique({
+    const cacheKey = `user:${userId}:repo:${repoUrl}`;
+    const cached = await this.cache.get<Project>(cacheKey);
+    if (cached) return cached;
+
+    const project = await this.prisma.project.findUnique({
       where: {
         ownerId_repoUrl: {
           ownerId: userId,
@@ -129,6 +149,8 @@ export class ProjectsService {
         },
       },
     });
+    if (project) await this.cache.set(cacheKey, project);
+    return project;
   }
 
   async syncAllReposForUser(): Promise<Project[]> {

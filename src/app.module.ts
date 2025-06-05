@@ -16,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot(),
     CacheModule.registerAsync({
+      isGlobal: true,
       useFactory: () => ({
         store: redisStore,
         url: process.env.REDIS_URL,
