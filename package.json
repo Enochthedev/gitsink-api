@@ -21,7 +21,8 @@
     "validate-md": "ts-node scripts/validate-markdown.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@nestjs/apollo": "^13.1.0",
