@@ -5,7 +5,6 @@ import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 
-
 describe('ProjectsService', () => {
   let service: ProjectsService;
   let prisma: { project: { findMany: jest.Mock } };

@@ -1,4 +1,3 @@
-
 import { Resolver, Mutation, Args, Query, Context } from '@nestjs/graphql';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';

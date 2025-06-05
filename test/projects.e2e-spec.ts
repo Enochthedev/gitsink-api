@@ -30,17 +30,19 @@ class MockPrismaService {
     findMany: jest.fn(async ({ where }) =>
       this.projects.filter((p) => p.ownerId === where.ownerId),
     ),
-    findUnique: jest.fn(async ({ where }) =>
-      this.projects.find(
-        (p) =>
-          p.ownerId === where.ownerId_repoUrl.ownerId &&
-          p.repoUrl === where.ownerId_repoUrl.repoUrl,
-      ) || null,
+    findUnique: jest.fn(
+      async ({ where }) =>
+        this.projects.find(
+          (p) =>
+            p.ownerId === where.ownerId_repoUrl.ownerId &&
+            p.repoUrl === where.ownerId_repoUrl.repoUrl,
+        ) || null,
     ),
   };
   user = {
-    findFirst: jest.fn(async ({ where }) =>
-      this.users.find((u) => u.apiKey === where.apiKey) || null,
+    findFirst: jest.fn(
+      async ({ where }) =>
+        this.users.find((u) => u.apiKey === where.apiKey) || null,
     ),
     update: jest.fn(async ({ where, data }) => {
       const user = this.users.find((u) => u.id === where.id);
@@ -110,9 +112,15 @@ describe('Projects Module (e2e)', () => {
   it('syncs a project via REST and retrieves it', async () => {
     mockedAxios.get.mockImplementation(async (url: string) => {
       if (url.includes('/repos/')) {
-        return { data: { name: 'Repo', description: 'Desc', pushed_at: new Date().toISOString() } } as any;
+        return {
+          data: {
+            name: 'Repo',
+            description: 'Desc',
+            pushed_at: new Date().toISOString(),
+          },
+        } as any;
       }
-      return { data: '# Title\n'} as any;
+      return { data: '# Title\n' } as any;
     });
 
     await request(app.getHttpServer())
@@ -145,7 +153,8 @@ describe('Projects Module (e2e)', () => {
     mockedAxios.post.mockResolvedValue({ data: { access_token: 'token' } });
     mockedAxios.get.mockResolvedValue({ data: { id: 123 } });
     const mutation = {
-      query: 'mutation($userId:String!,$code:String!){ githubOAuth(userId:$userId, code:$code){ id githubId } }',
+      query:
+        'mutation($userId:String!,$code:String!){ githubOAuth(userId:$userId, code:$code){ id githubId } }',
       variables: { userId: 'u1', code: 'code123' },
     };
     const res = await request(app.getHttpServer())

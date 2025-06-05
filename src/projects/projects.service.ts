@@ -13,7 +13,6 @@ import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
 import { decrypt } from '../utils/encryption';
 
-
 @Injectable()
 export class ProjectsService {
   constructor(
@@ -22,7 +21,6 @@ export class ProjectsService {
     private config: ConfigService,
 
     @Inject(CACHE_MANAGER) private cache: Cache,
-
   ) {}
 
   async syncProjectFromGitHub(
@@ -30,7 +28,6 @@ export class ProjectsService {
     repoUrl: string,
     branch = 'main',
     blacklisted = false,
-
   ): Promise<Project> {
     const { owner, repo } = parseGitHubRepoUrl(repoUrl);
 
