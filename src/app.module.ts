@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { ParserModule } from './parser/parser.module';
 import { ProjectsModule } from './projects/projects.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { ConfigModule } from '@nestjs/config';
@@ -32,6 +33,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
     ProjectsModule,
     PrismaModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
