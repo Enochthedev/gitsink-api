@@ -1,3 +1,5 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Injectable, Inject } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,6 +10,8 @@ import { parseGitHubRepoUrl } from '../utils/github.utils';
 import { GitHubRepo } from '../types/github.types';
 import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
+import { decrypt } from '../utils/encryption';
+
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
@@ -17,12 +21,15 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
+
     @Inject(CACHE_MANAGER) private cache: Cache,
+
   ) {}
 
   async syncProjectFromGitHub(
     repoUrl: string,
     branch = 'main',
+    userId = 'mock-user-id',
   ): Promise<Project> {
     const { owner, repo } = parseGitHubRepoUrl(repoUrl);
 
@@ -76,12 +83,12 @@ export class ProjectsService {
     const project = await this.prisma.project.upsert({
       where: {
         ownerId_repoUrl: {
-          ownerId: 'mock-user-id',
+          ownerId: userId,
           repoUrl,
         },
       },
       create: {
-        ownerId: 'mock-user-id',
+        ownerId: userId,
         title,
         description,
         tags: parsedMd?.tags || [],
@@ -141,6 +148,7 @@ export class ProjectsService {
       where: { ownerId: userId },
       orderBy: { updatedAt: 'desc' },
     });
+
     await this.cache.set(cacheKey, projects);
     return projects;
   }
@@ -171,9 +179,13 @@ export class ProjectsService {
     });
   }
 
-  async syncAllReposForUser(): Promise<Project[]> {
-    // In future: retrieve user's GitHub token from DB
-    const token = this.config.get<string>('GITHUB_PERSONAL_TOKEN');
+  async syncAllReposForUser(userId: string): Promise<Project[]> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.githubToken) {
+      throw new Error('GitHub token not found for user');
+    }
+    const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+    const token = key ? decrypt(user.githubToken, key) : user.githubToken;
     const headers = { Authorization: `token ${token}` };
 
     const repos = await axios.get<GitHubRepo[]>(
@@ -190,6 +202,7 @@ export class ProjectsService {
           typeof repo.default_branch === 'string'
             ? repo.default_branch
             : 'main',
+          userId,
         );
         syncedProjects.push(project);
       } catch (e) {
@@ -197,6 +210,7 @@ export class ProjectsService {
       }
     }
 
+    await this.cacheManager.del(`projects:${userId}`);
     return syncedProjects;
   }
 }
