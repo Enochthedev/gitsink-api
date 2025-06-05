@@ -12,6 +12,9 @@ export class User {
   githubId!: string | null;
 
   @Field(() => String, { nullable: true })
+  accessToken!: string | null;
+
+  @Field(() => String, { nullable: true })
   apiKey!: string | null;
 
   @Field(() => Date)
