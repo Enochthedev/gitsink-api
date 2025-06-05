@@ -1,31 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
 
-describe('ProjectsService', () => {
-  let service: ProjectsService;
+describe('ProjectsController', () => {
+  let controller: ProjectsController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-
+      controllers: [ProjectsController],
       providers: [ProjectsService, PrismaService, ParserService, ConfigService],
-
-      imports: [CacheModule.register()],
-      providers: [
-        ProjectsService,
-        PrismaService,
-        ParserService,
-        ConfigService,
-      ],
     }).compile();
 
-    service = module.get<ProjectsService>(ProjectsService);
+    controller = module.get<ProjectsController>(ProjectsController);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(controller).toBeDefined();
   });
 });
