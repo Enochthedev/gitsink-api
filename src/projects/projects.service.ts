@@ -18,6 +18,7 @@ export class ProjectsService {
   ) {}
 
   async syncProjectFromGitHub(
+    userId: string,
     repoUrl: string,
     branch = 'main',
   ): Promise<Project> {
@@ -65,12 +66,12 @@ export class ProjectsService {
     return await this.prisma.project.upsert({
       where: {
         ownerId_repoUrl: {
-          ownerId: 'mock-user-id',
+          ownerId: userId,
           repoUrl,
         },
       },
       create: {
-        ownerId: 'mock-user-id',
+        ownerId: userId,
         title,
         description,
         tags: parsedMd?.tags || [],
@@ -131,7 +132,7 @@ export class ProjectsService {
     });
   }
 
-  async syncAllReposForUser(): Promise<Project[]> {
+  async syncAllReposForUser(userId: string): Promise<Project[]> {
     // In future: retrieve user's GitHub token from DB
     const token = this.config.get<string>('GITHUB_PERSONAL_TOKEN');
     const headers = { Authorization: `token ${token}` };
@@ -146,6 +147,7 @@ export class ProjectsService {
       const repoUrl = repo.html_url;
       try {
         const project = await this.syncProjectFromGitHub(
+          userId,
           String(repoUrl),
           typeof repo.default_branch === 'string'
             ? repo.default_branch

@@ -35,4 +35,11 @@ export class AuthService {
       data: { apiKey },
     });
   }
+
+  /**
+   * Validate an API key and return the associated user if it exists.
+   */
+  async validateApiKey(apiKey: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { apiKey } });
+  }
 }
