@@ -118,5 +118,13 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
+## Markdown Validation
 
-user-defined schemas.
+Validate a Portfolio.md file with:
+
+```bash
+npm run validate-md <path>
+```
+
+
+

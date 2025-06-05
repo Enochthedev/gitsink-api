@@ -1,3 +1,5 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Injectable, Inject } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,12 +21,15 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
+
     @Inject(CACHE_MANAGER) private cache: Cache,
+
   ) {}
 
   async syncProjectFromGitHub(
     repoUrl: string,
     branch = 'main',
+    userId = 'mock-user-id',
   ): Promise<Project> {
     const { owner, repo } = parseGitHubRepoUrl(repoUrl);
 
@@ -35,10 +40,18 @@ export class ProjectsService {
     const repoData: GitHubRepo = repoResponse.data;
 
     let parsedMd: PortfolioMetadata | null = null;
+    let validationErrors: string[] = [];
+    let valid = true;
     try {
       const mdResponse = await axios.get<string>(rawMdUrl);
       const mdRaw: string = mdResponse.data;
-      parsedMd = this.parser.parseMarkdown(mdRaw);
+      const result = this.parser.parseMarkdown(mdRaw);
+      if (result.valid) {
+        parsedMd = result.data;
+      } else {
+        valid = false;
+        validationErrors = result.errors;
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 404) {
@@ -70,12 +83,12 @@ export class ProjectsService {
     const project = await this.prisma.project.upsert({
       where: {
         ownerId_repoUrl: {
-          ownerId: 'mock-user-id',
+          ownerId: userId,
           repoUrl,
         },
       },
       create: {
-        ownerId: 'mock-user-id',
+        ownerId: userId,
         title,
         description,
         tags: parsedMd?.tags || [],
@@ -83,6 +96,8 @@ export class ProjectsService {
         image: parsedMd?.image,
         demoUrl: parsedMd?.demoUrl,
         repoUrl,
+        valid,
+        validationErrors,
         featured: parsedMd?.featured ?? false,
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
@@ -102,6 +117,8 @@ export class ProjectsService {
         icon: parsedMd?.icon,
         image: parsedMd?.image,
         demoUrl: parsedMd?.demoUrl,
+        valid,
+        validationErrors,
         featured: parsedMd?.featured ?? false,
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
@@ -131,6 +148,7 @@ export class ProjectsService {
       where: { ownerId: userId },
       orderBy: { updatedAt: 'desc' },
     });
+
     await this.cache.set(cacheKey, projects);
     return projects;
   }
@@ -184,6 +202,7 @@ export class ProjectsService {
           typeof repo.default_branch === 'string'
             ? repo.default_branch
             : 'main',
+          userId,
         );
         syncedProjects.push(project);
       } catch (e) {
@@ -191,6 +210,7 @@ export class ProjectsService {
       }
     }
 
+    await this.cacheManager.del(`projects:${userId}`);
     return syncedProjects;
   }
 }

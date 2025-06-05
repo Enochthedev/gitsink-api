@@ -4,6 +4,8 @@ import { ProjectsService } from './projects.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
+
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CacheModule } from '@nestjs/cache-manager';
 
 describe('ProjectsResolver', () => {
@@ -18,6 +20,7 @@ describe('ProjectsResolver', () => {
         PrismaService,
         ParserService,
         ConfigService,
+        { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
       ],
     }).compile();
 
