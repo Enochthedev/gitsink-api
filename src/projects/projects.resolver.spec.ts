@@ -2,6 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsResolver } from './projects.resolver';
 import { ProjectsService } from './projects.service';
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CacheModule } from '@nestjs/cache-manager';
+
 describe('ProjectsResolver', () => {
   let resolver: ProjectsResolver;
   let service: { getFilteredProjectsForUser: jest.Mock };
@@ -9,9 +12,18 @@ describe('ProjectsResolver', () => {
   beforeEach(async () => {
     service = { getFilteredProjectsForUser: jest.fn() };
     const module: TestingModule = await Test.createTestingModule({
+      imports: [CacheModule.register()],
       providers: [
         ProjectsResolver,
+
         { provide: ProjectsService, useValue: service },
+
+        ProjectsService,
+        PrismaService,
+        ParserService,
+        ConfigService,
+        { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
+
       ],
     }).compile();
 

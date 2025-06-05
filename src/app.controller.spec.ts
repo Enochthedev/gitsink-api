@@ -18,10 +18,11 @@ describe('AppController', () => {
   describe('root', () => {
     it('should parse markdown sample', () => {
       const result = appController.getHello();
-      expect(result.title).toBe('Test Project');
-      expect(result.description).toBe('Just testing.');
-      expect(result.tags).toEqual(['test']);
-      expect(result.body).toBe('Some more body content.');
+      if (!result.valid) throw new Error('Expected valid result');
+      expect(result.data.title).toBe('Test Project');
+      expect(result.data.description).toBe('Just testing.');
+      expect(result.data.tags).toEqual(['test']);
+      expect(result.data.body).toBe('Some more body content.');
     });
   });
 });
