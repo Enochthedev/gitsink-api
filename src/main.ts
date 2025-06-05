@@ -1,21 +1,29 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-// import helmet from 'helmet';
-// import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // app.use(helmet());
-  // app.use(
-  //   rateLimit({
-  //     windowMs: 15 * 60 * 1000, // 15 minutes
-  //     max: 100, // limit each IP to 100 requests per windowMs
-  //     standardHeaders: true,
-  //     legacyHeaders: false,
-  //   }),
-  // );
   app.useGlobalPipes(new ValidationPipe());
+
+  if (process.env.ENABLE_HELMET !== 'false') {
+    app.use(helmet());
+  }
+
+  if (process.env.ENABLE_RATE_LIMIT !== 'false') {
+    const windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? '', 10);
+    const max = parseInt(process.env.RATE_LIMIT_MAX ?? '', 10);
+    app.use(
+      rateLimit({
+        windowMs: Number.isNaN(windowMs) ? 15 * 60 * 1000 : windowMs,
+        max: Number.isNaN(max) ? 100 : max,
+        standardHeaders: true,
+        legacyHeaders: false,
+      }),
+    );
+  }
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
