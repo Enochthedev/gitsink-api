@@ -10,6 +10,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { UserContextGuard } from './auth/user-context.guard';
@@ -18,12 +19,14 @@ import { UserContextGuard } from './auth/user-context.guard';
   imports: [
     ConfigModule.forRoot(),
     CacheModule.registerAsync({
+      isGlobal: true,
       useFactory: () => ({
         store: redisStore,
         url: process.env.REDIS_URL,
         ttl: 300, // default TTL
       }),
     }),
+    ScheduleModule.forRoot(),
     ParserModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
