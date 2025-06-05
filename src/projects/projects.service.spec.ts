@@ -15,7 +15,7 @@ describe('ProjectsService', () => {
     prisma = { project: { findMany: jest.fn().mockResolvedValue([]) } };
     const module: TestingModule = await Test.createTestingModule({
 
-
+      providers: [ProjectsService, PrismaService, ParserService, ConfigService],
 
       imports: [CacheModule.register()],
       providers: [

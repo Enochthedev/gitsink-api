@@ -38,6 +38,7 @@ type Project {
   """GitHub metadata"""
   githubMetadata: JSON
   githubSync: Boolean
+  blacklisted: Boolean
   icon: String
   id: ID!
   image: String
