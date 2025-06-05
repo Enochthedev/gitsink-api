@@ -17,6 +17,7 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   githubId  String?  @unique
+  githubToken String?
   accessToken String?
   apiKey    String?  @unique
   projects  Project[]
