@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ParserService } from './parser/parser.service';
-import { PortfolioMetadata } from './parser/types/portfolio.schema';
+import { ParseResult } from './parser/types/portfolio.types';
 
 @Injectable()
 export class AppService {
   constructor(private readonly parser: ParserService) {}
 
-  getHello(): PortfolioMetadata {
+  getHello(): ParseResult {
     const testMd = `---
 title: "Test Project"
 description: "Just testing."
