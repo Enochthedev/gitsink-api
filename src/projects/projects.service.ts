@@ -251,12 +251,12 @@ export class ProjectsService {
           await this.prisma.project.upsert({
             where: {
               ownerId_repoUrl: {
-                ownerId: 'mock-user-id',
+                ownerId: userId,
                 repoUrl: String(repoUrl),
               },
             },
             create: {
-              ownerId: 'mock-user-id',
+              ownerId: userId,
               title: repo.name,
               description: repo.description || '',
               tags: [],
