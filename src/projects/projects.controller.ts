@@ -35,6 +35,7 @@ export class ProjectsController {
   }
 
   @Post('sync')
+  
   /**
    * Synchronize a single repository. The branch is optional and defaults to
    * `main` if not provided.
