@@ -12,7 +12,7 @@ describe('ProjectsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ProjectsService, PrismaService, ParserService, ConfigService],
+
 
 
       imports: [CacheModule.register()],
@@ -23,6 +23,7 @@ describe('ProjectsService', () => {
         ConfigService,
         { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
       ],
+
 
     }).compile();
 
