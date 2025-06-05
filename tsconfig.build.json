@@ -5,6 +5,7 @@
       "node"
     ]
   },
+
   "exclude": [
     "node_modules",
     "test",
@@ -12,4 +13,5 @@
     "**/*spec.ts",
     "docs/docs-site/**"
   ]
+
 }

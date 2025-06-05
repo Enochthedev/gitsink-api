@@ -153,6 +153,30 @@ export class ProjectsService {
     return projects;
   }
 
+  async getFilteredProjectsForUser(
+    filter: { tag?: string; category?: string; featured?: boolean },
+    userId: string,
+  ): Promise<Project[]> {
+    const where: Prisma.ProjectWhereInput = { ownerId: userId };
+
+    if (filter.tag) {
+      where.tags = { has: filter.tag };
+    }
+
+    if (filter.category) {
+      where.category = filter.category;
+    }
+
+    if (typeof filter.featured === 'boolean') {
+      where.featured = filter.featured;
+    }
+
+    return this.prisma.project.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
   async getProjectByRepoUrl(
     repoUrl: string,
     userId: string,
