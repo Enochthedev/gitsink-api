@@ -1,6 +1,7 @@
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
+import { ApiKeyPayload } from './entities/api-key-payload.entity';
 
 @Resolver(() => User)
 export class AuthResolver {
@@ -9,8 +10,8 @@ export class AuthResolver {
   /**
    * Create a user account and return the new user record.
    */
-  @Mutation(() => User)
-  signup(@Args('email') email: string): Promise<User> {
+  @Mutation(() => ApiKeyPayload)
+  signup(@Args('email') email: string): Promise<ApiKeyPayload> {
     return this.authService.signup(email);
   }
 
@@ -21,15 +22,16 @@ export class AuthResolver {
   connectGitHub(
     @Args('userId') userId: string,
     @Args('githubId') githubId: string,
+    @Args('githubToken') githubToken: string,
   ): Promise<User> {
-    return this.authService.connectGitHub(userId, githubId);
+    return this.authService.connectGitHub(userId, githubId, githubToken);
   }
 
   /**
    * Regenerate the user's API key.
    */
-  @Mutation(() => User)
-  regenerateApiKey(@Args('userId') userId: string): Promise<User> {
+  @Mutation(() => ApiKeyPayload)
+  regenerateApiKey(@Args('userId') userId: string): Promise<ApiKeyPayload> {
     return this.authService.regenerateApiKey(userId);
   }
 
@@ -39,5 +41,9 @@ export class AuthResolver {
     @Args('code') code: string,
   ): Promise<User> {
     return this.authService.oauth(userId, code);
+
+  revokeApiKey(@Args('userId') userId: string): Promise<User> {
+    return this.authService.revokeApiKey(userId);
+
   }
 }

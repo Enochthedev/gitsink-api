@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { PortfolioMetadata } from './parser/types/portfolio.schema';
+import { ParseResult } from './parser/types/portfolio.types';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): PortfolioMetadata {
+  getHello(): ParseResult {
     return this.appService.getHello();
   }
 }

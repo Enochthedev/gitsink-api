@@ -7,12 +7,10 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   async onModuleInit(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await this.$connect(); // ✅ now TS knows type, ESLint will shut up
   }
 
   async onModuleDestroy(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await this.$disconnect();
   }
 }

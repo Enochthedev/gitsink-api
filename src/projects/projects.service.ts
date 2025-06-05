@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
+import { Injectable, Inject } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
@@ -8,6 +10,10 @@ import { parseGitHubRepoUrl } from '../utils/github.utils';
 import { GitHubRepo } from '../types/github.types';
 import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
+import { decrypt } from '../utils/encryption';
+
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProjectsService {
@@ -15,11 +21,15 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
+
+    @Inject(CACHE_MANAGER) private cache: Cache,
+
   ) {}
 
   async syncProjectFromGitHub(
     repoUrl: string,
     branch = 'main',
+    userId = 'mock-user-id',
   ): Promise<Project> {
     const { owner, repo } = parseGitHubRepoUrl(repoUrl);
 
@@ -30,10 +40,18 @@ export class ProjectsService {
     const repoData: GitHubRepo = repoResponse.data;
 
     let parsedMd: PortfolioMetadata | null = null;
+    let validationErrors: string[] = [];
+    let valid = true;
     try {
       const mdResponse = await axios.get<string>(rawMdUrl);
       const mdRaw: string = mdResponse.data;
-      parsedMd = this.parser.parseMarkdown(mdRaw);
+      const result = this.parser.parseMarkdown(mdRaw);
+      if (result.valid) {
+        parsedMd = result.data;
+      } else {
+        valid = false;
+        validationErrors = result.errors;
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 404) {
@@ -62,15 +80,15 @@ export class ProjectsService {
       customMetadata = parsedMd.custom;
     }
 
-    return await this.prisma.project.upsert({
+    const project = await this.prisma.project.upsert({
       where: {
         ownerId_repoUrl: {
-          ownerId: 'mock-user-id',
+          ownerId: userId,
           repoUrl,
         },
       },
       create: {
-        ownerId: 'mock-user-id',
+        ownerId: userId,
         title,
         description,
         tags: parsedMd?.tags || [],
@@ -78,6 +96,8 @@ export class ProjectsService {
         image: parsedMd?.image,
         demoUrl: parsedMd?.demoUrl,
         repoUrl,
+        valid,
+        validationErrors,
         featured: parsedMd?.featured ?? false,
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
@@ -97,6 +117,8 @@ export class ProjectsService {
         icon: parsedMd?.icon,
         image: parsedMd?.image,
         demoUrl: parsedMd?.demoUrl,
+        valid,
+        validationErrors,
         featured: parsedMd?.featured ?? false,
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
@@ -108,11 +130,49 @@ export class ProjectsService {
         syncedAt: new Date(),
       },
     });
+
+    const cacheKey = `user:${project.ownerId}:repo:${repoUrl}`;
+    await this.cache.del(cacheKey);
+    await this.cache.del(`user:${project.ownerId}:projects`);
+    await this.cache.set(cacheKey, project);
+
+    return project;
   }
 
   async getAllProjectsForUser(userId: string): Promise<Project[]> {
-    return this.prisma.project.findMany({
+    const cacheKey = `user:${userId}:projects`;
+    const cached = await this.cache.get<Project[]>(cacheKey);
+    if (cached) return cached;
+
+    const projects = await this.prisma.project.findMany({
       where: { ownerId: userId },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    await this.cache.set(cacheKey, projects);
+    return projects;
+  }
+
+  async getFilteredProjectsForUser(
+    filter: { tag?: string; category?: string; featured?: boolean },
+    userId: string,
+  ): Promise<Project[]> {
+    const where: Prisma.ProjectWhereInput = { ownerId: userId };
+
+    if (filter.tag) {
+      where.tags = { has: filter.tag };
+    }
+
+    if (filter.category) {
+      where.category = filter.category;
+    }
+
+    if (typeof filter.featured === 'boolean') {
+      where.featured = filter.featured;
+    }
+
+    return this.prisma.project.findMany({
+      where,
       orderBy: { updatedAt: 'desc' },
     });
   }
@@ -121,7 +181,11 @@ export class ProjectsService {
     repoUrl: string,
     userId: string,
   ): Promise<Project | null> {
-    return this.prisma.project.findUnique({
+    const cacheKey = `user:${userId}:repo:${repoUrl}`;
+    const cached = await this.cache.get<Project>(cacheKey);
+    if (cached) return cached;
+
+    const project = await this.prisma.project.findUnique({
       where: {
         ownerId_repoUrl: {
           ownerId: userId,
@@ -129,11 +193,23 @@ export class ProjectsService {
         },
       },
     });
+    if (project) await this.cache.set(cacheKey, project);
+    return project;
   }
 
-  async syncAllReposForUser(): Promise<Project[]> {
-    // In future: retrieve user's GitHub token from DB
-    const token = this.config.get<string>('GITHUB_PERSONAL_TOKEN');
+  async getProjectById(id: string, userId: string): Promise<Project | null> {
+    return this.prisma.project.findFirst({
+      where: { id, ownerId: userId },
+    });
+  }
+
+  async syncAllReposForUser(userId: string): Promise<Project[]> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.githubToken) {
+      throw new Error('GitHub token not found for user');
+    }
+    const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+    const token = key ? decrypt(user.githubToken, key) : user.githubToken;
     const headers = { Authorization: `token ${token}` };
 
     const repos = await axios.get<GitHubRepo[]>(
@@ -150,6 +226,7 @@ export class ProjectsService {
           typeof repo.default_branch === 'string'
             ? repo.default_branch
             : 'main',
+          userId,
         );
         syncedProjects.push(project);
       } catch (e) {
@@ -157,6 +234,7 @@ export class ProjectsService {
       }
     }
 
+    await this.cacheManager.del(`projects:${userId}`);
     return syncedProjects;
   }
 }
