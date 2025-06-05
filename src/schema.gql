@@ -43,6 +43,8 @@ type Project {
   image: String
   lastCommitAt: DateTime
   markdown: String
+  valid: Boolean!
+  validationErrors: [String!]!
   order: Float
   published: Boolean
   repoUrl: String
@@ -56,6 +58,7 @@ type Query {
   ping: String!
   project(repoUrl: String!): Project
   projects: [Project!]!
+  filteredProjects(filter: ProjectFilterInput): [Project!]!
 }
 
 input SyncProjectInput {
@@ -63,7 +66,16 @@ input SyncProjectInput {
   repoUrl: String!
 }
 
+
+
+
+input ProjectFilterInput {
+  tag: String
+  category: String
+  featured: Boolean
+
 type User {
+  accessToken: String
   apiKey: String
   createdAt: DateTime!
   email: String!
