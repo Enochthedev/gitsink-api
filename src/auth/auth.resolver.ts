@@ -32,4 +32,12 @@ export class AuthResolver {
   regenerateApiKey(@Args('userId') userId: string): Promise<User> {
     return this.authService.regenerateApiKey(userId);
   }
+
+  @Mutation(() => User)
+  githubOAuth(
+    @Args('userId') userId: string,
+    @Args('code') code: string,
+  ): Promise<User> {
+    return this.authService.oauth(userId, code);
+  }
 }

@@ -2,8 +2,11 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { SyncProjectInput } from './dto/sync-project.input';
+import { UseGuards } from '@nestjs/common';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @Resolver(() => Project)
+@UseGuards(ApiKeyGuard)
 export class ProjectsResolver {
   constructor(private readonly projectsService: ProjectsService) {}
 
