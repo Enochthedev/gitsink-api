@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Body, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { SyncProjectInput } from './dto/sync-project.input';
 import { Project } from './entities/project.entity';
@@ -10,18 +18,32 @@ import { RequestWithUser } from '../auth/request-with-user';
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
+  /**
+   * Retrieve all projects for the authenticated user.
+   */
   @Get()
   async findAll(@Req() req: RequestWithUser): Promise<Project[]> {
     return this.projectsService.getAllProjectsForUser(req.user.id);
   }
 
   @Get(':repoUrl')
-  async findOne(@Param('repoUrl') repoUrl: string, @Req() req: RequestWithUser): Promise<Project | null> {
+  async findOne(
+    @Param('repoUrl') repoUrl: string,
+    @Req() req: RequestWithUser,
+  ): Promise<Project | null> {
     return this.projectsService.getProjectByRepoUrl(repoUrl, req.user.id);
   }
 
   @Post('sync')
-  async sync(@Body() input: SyncProjectInput, @Req() req: RequestWithUser): Promise<Project> {
+  
+  /**
+   * Synchronize a single repository. The branch is optional and defaults to
+   * `main` if not provided.
+   */
+  async sync(
+    @Body() input: SyncProjectInput,
+    @Req() req: RequestWithUser,
+  ): Promise<Project> {
     // Branch is optional; default handled in service
     return this.projectsService.syncProjectFromGitHub(
       req.user.id,
@@ -31,6 +53,9 @@ export class ProjectsController {
   }
 
   @Post('sync-all')
+  /**
+   * Synchronize every GitHub repository linked to the authenticated user.
+   */
   async syncAll(@Req() req: RequestWithUser): Promise<Project[]> {
     return this.projectsService.syncAllReposForUser(req.user.id);
   }

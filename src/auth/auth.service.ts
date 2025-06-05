@@ -7,7 +7,6 @@ import axios from 'axios';
 import { encrypt } from '../utils/encryption';
 import * as bcrypt from 'bcryptjs';
 
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -21,7 +20,9 @@ export class AuthService {
   async signup(email: string): Promise<{ user: User; apiKey: string }> {
     const apiKey = randomBytes(32).toString('hex');
     const hashed = await bcrypt.hash(apiKey, 10);
-    const user = await this.prisma.user.create({ data: { email, apiKey: hashed } });
+    const user = await this.prisma.user.create({
+      data: { email, apiKey: hashed },
+    });
     return { user, apiKey };
   }
 
@@ -49,7 +50,9 @@ export class AuthService {
   /**
    * Generate a new API key for the user.
    */
-  async regenerateApiKey(userId: string): Promise<{ user: User; apiKey: string }> {
+  async regenerateApiKey(
+    userId: string,
+  ): Promise<{ user: User; apiKey: string }> {
     const apiKey = randomBytes(32).toString('hex');
     const hashed = await bcrypt.hash(apiKey, 10);
     const user = await this.prisma.user.update({

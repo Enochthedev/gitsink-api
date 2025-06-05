@@ -12,7 +12,11 @@ describe('ProjectsResolver', () => {
   beforeEach(async () => {
     service = { getFilteredProjectsForUser: jest.fn() };
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ProjectsResolver, { provide: ProjectsService, useValue: service }],
+      providers: [
+        ProjectsResolver,
+        { provide: ProjectsService, useValue: service },
+      ],
+
     })
       .overrideGuard(ApiKeyGuard)
       .useValue({ canActivate: jest.fn().mockReturnValue(true) })
@@ -31,7 +35,10 @@ describe('ProjectsResolver', () => {
   it('filteredProjects delegates to service', async () => {
     const filter = { tag: 'api' };
     service.getFilteredProjectsForUser.mockResolvedValue(['result']);
-    const result = await resolver.filteredProjects(filter as any, { userId: 'test-user' } as any);
+    const result = await resolver.filteredProjects(
+      filter as any,
+      { userId: 'test-user' } as any,
+    );
     expect(service.getFilteredProjectsForUser).toHaveBeenCalledWith(
       filter,
       'test-user',
