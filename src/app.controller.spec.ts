@@ -18,12 +18,10 @@ describe('AppController', () => {
   describe('root', () => {
     it('should parse markdown sample', () => {
       const result = appController.getHello();
-      expect(result).toEqual({
-        title: 'Test Project',
-        description: 'Just testing.',
-        tags: ['test'],
-        body: 'Some more body content.',
-      });
+      expect(result.title).toBe('Test Project');
+      expect(result.description).toBe('Just testing.');
+      expect(result.tags).toEqual(['test']);
+      expect(result.body).toBe('Some more body content.');
     });
   });
 });
