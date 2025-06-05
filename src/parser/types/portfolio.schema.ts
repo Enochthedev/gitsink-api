@@ -14,7 +14,7 @@ export const PortfolioMetadataSchema = z.object({
   order: z.number().optional(),
   githubSync: z.boolean().optional(),
   custom: z.record(z.unknown()).optional(),
-  body: z.string().optional(), // will be injected later
+  body: z.string().optional(), // populated during parsing
 });
 
 export type PortfolioMetadata = z.infer<typeof PortfolioMetadataSchema>;
