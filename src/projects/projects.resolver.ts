@@ -15,6 +15,7 @@ export class ProjectsResolver {
     return this.projectsService.syncProjectFromGitHub(
       input.repoUrl,
       input.branch,
+      'mock-user-id',
     );
   }
 
@@ -34,7 +35,9 @@ export class ProjectsResolver {
   }
 
   @Mutation(() => [Project])
+
   async syncAllProjects(@Args('userId') userId: string): Promise<Project[]> {
     return this.projectsService.syncAllReposForUser(userId);
+
   }
 }
