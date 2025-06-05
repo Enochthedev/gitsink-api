@@ -1,29 +1,32 @@
-import { Controller, Get, Param, Post, Req } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
-import { Project } from '@prisma/client';
+import { SyncProjectInput } from './dto/sync-project.input';
+import { Project } from './entities/project.entity';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 import { RequestWithUser } from '../auth/request-with-user';
 
-@Controller()
+@UseGuards(ApiKeyGuard)
+@Controller('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  @Get('projects')
-  getProjects(@Req() req: RequestWithUser): Promise<Project[]> {
+  @Get()
+  async findAll(@Req() req: RequestWithUser): Promise<Project[]> {
     return this.projectsService.getAllProjectsForUser(req.user.id);
   }
 
-  @Get('projects/:id')
-  getProject(
-    @Param('id') id: string,
-    @Req() req: RequestWithUser,
-  ): Promise<Project | null> {
-    return this.projectsService.getProjectById(id, req.user.id);
+  @Get(':repoUrl')
+  async findOne(@Param('repoUrl') repoUrl: string, @Req() req: RequestWithUser): Promise<Project | null> {
+    return this.projectsService.getProjectByRepoUrl(repoUrl, req.user.id);
   }
 
   @Post('sync')
-  sync(@Req() req: RequestWithUser): Promise<Project[]> {
-    // user id can be derived from req.user once GitHub auth is wired up
-    void req.user.id;
-    return this.projectsService.syncAllReposForUser();
+  async sync(@Body() input: SyncProjectInput, @Req() req: RequestWithUser): Promise<Project> {
+    return this.projectsService.syncProjectFromGitHub(input.repoUrl, input.branch, req.user.id);
+  }
+
+  @Post('sync-all')
+  async syncAll(@Req() req: RequestWithUser): Promise<Project[]> {
+    return this.projectsService.syncAllReposForUser(req.user.id);
   }
 }
