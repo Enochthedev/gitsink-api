@@ -40,10 +40,18 @@ export class ProjectsService {
     const repoData: GitHubRepo = repoResponse.data;
 
     let parsedMd: PortfolioMetadata | null = null;
+    let validationErrors: string[] = [];
+    let valid = true;
     try {
       const mdResponse = await axios.get<string>(rawMdUrl);
       const mdRaw: string = mdResponse.data;
-      parsedMd = this.parser.parseMarkdown(mdRaw);
+      const result = this.parser.parseMarkdown(mdRaw);
+      if (result.valid) {
+        parsedMd = result.data;
+      } else {
+        valid = false;
+        validationErrors = result.errors;
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 404) {
@@ -88,6 +96,8 @@ export class ProjectsService {
         image: parsedMd?.image,
         demoUrl: parsedMd?.demoUrl,
         repoUrl,
+        valid,
+        validationErrors,
         featured: parsedMd?.featured ?? false,
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
@@ -107,6 +117,8 @@ export class ProjectsService {
         icon: parsedMd?.icon,
         image: parsedMd?.image,
         demoUrl: parsedMd?.demoUrl,
+        valid,
+        validationErrors,
         featured: parsedMd?.featured ?? false,
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
