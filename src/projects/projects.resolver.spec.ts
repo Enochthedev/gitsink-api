@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsResolver } from './projects.resolver';
 import { ProjectsService } from './projects.service';
-
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { CacheModule } from '@nestjs/cache-manager';
+import { ApiKeyGuard } from '../auth/api-key.guard';
+import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 
 describe('ProjectsResolver', () => {
   let resolver: ProjectsResolver;
@@ -12,20 +11,16 @@ describe('ProjectsResolver', () => {
   beforeEach(async () => {
     service = { getFilteredProjectsForUser: jest.fn() };
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register()],
       providers: [
         ProjectsResolver,
-
         { provide: ProjectsService, useValue: service },
-
-        ProjectsService,
-        PrismaService,
-        ParserService,
-        ConfigService,
-        { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
-
       ],
-    }).compile();
+    })
+      .overrideGuard(ApiKeyGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .overrideGuard(ApiKeyAuthGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
 
     resolver = module.get<ProjectsResolver>(ProjectsResolver);
     service.getFilteredProjectsForUser.mockReset();
@@ -38,10 +33,13 @@ describe('ProjectsResolver', () => {
   it('filteredProjects delegates to service', async () => {
     const filter = { tag: 'api' };
     service.getFilteredProjectsForUser.mockResolvedValue(['result']);
-    const result = await resolver.filteredProjects(filter as any);
+    const result = await resolver.filteredProjects(
+      filter as any,
+      { userId: 'test-user' } as any,
+    );
     expect(service.getFilteredProjectsForUser).toHaveBeenCalledWith(
       filter,
-      'mock-user-id',
+      'test-user',
     );
     expect(result).toEqual(['result']);
   });

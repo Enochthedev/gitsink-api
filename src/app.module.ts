@@ -14,6 +14,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { UserContextGuard } from './auth/user-context.guard';
+import { Request, Response } from 'express';
 
 @Module({
   imports: [
@@ -35,7 +36,11 @@ import { UserContextGuard } from './auth/user-context.guard';
       playground: true,
       introspection: true,
       csrfPrevention: false,
-      context: ({ req, res }) => ({ req, res }),
+      // Explicitly type the request context for better safety
+      context: ({ req, res }: { req: Request; res: Response }) => ({
+        req,
+        res,
+      }),
     }),
     ProjectsModule,
     PrismaModule,

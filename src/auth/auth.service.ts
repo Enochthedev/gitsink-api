@@ -7,7 +7,6 @@ import axios from 'axios';
 import { encrypt } from '../utils/encryption';
 import * as bcrypt from 'bcryptjs';
 
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -21,7 +20,9 @@ export class AuthService {
   async signup(email: string): Promise<{ user: User; apiKey: string }> {
     const apiKey = randomBytes(32).toString('hex');
     const hashed = await bcrypt.hash(apiKey, 10);
-    const user = await this.prisma.user.create({ data: { email, apiKey: hashed } });
+    const user = await this.prisma.user.create({
+      data: { email, apiKey: hashed },
+    });
     return { user, apiKey };
   }
 
@@ -31,10 +32,15 @@ export class AuthService {
   async connectGitHub(
     userId: string,
     githubId: string,
-    githubToken: string,
+    githubToken?: string,
   ): Promise<User> {
+    // GitHub token may be undefined when linking via OAuth
     const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
-    const encrypted = key ? encrypt(githubToken, key) : githubToken;
+    const encrypted = githubToken
+      ? key
+        ? encrypt(githubToken, key)
+        : githubToken
+      : null;
     return this.prisma.user.update({
       where: { id: userId },
       data: { githubId, githubToken: encrypted },
@@ -44,7 +50,9 @@ export class AuthService {
   /**
    * Generate a new API key for the user.
    */
-  async regenerateApiKey(userId: string): Promise<{ user: User; apiKey: string }> {
+  async regenerateApiKey(
+    userId: string,
+  ): Promise<{ user: User; apiKey: string }> {
     const apiKey = randomBytes(32).toString('hex');
     const hashed = await bcrypt.hash(apiKey, 10);
     const user = await this.prisma.user.update({

@@ -3,9 +3,7 @@ import { ProjectsService } from './projects.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CacheModule } from '@nestjs/cache-manager';
-
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -14,24 +12,13 @@ describe('ProjectsService', () => {
   beforeEach(async () => {
     prisma = { project: { findMany: jest.fn().mockResolvedValue([]) } };
     const module: TestingModule = await Test.createTestingModule({
-
-      providers: [ProjectsService, PrismaService, ParserService, ConfigService],
-
       imports: [CacheModule.register()],
       providers: [
         ProjectsService,
         { provide: PrismaService, useValue: prisma },
         { provide: ParserService, useValue: {} },
-        { provide: ConfigService, useValue: {} },
-
-        PrismaService,
-        ParserService,
-        ConfigService,
-        { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
-
+        { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
-
-
     }).compile();
 
     service = module.get<ProjectsService>(ProjectsService);
