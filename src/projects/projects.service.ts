@@ -1,3 +1,5 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Injectable, Inject } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,12 +21,15 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
+
     @Inject(CACHE_MANAGER) private cache: Cache,
+
   ) {}
 
   async syncProjectFromGitHub(
     repoUrl: string,
     branch = 'main',
+    userId = 'mock-user-id',
   ): Promise<Project> {
     const { owner, repo } = parseGitHubRepoUrl(repoUrl);
 
@@ -70,12 +75,12 @@ export class ProjectsService {
     const project = await this.prisma.project.upsert({
       where: {
         ownerId_repoUrl: {
-          ownerId: 'mock-user-id',
+          ownerId: userId,
           repoUrl,
         },
       },
       create: {
-        ownerId: 'mock-user-id',
+        ownerId: userId,
         title,
         description,
         tags: parsedMd?.tags || [],
@@ -131,6 +136,7 @@ export class ProjectsService {
       where: { ownerId: userId },
       orderBy: { updatedAt: 'desc' },
     });
+
     await this.cache.set(cacheKey, projects);
     return projects;
   }
@@ -184,6 +190,7 @@ export class ProjectsService {
           typeof repo.default_branch === 'string'
             ? repo.default_branch
             : 'main',
+          userId,
         );
         syncedProjects.push(project);
       } catch (e) {
@@ -191,6 +198,7 @@ export class ProjectsService {
       }
     }
 
+    await this.cacheManager.del(`projects:${userId}`);
     return syncedProjects;
   }
 }
