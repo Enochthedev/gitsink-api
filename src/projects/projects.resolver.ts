@@ -34,7 +34,7 @@ export class ProjectsResolver {
   }
 
   @Mutation(() => [Project])
-  async syncAllProjects(): Promise<Project[]> {
-    return this.projectsService.syncAllReposForUser();
+  async syncAllProjects(@Args('userId') userId: string): Promise<Project[]> {
+    return this.projectsService.syncAllReposForUser(userId);
   }
 }

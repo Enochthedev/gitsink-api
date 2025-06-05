@@ -8,6 +8,8 @@ import { parseGitHubRepoUrl } from '../utils/github.utils';
 import { GitHubRepo } from '../types/github.types';
 import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
+import { decrypt } from '../utils/encryption';
+
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
@@ -159,9 +161,13 @@ export class ProjectsService {
     });
   }
 
-  async syncAllReposForUser(): Promise<Project[]> {
-    // In future: retrieve user's GitHub token from DB
-    const token = this.config.get<string>('GITHUB_PERSONAL_TOKEN');
+  async syncAllReposForUser(userId: string): Promise<Project[]> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.githubToken) {
+      throw new Error('GitHub token not found for user');
+    }
+    const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+    const token = key ? decrypt(user.githubToken, key) : user.githubToken;
     const headers = { Authorization: `token ${token}` };
 
     const repos = await axios.get<GitHubRepo[]>(

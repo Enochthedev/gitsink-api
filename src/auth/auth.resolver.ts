@@ -22,8 +22,9 @@ export class AuthResolver {
   connectGitHub(
     @Args('userId') userId: string,
     @Args('githubId') githubId: string,
+    @Args('githubToken') githubToken: string,
   ): Promise<User> {
-    return this.authService.connectGitHub(userId, githubId);
+    return this.authService.connectGitHub(userId, githubId, githubToken);
   }
 
   /**
