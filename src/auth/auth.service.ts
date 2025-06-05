@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { User } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -10,9 +11,11 @@ export class AuthService {
   /**
    * Register a new user and create an API key.
    */
-  async signup(email: string): Promise<User> {
+  async signup(email: string): Promise<{ user: User; apiKey: string }> {
     const apiKey = randomBytes(32).toString('hex');
-    return this.prisma.user.create({ data: { email, apiKey } });
+    const hashed = await bcrypt.hash(apiKey, 10);
+    const user = await this.prisma.user.create({ data: { email, apiKey: hashed } });
+    return { user, apiKey };
   }
 
   /**
@@ -28,11 +31,20 @@ export class AuthService {
   /**
    * Generate a new API key for the user.
    */
-  async regenerateApiKey(userId: string): Promise<User> {
+  async regenerateApiKey(userId: string): Promise<{ user: User; apiKey: string }> {
     const apiKey = randomBytes(32).toString('hex');
+    const hashed = await bcrypt.hash(apiKey, 10);
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { apiKey: hashed },
+    });
+    return { user, apiKey };
+  }
+
+  async revokeApiKey(userId: string): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },
-      data: { apiKey },
+      data: { apiKey: null },
     });
   }
 
