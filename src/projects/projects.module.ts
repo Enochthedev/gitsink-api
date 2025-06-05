@@ -7,11 +7,11 @@ import { ConfigModule } from '@nestjs/config';
 import { ProjectFieldsResolver } from './project-fields.resolver';
 import { ProjectsController } from './projects.controller';
 import { ApiKeyMiddleware } from '../auth/api-key.middleware';
-
+import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 @Module({
   imports: [PrismaModule, ParserModule, ConfigModule],
   controllers: [ProjectsController],
-  providers: [ProjectsService, ProjectsResolver, ProjectFieldsResolver],
+  providers: [ProjectsService, ProjectsResolver, ProjectFieldsResolver, ApiKeyAuthGuard],
 })
 export class ProjectsModule {
   configure(consumer: MiddlewareConsumer) {
