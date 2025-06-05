@@ -2,11 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { User } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { encrypt } from '../utils/encryption';
+
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private config: ConfigService,
+  ) {}
 
   /**
    * Register a new user and create an API key.
@@ -21,10 +27,16 @@ export class AuthService {
   /**
    * Attach a GitHub ID to an existing user.
    */
-  async connectGitHub(userId: string, githubId: string): Promise<User> {
+  async connectGitHub(
+    userId: string,
+    githubId: string,
+    githubToken: string,
+  ): Promise<User> {
+    const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+    const encrypted = key ? encrypt(githubToken, key) : githubToken;
     return this.prisma.user.update({
       where: { id: userId },
-      data: { githubId },
+      data: { githubId, githubToken: encrypted },
     });
   }
 

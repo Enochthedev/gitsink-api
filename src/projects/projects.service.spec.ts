@@ -10,6 +10,8 @@ describe('ProjectsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      providers: [ProjectsService, PrismaService, ParserService, ConfigService],
+
       imports: [CacheModule.register()],
       providers: [
         ProjectsService,
