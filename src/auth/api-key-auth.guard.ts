@@ -7,6 +7,7 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
+import { RequestWithUser } from './request-with-user';
 
 @Injectable()
 export class ApiKeyAuthGuard implements CanActivate {
@@ -14,8 +15,8 @@ export class ApiKeyAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ctx = GqlExecutionContext.create(context);
-    const req = ctx.getContext().req;
-    const auth = req.headers['authorization'] as string | undefined;
+    const req = ctx.getContext().req as RequestWithUser;
+    const auth = req.headers['authorization'];
     if (!auth) throw new UnauthorizedException('Missing Authorization header');
 
     const [type, token] = auth.split(' ');
