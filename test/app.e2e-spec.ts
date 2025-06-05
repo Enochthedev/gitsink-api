@@ -24,11 +24,12 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer())
+    return request(app.getHttpServer() as App)
       .get('/')
       .expect(200)
-      .expect(({ body }) => {
-        expect(body.title).toBe('Test Project');
+      .expect(({ body }: request.Response) => {
+        const data = body as { title: string };
+        expect(data.title).toBe('Test Project');
       });
   });
 });
