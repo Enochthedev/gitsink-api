@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
@@ -15,11 +17,13 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async syncProjectFromGitHub(
     repoUrl: string,
     branch = 'main',
+    userId = 'mock-user-id',
   ): Promise<Project> {
     const { owner, repo } = parseGitHubRepoUrl(repoUrl);
 
@@ -62,15 +66,15 @@ export class ProjectsService {
       customMetadata = parsedMd.custom;
     }
 
-    return await this.prisma.project.upsert({
+    const project = await this.prisma.project.upsert({
       where: {
         ownerId_repoUrl: {
-          ownerId: 'mock-user-id',
+          ownerId: userId,
           repoUrl,
         },
       },
       create: {
-        ownerId: 'mock-user-id',
+        ownerId: userId,
         title,
         description,
         tags: parsedMd?.tags || [],
@@ -108,13 +112,22 @@ export class ProjectsService {
         syncedAt: new Date(),
       },
     });
+    await this.cacheManager.del(`projects:${userId}`);
+    return project;
   }
 
   async getAllProjectsForUser(userId: string): Promise<Project[]> {
-    return this.prisma.project.findMany({
+    const cacheKey = `projects:${userId}`;
+    const cached = await this.cacheManager.get<Project[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+    const projects = await this.prisma.project.findMany({
       where: { ownerId: userId },
       orderBy: { updatedAt: 'desc' },
     });
+    await this.cacheManager.set(cacheKey, projects);
+    return projects;
   }
 
   async getProjectByRepoUrl(
@@ -131,7 +144,7 @@ export class ProjectsService {
     });
   }
 
-  async syncAllReposForUser(): Promise<Project[]> {
+  async syncAllReposForUser(userId = 'mock-user-id'): Promise<Project[]> {
     // In future: retrieve user's GitHub token from DB
     const token = this.config.get<string>('GITHUB_PERSONAL_TOKEN');
     const headers = { Authorization: `token ${token}` };
@@ -150,6 +163,7 @@ export class ProjectsService {
           typeof repo.default_branch === 'string'
             ? repo.default_branch
             : 'main',
+          userId,
         );
         syncedProjects.push(project);
       } catch (e) {
@@ -157,6 +171,7 @@ export class ProjectsService {
       }
     }
 
+    await this.cacheManager.del(`projects:${userId}`);
     return syncedProjects;
   }
 }
