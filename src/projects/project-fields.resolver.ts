@@ -22,7 +22,7 @@ export class ProjectFieldsResolver {
   }
 
   @ResolveField(() => [String])
-  allGithubKeys(@Parent() project: Project): string[] {
+  allGitHubKeys(@Parent() project: Project): string[] {
     return typeof project.githubMetadata === 'object' &&
       project.githubMetadata !== null
       ? Object.keys(project.githubMetadata as Record<string, unknown>)
