@@ -2,10 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { User } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private config: ConfigService,
+  ) {}
 
   /**
    * Register a new user and create an API key.
@@ -34,5 +39,27 @@ export class AuthService {
       where: { id: userId },
       data: { apiKey },
     });
+  }
+
+  async exchangeCodeForGitHubId(code: string): Promise<string> {
+    const tokenResp = await axios.post(
+      'https://github.com/login/oauth/access_token',
+      {
+        client_id: this.config.get<string>('GITHUB_CLIENT_ID'),
+        client_secret: this.config.get<string>('GITHUB_CLIENT_SECRET'),
+        code,
+      },
+      { headers: { Accept: 'application/json' } },
+    );
+    const token = tokenResp.data.access_token as string;
+    const userResp = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `token ${token}` },
+    });
+    return String(userResp.data.id);
+  }
+
+  async oauth(userId: string, code: string): Promise<User> {
+    const githubId = await this.exchangeCodeForGitHubId(code);
+    return this.connectGitHub(userId, githubId);
   }
 }
