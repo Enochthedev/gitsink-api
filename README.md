@@ -73,9 +73,13 @@ $ npm run prisma:seed
 
 All REST endpoints require an API key passed via the `x-api-key` HTTP header.
 
+Key routes include:
 - `GET /projects` - list projects for the authenticated user.
-- `GET /projects/:id` - fetch a single project by its ID.
-- `POST /sync` - sync all of the user's GitHub repositories into projects.
+- `GET /projects/:repoUrl` - fetch a project by its repository URL.
+- `POST /projects/sync` - sync a single GitHub repository.
+- `POST /projects/sync-all` - sync all repositories for the user.
+
+See [docs/endpoints.md](docs/endpoints.md) for a full list of REST and GraphQL endpoints.
 
 
 ## Deployment
