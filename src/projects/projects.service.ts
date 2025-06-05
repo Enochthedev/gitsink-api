@@ -131,6 +131,12 @@ export class ProjectsService {
     });
   }
 
+  async getProjectById(id: string, userId: string): Promise<Project | null> {
+    return this.prisma.project.findFirst({
+      where: { id, ownerId: userId },
+    });
+  }
+
   async syncAllReposForUser(): Promise<Project[]> {
     // In future: retrieve user's GitHub token from DB
     const token = this.config.get<string>('GITHUB_PERSONAL_TOKEN');
