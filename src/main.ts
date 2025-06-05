@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 // import helmet from 'helmet';
 // import rateLimit from 'express-rate-limit';
@@ -14,6 +15,7 @@ async function bootstrap() {
   //     legacyHeaders: false,
   //   }),
   // );
+  app.useGlobalPipes(new ValidationPipe());
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
