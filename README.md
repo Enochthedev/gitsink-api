@@ -54,6 +54,21 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Prisma
+
+Useful scripts for working with the database:
+
+```bash
+# generate Prisma client
+$ npm run prisma:generate
+
+# run migrations
+$ npm run prisma:migrate
+
+# seed the database
+$ npm run prisma:seed
+```
+
 ## REST API
 
 All REST endpoints require an API key passed via the `x-api-key` HTTP header.
@@ -61,6 +76,7 @@ All REST endpoints require an API key passed via the `x-api-key` HTTP header.
 - `GET /projects` - list projects for the authenticated user.
 - `GET /projects/:id` - fetch a single project by its ID.
 - `POST /sync` - sync all of the user's GitHub repositories into projects.
+
 
 ## Deployment
 
