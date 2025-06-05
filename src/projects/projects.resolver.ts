@@ -3,12 +3,15 @@ import { UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { SyncProjectInput } from './dto/sync-project.input';
+import { UseGuards } from '@nestjs/common';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 import { ProjectFilterInput } from './dto/project-filter.input';
 
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 
 @UseGuards(ApiKeyAuthGuard)
 @Resolver(() => Project)
+@UseGuards(ApiKeyGuard)
 export class ProjectsResolver {
   constructor(private readonly projectsService: ProjectsService) {}
 
