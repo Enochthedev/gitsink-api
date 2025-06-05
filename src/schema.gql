@@ -14,6 +14,7 @@ scalar JSON
 
 type Mutation {
   connectGitHub(githubId: String!, userId: String!): User!
+  githubOAuth(code: String!, userId: String!): User!
   regenerateApiKey(userId: String!): User!
   signup(email: String!): User!
   syncAllProjects: [Project!]!
@@ -43,6 +44,8 @@ type Project {
   image: String
   lastCommitAt: DateTime
   markdown: String
+  valid: Boolean!
+  validationErrors: [String!]!
   order: Float
   published: Boolean
   repoUrl: String
@@ -56,12 +59,21 @@ type Query {
   ping: String!
   project(repoUrl: String!): Project
   projects: [Project!]!
+  filteredProjects(filter: ProjectFilterInput): [Project!]!
 }
 
 input SyncProjectInput {
   branch: String
   repoUrl: String!
 }
+
+
+
+
+input ProjectFilterInput {
+  tag: String
+  category: String
+  featured: Boolean
 
 type User {
   accessToken: String

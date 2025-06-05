@@ -48,6 +48,12 @@ export class Project {
   @Field(() => String, { nullable: true })
   markdown!: string | null;
 
+  @Field(() => Boolean)
+  valid!: boolean;
+
+  @Field(() => [String])
+  validationErrors!: string[];
+
   @Field(() => [String])
   collaborators!: string[];
 
