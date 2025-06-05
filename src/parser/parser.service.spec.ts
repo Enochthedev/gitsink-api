@@ -22,20 +22,25 @@ tags: ["test"]
 Some more body content.`;
     const result = service.parseMarkdown(md);
     expect(result).toEqual({
-      title: 'Test Project',
-      description: 'Just testing.',
-      tags: ['test'],
-      body: 'Some more body content.',
+      valid: true,
+      data: {
+        title: 'Test Project',
+        description: 'Just testing.',
+        tags: ['test'],
+        body: 'Some more body content.',
+      },
     });
   });
 
-  it('should throw an error for invalid front matter', () => {
+  it('should return errors for invalid front matter', () => {
     const md = `---
 title: 123
 ---
 Invalid body`;
-    expect(() => service.parseMarkdown(md)).toThrowError(
-      /Invalid Portfolio.md format/,
-    );
+    const result = service.parseMarkdown(md);
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
   });
 });
