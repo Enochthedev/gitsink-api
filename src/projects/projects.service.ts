@@ -13,6 +13,10 @@ import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
 import { decrypt } from '../utils/encryption';
 
+/**
+ * Service encapsulating all project-related persistence logic. It handles
+ * communication with GitHub, parsing markdown and caching results.
+ */
 @Injectable()
 export class ProjectsService {
   constructor(
@@ -23,6 +27,14 @@ export class ProjectsService {
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) {}
 
+  /**
+   * Fetch project data from GitHub and upsert it in the database.
+   *
+   * @param userId      Owner of the repository
+   * @param repoUrl     HTTPS URL of the repository
+   * @param branch      Branch containing the Portfolio.md file
+   * @param blacklisted Whether the repo should be marked as blacklisted
+   */
   async syncProjectFromGitHub(
     userId: string,
     repoUrl: string,
@@ -139,6 +151,10 @@ export class ProjectsService {
     return project;
   }
 
+  /**
+   * Return all projects belonging to the provided user. Results are cached to
+   * avoid hitting the database repeatedly.
+   */
   async getAllProjectsForUser(userId: string): Promise<Project[]> {
     const cacheKey = `user:${userId}:projects`;
     const cached = await this.cache.get<Project[]>(cacheKey);
@@ -153,6 +169,9 @@ export class ProjectsService {
     return projects;
   }
 
+  /**
+   * Retrieve projects for a user based on optional filter criteria.
+   */
   async getFilteredProjectsForUser(
     filter: { tag?: string; category?: string; featured?: boolean },
     userId: string,
@@ -177,6 +196,10 @@ export class ProjectsService {
     });
   }
 
+  /**
+   * Look up a single project by its repository URL. Cached results are
+   * returned if available.
+   */
   async getProjectByRepoUrl(
     repoUrl: string,
     userId: string,
@@ -197,12 +220,19 @@ export class ProjectsService {
     return project;
   }
 
+  /**
+   * Fetch a project by its database ID ensuring it belongs to the given user.
+   */
   async getProjectById(id: string, userId: string): Promise<Project | null> {
     return this.prisma.project.findFirst({
       where: { id, ownerId: userId },
     });
   }
 
+  /**
+   * Synchronize all repositories for the given user, respecting any blacklist
+   * flags found in `Profile.md`.
+   */
   async syncAllReposForUser(userId: string): Promise<Project[]> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user?.githubToken) {

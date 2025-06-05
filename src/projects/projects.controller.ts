@@ -18,6 +18,9 @@ import { RequestWithUser } from '../auth/request-with-user';
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
+  /**
+   * Retrieve all projects for the authenticated user.
+   */
   @Get()
   async findAll(@Req() req: RequestWithUser): Promise<Project[]> {
     return this.projectsService.getAllProjectsForUser(req.user.id);
@@ -32,6 +35,10 @@ export class ProjectsController {
   }
 
   @Post('sync')
+  /**
+   * Synchronize a single repository. The branch is optional and defaults to
+   * `main` if not provided.
+   */
   async sync(
     @Body() input: SyncProjectInput,
     @Req() req: RequestWithUser,
@@ -45,6 +52,9 @@ export class ProjectsController {
   }
 
   @Post('sync-all')
+  /**
+   * Synchronize every GitHub repository linked to the authenticated user.
+   */
   async syncAll(@Req() req: RequestWithUser): Promise<Project[]> {
     return this.projectsService.syncAllReposForUser(req.user.id);
   }
