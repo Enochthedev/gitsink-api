@@ -3,6 +3,8 @@ import { UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { SyncProjectInput } from './dto/sync-project.input';
+import { ProjectFilterInput } from './dto/project-filter.input';
+
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 
 @UseGuards(ApiKeyAuthGuard)
@@ -27,6 +29,16 @@ export class ProjectsResolver {
   @Query(() => [Project])
   async projects(): Promise<Project[]> {
     return this.projectsService.getAllProjectsForUser('mock-user-id');
+  }
+
+  @Query(() => [Project])
+  async filteredProjects(
+    @Args('filter', { nullable: true }) filter: ProjectFilterInput,
+  ): Promise<Project[]> {
+    return this.projectsService.getFilteredProjectsForUser(
+      filter || {},
+      'mock-user-id',
+    );
   }
 
   @Query(() => Project, { nullable: true })
