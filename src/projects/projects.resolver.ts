@@ -20,7 +20,7 @@ export class ProjectsResolver {
     return this.projectsService.syncProjectFromGitHub(
       input.repoUrl,
       input.branch,
-      'mock-user-id',
+      false,
     );
   }
 

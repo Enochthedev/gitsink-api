@@ -5,6 +5,7 @@ import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
 import axios from 'axios';
+import matter from 'gray-matter';
 import { Prisma, Project } from '@prisma/client';
 import { parseGitHubRepoUrl } from '../utils/github.utils';
 import { GitHubRepo } from '../types/github.types';
@@ -29,7 +30,8 @@ export class ProjectsService {
   async syncProjectFromGitHub(
     repoUrl: string,
     branch = 'main',
-    userId = 'mock-user-id',
+    blacklisted = false,
+
   ): Promise<Project> {
     const { owner, repo } = parseGitHubRepoUrl(repoUrl);
 
@@ -102,6 +104,7 @@ export class ProjectsService {
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
         order: parsedMd?.order,
+        blacklisted,
         markdown: parsedMd?.body || '',
         collaborators: repoData?.contributors_url ? [] : [],
         firstCommitAt: null,
@@ -123,6 +126,7 @@ export class ProjectsService {
         published: parsedMd?.published ?? false,
         category: parsedMd?.category,
         order: parsedMd?.order,
+        blacklisted,
         markdown: parsedMd?.body || '',
         lastCommitAt: new Date(repoData.pushed_at),
         githubMetadata,
@@ -220,13 +224,79 @@ export class ProjectsService {
     const syncedProjects: Project[] = [];
     for (const repo of repos.data) {
       const repoUrl = repo.html_url;
+      const { owner, repo: repoName } = parseGitHubRepoUrl(String(repoUrl));
+      const profileUrl = `${this.config.get<string>('GITHUB_MD_URL')}/${owner}/${repoName}/${
+        typeof repo.default_branch === 'string' ? repo.default_branch : 'main'
+      }/Profile.md`;
+      let blacklisted = false;
       try {
+        const profileRes = await axios.get<string>(profileUrl, { headers });
+        const profileData = matter(profileRes.data).data as Record<
+          string,
+          unknown
+        >;
+        if (
+          profileData['blacklisted'] === true ||
+          profileData['blacklist'] === true ||
+          profileData['allowed'] === false
+        ) {
+          blacklisted = true;
+        }
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status !== 404) {
+          console.warn(
+            `Error fetching Profile.md for ${String(repo.full_name)}: ${err.message}`,
+          );
+        }
+      }
+      try {
+        if (blacklisted) {
+          await this.prisma.project.upsert({
+            where: {
+              ownerId_repoUrl: {
+                ownerId: 'mock-user-id',
+                repoUrl: String(repoUrl),
+              },
+            },
+            create: {
+              ownerId: 'mock-user-id',
+              title: repo.name,
+              description: repo.description || '',
+              tags: [],
+              repoUrl: String(repoUrl),
+              featured: false,
+              published: false,
+              githubSync: false,
+              blacklisted: true,
+              markdown: '',
+              collaborators: [],
+              firstCommitAt: null,
+              lastCommitAt: new Date(repo.pushed_at),
+              githubMetadata: isInputJsonValue(repo)
+                ? (repo as Prisma.InputJsonValue)
+                : {},
+              customMetadata: {},
+              syncedAt: new Date(),
+            },
+            update: {
+              blacklisted: true,
+              githubMetadata: isInputJsonValue(repo)
+                ? (repo as Prisma.InputJsonValue)
+                : {},
+              syncedAt: new Date(),
+            },
+          });
+          continue;
+        }
+
         const project = await this.syncProjectFromGitHub(
           String(repoUrl),
           typeof repo.default_branch === 'string'
             ? repo.default_branch
             : 'main',
+          false,
           userId,
+
         );
         syncedProjects.push(project);
       } catch (e) {
