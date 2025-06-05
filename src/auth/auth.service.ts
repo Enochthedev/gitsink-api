@@ -35,4 +35,28 @@ export class AuthService {
       data: { apiKey },
     });
   }
+
+  /**
+   * Find or create a user using GitHub OAuth details.
+   */
+  async findOrCreateWithGitHub(
+    githubId: string,
+    accessToken: string,
+    email?: string,
+  ): Promise<User> {
+    const existing = await this.prisma.user.findUnique({ where: { githubId } });
+    if (existing) {
+      return this.prisma.user.update({
+        where: { id: existing.id },
+        data: { accessToken },
+      });
+    }
+    return this.prisma.user.create({
+      data: {
+        email: email ?? `${githubId}@github.local`,
+        githubId,
+        accessToken,
+      },
+    });
+  }
 }
