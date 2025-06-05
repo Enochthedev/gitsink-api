@@ -52,9 +52,16 @@ type Query {
   ping: String!
   project(repoUrl: String!): Project
   projects: [Project!]!
+  filteredProjects(filter: ProjectFilterInput): [Project!]!
 }
 
 input SyncProjectInput {
   branch: String
   repoUrl: String!
+}
+
+input ProjectFilterInput {
+  tag: String
+  category: String
+  featured: Boolean
 }
