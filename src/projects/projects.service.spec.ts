@@ -14,6 +14,7 @@ describe('ProjectsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [ProjectsService, PrismaService, ParserService, ConfigService],
 
+
       imports: [CacheModule.register()],
       providers: [
         ProjectsService,
@@ -22,6 +23,7 @@ describe('ProjectsService', () => {
         ConfigService,
         { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
       ],
+
     }).compile();
 
     service = module.get<ProjectsService>(ProjectsService);
