@@ -62,6 +62,12 @@ export class AuthService {
   }
 
   /**
+   * Validate an API key and return the associated user if it exists.
+   */
+  async validateApiKey(apiKey: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { apiKey } });
+  }
+  /**
    * Find or create a user using GitHub OAuth details.
    */
   async findOrCreateWithGitHub(

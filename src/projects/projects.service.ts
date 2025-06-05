@@ -28,6 +28,7 @@ export class ProjectsService {
   ) {}
 
   async syncProjectFromGitHub(
+    userId: string,
     repoUrl: string,
     branch = 'main',
     blacklisted = false,
@@ -214,6 +215,7 @@ export class ProjectsService {
     }
     const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
     const token = key ? decrypt(user.githubToken, key) : user.githubToken;
+
     const headers = { Authorization: `token ${token}` };
 
     const repos = await axios.get<GitHubRepo[]>(
@@ -290,6 +292,7 @@ export class ProjectsService {
         }
 
         const project = await this.syncProjectFromGitHub(
+          userId,
           String(repoUrl),
           typeof repo.default_branch === 'string'
             ? repo.default_branch

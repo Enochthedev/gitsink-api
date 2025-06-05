@@ -1,4 +1,5 @@
-import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+
+import { Resolver, Mutation, Args, Query, Context } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
@@ -16,8 +17,15 @@ export class ProjectsResolver {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Mutation(() => Project, { name: 'syncProject' })
-  async syncProject(@Args('input') input: SyncProjectInput): Promise<Project> {
+  async syncProject(
+    @Args('input') input: SyncProjectInput,
+    @Context() context: { userId?: string },
+  ): Promise<Project> {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
     return this.projectsService.syncProjectFromGitHub(
+      context.userId,
       input.repoUrl,
       input.branch,
       false,
@@ -30,8 +38,11 @@ export class ProjectsResolver {
   }
 
   @Query(() => [Project])
-  async projects(): Promise<Project[]> {
-    return this.projectsService.getAllProjectsForUser('mock-user-id');
+  async projects(@Context() context: { userId?: string }): Promise<Project[]> {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
+    return this.projectsService.getAllProjectsForUser(context.userId);
   }
 
   @Query(() => [Project])
@@ -45,14 +56,23 @@ export class ProjectsResolver {
   }
 
   @Query(() => Project, { nullable: true })
-  async project(@Args('repoUrl') repoUrl: string): Promise<Project | null> {
-    return this.projectsService.getProjectByRepoUrl(repoUrl, 'mock-user-id');
+  async project(
+    @Args('repoUrl') repoUrl: string,
+    @Context() context: { userId?: string },
+  ): Promise<Project | null> {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
+    return this.projectsService.getProjectByRepoUrl(repoUrl, context.userId);
   }
 
   @Mutation(() => [Project])
-
-  async syncAllProjects(@Args('userId') userId: string): Promise<Project[]> {
-    return this.projectsService.syncAllReposForUser(userId);
-
+  async syncAllProjects(
+    @Context() context: { userId?: string },
+  ): Promise<Project[]> {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
+    return this.projectsService.syncAllReposForUser(context.userId);
   }
 }
