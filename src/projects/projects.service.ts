@@ -13,8 +13,6 @@ import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
 import { decrypt } from '../utils/encryption';
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProjectsService {
@@ -298,8 +296,6 @@ export class ProjectsService {
             ? repo.default_branch
             : 'main',
           false,
-          userId,
-
         );
         syncedProjects.push(project);
       } catch (e) {
@@ -307,7 +303,7 @@ export class ProjectsService {
       }
     }
 
-    await this.cacheManager.del(`projects:${userId}`);
+    await this.cache.del(`projects:${userId}`);
     return syncedProjects;
   }
 }
