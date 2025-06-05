@@ -18,6 +18,7 @@ model User {
   email     String   @unique
   githubId  String?  @unique
   githubToken String?
+  accessToken String?
   apiKey    String?  @unique
   projects  Project[]
   createdAt DateTime @default(now())
