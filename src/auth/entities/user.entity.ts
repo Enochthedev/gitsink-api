@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, HideField } from '@nestjs/graphql';
 
 @ObjectType()
 export class User {
@@ -10,6 +10,9 @@ export class User {
 
   @Field(() => String, { nullable: true })
   githubId!: string | null;
+
+  @HideField()
+  githubToken!: string | null;
 
   @Field(() => String, { nullable: true })
   apiKey!: string | null;
