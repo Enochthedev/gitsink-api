@@ -42,6 +42,8 @@ model Project {
 
   githubSync     Boolean? @default(true)
   markdown       String?         // optional, raw md body
+  valid          Boolean  @default(true)
+  validationErrors String[]
 
   collaborators  String[]        // ← can be empty, but not optional
   firstCommitAt  DateTime?       // optional

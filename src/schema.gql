@@ -39,6 +39,8 @@ type Project {
   image: String
   lastCommitAt: DateTime
   markdown: String
+  valid: Boolean!
+  validationErrors: [String!]!
   order: Float
   published: Boolean
   repoUrl: String
