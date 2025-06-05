@@ -4,7 +4,6 @@ import { ProjectsService } from './projects.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 
-
 describe('ProjectsResolver', () => {
   let resolver: ProjectsResolver;
   let service: { getFilteredProjectsForUser: jest.Mock };
@@ -16,7 +15,6 @@ describe('ProjectsResolver', () => {
         ProjectsResolver,
         { provide: ProjectsService, useValue: service },
       ],
-
     })
       .overrideGuard(ApiKeyGuard)
       .useValue({ canActivate: jest.fn().mockReturnValue(true) })
