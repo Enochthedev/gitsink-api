@@ -69,6 +69,15 @@ $ npm run prisma:migrate
 $ npm run prisma:seed
 ```
 
+## REST API
+
+All REST endpoints require an API key passed via the `x-api-key` HTTP header.
+
+- `GET /projects` - list projects for the authenticated user.
+- `GET /projects/:id` - fetch a single project by its ID.
+- `POST /sync` - sync all of the user's GitHub repositories into projects.
+
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
