@@ -31,10 +31,15 @@ export class AuthService {
   async connectGitHub(
     userId: string,
     githubId: string,
-    githubToken: string,
+    githubToken?: string,
   ): Promise<User> {
+    // GitHub token may be undefined when linking via OAuth
     const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
-    const encrypted = key ? encrypt(githubToken, key) : githubToken;
+    const encrypted = githubToken
+      ? key
+        ? encrypt(githubToken, key)
+        : githubToken
+      : null;
     return this.prisma.user.update({
       where: { id: userId },
       data: { githubId, githubToken: encrypted },

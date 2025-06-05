@@ -41,9 +41,10 @@ export class AuthResolver {
     @Args('code') code: string,
   ): Promise<User> {
     return this.authService.oauth(userId, code);
+  }
 
+  @Mutation(() => User)
   revokeApiKey(@Args('userId') userId: string): Promise<User> {
     return this.authService.revokeApiKey(userId);
-
   }
 }
