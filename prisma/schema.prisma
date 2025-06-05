@@ -41,6 +41,7 @@ model Project {
   category       String?         // optional
 
   githubSync     Boolean? @default(true)
+  blacklisted    Boolean? @default(false)
   markdown       String?         // optional, raw md body
 
   collaborators  String[]        // ← can be empty, but not optional

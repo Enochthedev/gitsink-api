@@ -42,6 +42,9 @@ export class Project {
   @Field(() => Boolean, { nullable: true })
   githubSync!: boolean | null;
 
+  @Field(() => Boolean, { nullable: true })
+  blacklisted!: boolean | null;
+
   @Field(() => String, { nullable: true })
   markdown!: string | null;
 
