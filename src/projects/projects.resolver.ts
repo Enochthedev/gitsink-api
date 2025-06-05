@@ -1,8 +1,11 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { SyncProjectInput } from './dto/sync-project.input';
+import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 
+@UseGuards(ApiKeyAuthGuard)
 @Resolver(() => Project)
 export class ProjectsResolver {
   constructor(private readonly projectsService: ProjectsService) {}
@@ -31,7 +34,7 @@ export class ProjectsResolver {
   }
 
   @Mutation(() => [Project])
-  async syncAllProjects(): Promise<Project[]> {
-    return this.projectsService.syncAllReposForUser();
+  async syncAllProjects(@Args('userId') userId: string): Promise<Project[]> {
+    return this.projectsService.syncAllReposForUser(userId);
   }
 }
