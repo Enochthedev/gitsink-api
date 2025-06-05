@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/client": "^6.7.0",
     "apollo-server-express": "^3.13.0",
+    "axios": "^1.6.2",
     "cache-manager": "^6.4.3",
     "cache-manager-ioredis": "^2.1.0",
     "express-rate-limit": "^7.5.0",
