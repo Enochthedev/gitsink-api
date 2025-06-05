@@ -23,7 +23,6 @@ export class ProjectsController {
   @Post('sync')
   sync(@Req() req: RequestWithUser): Promise<Project[]> {
     // user id can be derived from req.user once GitHub auth is wired up
-    void req.user.id;
-    return this.projectsService.syncAllReposForUser();
+    return this.projectsService.syncAllReposForUser(req.user.id);
   }
 }
