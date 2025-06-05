@@ -1,6 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { Injectable, Inject } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
@@ -10,6 +10,10 @@ import { parseGitHubRepoUrl } from '../utils/github.utils';
 import { GitHubRepo } from '../types/github.types';
 import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
+import { decrypt } from '../utils/encryption';
+
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProjectsService {
@@ -17,7 +21,9 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+
+    @Inject(CACHE_MANAGER) private cache: Cache,
+
   ) {}
 
   async syncProjectFromGitHub(
@@ -112,21 +118,26 @@ export class ProjectsService {
         syncedAt: new Date(),
       },
     });
-    await this.cacheManager.del(`projects:${userId}`);
+
+    const cacheKey = `user:${project.ownerId}:repo:${repoUrl}`;
+    await this.cache.del(cacheKey);
+    await this.cache.del(`user:${project.ownerId}:projects`);
+    await this.cache.set(cacheKey, project);
+
     return project;
   }
 
   async getAllProjectsForUser(userId: string): Promise<Project[]> {
-    const cacheKey = `projects:${userId}`;
-    const cached = await this.cacheManager.get<Project[]>(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    const cacheKey = `user:${userId}:projects`;
+    const cached = await this.cache.get<Project[]>(cacheKey);
+    if (cached) return cached;
+
     const projects = await this.prisma.project.findMany({
       where: { ownerId: userId },
       orderBy: { updatedAt: 'desc' },
     });
-    await this.cacheManager.set(cacheKey, projects);
+
+    await this.cache.set(cacheKey, projects);
     return projects;
   }
 
@@ -134,7 +145,11 @@ export class ProjectsService {
     repoUrl: string,
     userId: string,
   ): Promise<Project | null> {
-    return this.prisma.project.findUnique({
+    const cacheKey = `user:${userId}:repo:${repoUrl}`;
+    const cached = await this.cache.get<Project>(cacheKey);
+    if (cached) return cached;
+
+    const project = await this.prisma.project.findUnique({
       where: {
         ownerId_repoUrl: {
           ownerId: userId,
@@ -142,11 +157,23 @@ export class ProjectsService {
         },
       },
     });
+    if (project) await this.cache.set(cacheKey, project);
+    return project;
   }
 
-  async syncAllReposForUser(userId = 'mock-user-id'): Promise<Project[]> {
-    // In future: retrieve user's GitHub token from DB
-    const token = this.config.get<string>('GITHUB_PERSONAL_TOKEN');
+  async getProjectById(id: string, userId: string): Promise<Project | null> {
+    return this.prisma.project.findFirst({
+      where: { id, ownerId: userId },
+    });
+  }
+
+  async syncAllReposForUser(userId: string): Promise<Project[]> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.githubToken) {
+      throw new Error('GitHub token not found for user');
+    }
+    const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+    const token = key ? decrypt(user.githubToken, key) : user.githubToken;
     const headers = { Authorization: `token ${token}` };
 
     const repos = await axios.get<GitHubRepo[]>(
