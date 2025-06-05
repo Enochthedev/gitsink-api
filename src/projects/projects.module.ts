@@ -25,9 +25,11 @@ import { ConfigModule } from '@nestjs/config';
 })
 export class ProjectsModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ApiKeyMiddleware).forRoutes(
-      { path: 'projects/sync', method: RequestMethod.POST },
-      { path: 'projects/sync-all', method: RequestMethod.POST },
-    );
+    consumer
+      .apply(ApiKeyMiddleware)
+      .forRoutes(
+        { path: 'projects/sync', method: RequestMethod.POST },
+        { path: 'projects/sync-all', method: RequestMethod.POST },
+      );
   }
 }

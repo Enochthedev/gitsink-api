@@ -21,6 +21,7 @@ export class ProjectsScheduler {
         await this.projectsService.syncAllReposForUser(user.id);
       } catch (err) {
         this.logger.warn(`Failed to sync repos for user ${user.id}`);
+        this.logger.debug(err);
       }
     }
   }

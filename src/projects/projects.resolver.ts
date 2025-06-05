@@ -1,6 +1,4 @@
-
 import { Resolver, Mutation, Args, Query, Context } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { SyncProjectInput } from './dto/sync-project.input';
@@ -48,10 +46,15 @@ export class ProjectsResolver {
   @Query(() => [Project])
   async filteredProjects(
     @Args('filter', { nullable: true }) filter: ProjectFilterInput,
+    @Context() context: { userId?: string },
   ): Promise<Project[]> {
+    // Ensure the request is authenticated before filtering projects
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
     return this.projectsService.getFilteredProjectsForUser(
       filter || {},
-      'mock-user-id',
+      context.userId,
     );
   }
 

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { RequestWithUser } from './request-with-user';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
@@ -13,10 +14,11 @@ export class ApiKeyGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType<'http' | 'graphql'>();
-    const request =
+    const request: RequestWithUser =
       type === 'http'
         ? context.switchToHttp().getRequest()
-        : GqlExecutionContext.create(context).getContext().req;
+        : (GqlExecutionContext.create(context).getContext()
+            .req as RequestWithUser);
     const apiKey = request.headers['x-api-key'];
     if (!apiKey) throw new UnauthorizedException('API key missing');
     const user = await this.prisma.user.findFirst({
