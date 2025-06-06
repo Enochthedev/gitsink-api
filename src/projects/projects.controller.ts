@@ -7,6 +7,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiSecurity } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { SyncProjectInput } from './dto/sync-project.input';
 import { Project } from './entities/project.entity';
@@ -14,6 +15,8 @@ import { ApiKeyGuard } from '../auth/api-key.guard';
 import { RequestWithUser } from '../auth/request-with-user';
 
 @UseGuards(ApiKeyGuard)
+@ApiTags('projects')
+@ApiSecurity('x-api-key')
 @Controller('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
