@@ -7,6 +7,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiSecurity, ApiBody } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { SyncProjectInput } from './dto/sync-project.input';
 import { Project } from './entities/project.entity';
@@ -14,6 +15,8 @@ import { ApiKeyGuard } from '../auth/api-key.guard';
 import { RequestWithUser } from '../auth/request-with-user';
 
 @UseGuards(ApiKeyGuard)
+@ApiTags('projects')
+@ApiSecurity('x-api-key')
 @Controller('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
@@ -39,6 +42,10 @@ export class ProjectsController {
    * Synchronize a single repository. The branch is optional and defaults to
    * `main` if not provided.
    */
+  @ApiBody({
+    type: SyncProjectInput,
+    description: 'Repository URL and optional branch to sync',
+  })
   async sync(
     @Body() input: SyncProjectInput,
     @Req() req: RequestWithUser,
@@ -55,6 +62,7 @@ export class ProjectsController {
   /**
    * Synchronize every GitHub repository linked to the authenticated user.
    */
+  @ApiBody({ description: 'No body required', required: false })
   async syncAll(@Req() req: RequestWithUser): Promise<Project[]> {
     return this.projectsService.syncAllReposForUser(req.user.id);
   }

@@ -9,11 +9,35 @@ This project exposes both REST and GraphQL APIs. All REST endpoints require an A
 | GET | `/` | Returns a parsed sample `Portfolio.md` document. |
 | GET | `/projects` | List projects for the authenticated user. |
 | GET | `/projects/:repoUrl` | Fetch a single project by repository URL. |
-| POST | `/projects/sync` | Sync a single GitHub repository. Body parameters: `repoUrl` and optional `branch`. |
+| POST | `/projects/sync` | Sync a single GitHub repository. |
 | POST | `/projects/sync-all` | Sync all GitHub repositories linked to the user. |
 | POST | `/webhook/github` | GitHub webhook endpoint used to trigger project syncs. |
 | GET | `/auth/github` | Initiate GitHub OAuth login. |
 | GET | `/auth/github/callback` | OAuth callback that links the GitHub account. |
+
+### Request Bodies
+
+#### `POST /projects/sync`
+
+```
+{
+  "repoUrl": "https://github.com/user/repo",
+  "branch": "main"
+}
+```
+
+#### `POST /projects/sync-all`
+
+No body required.
+
+#### `POST /webhook/github`
+
+```
+{
+  "repository": { "html_url": "https://github.com/user/repo" },
+  "ref": "refs/heads/main"
+}
+```
 
 ## GraphQL Operations
 
