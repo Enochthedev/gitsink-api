@@ -9,9 +9,10 @@ import { ProjectsScheduler } from './projects.scheduler';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ParserModule } from '../parser/parser.module';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, ParserModule, ConfigModule],
+  imports: [PrismaModule, ParserModule, ConfigModule, AuthModule],
   controllers: [ProjectsController, GitHubWebhookController],
   providers: [
     ProjectsService,
