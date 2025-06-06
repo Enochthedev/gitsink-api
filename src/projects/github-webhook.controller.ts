@@ -1,7 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBody } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { ConfigService } from '@nestjs/config';
+import { GitHubWebhookPayload } from './dto/github-webhook.payload';
 
 @ApiTags('webhook')
 @Controller('webhook/github')
@@ -12,7 +13,13 @@ export class GitHubWebhookController {
   ) {}
 
   @Post()
-  async handleWebhook(@Body() body: any): Promise<{ success: boolean }> {
+  @ApiBody({
+    type: GitHubWebhookPayload,
+    description: 'GitHub webhook payload containing repository info and ref',
+  })
+  async handleWebhook(
+    @Body() body: GitHubWebhookPayload,
+  ): Promise<{ success: boolean }> {
     const repoUrl: string | undefined = body?.repository?.html_url;
     const ref: string | undefined = body?.ref;
     const branch = ref?.split('/').pop() ?? 'main';
