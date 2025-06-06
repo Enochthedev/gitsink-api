@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import helmet from 'helmet';
+import helmet, { HelmetOptions } from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
@@ -10,7 +10,21 @@ async function bootstrap() {
   app.enableCors({ origin: '*', credentials: true });
 
   if (process.env.ENABLE_HELMET !== 'false') {
-    app.use(helmet());
+    const devPolicy: HelmetOptions = { contentSecurityPolicy: false };
+    const prodPolicy: HelmetOptions = {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'"],
+          imgSrc: ["'self'"],
+        },
+      },
+    };
+
+    const isProd = process.env.NODE_ENV === 'production';
+    const policy = isProd ? prodPolicy : devPolicy;
+    app.use(helmet(policy));
   }
 
   if (process.env.ENABLE_RATE_LIMIT !== 'false') {
