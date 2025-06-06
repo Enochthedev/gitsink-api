@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type ApiKeyPayload {
+  apiKey: String!
+  user: User!
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -13,16 +18,18 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
-  connectGitHub(githubId: String!, userId: String!): User!
+  connectGitHub(githubId: String!, githubToken: String!, userId: String!): User!
   githubOAuth(code: String!, userId: String!): User!
-  regenerateApiKey(userId: String!): User!
-  signup(email: String!): User!
+  regenerateApiKey(userId: String!): ApiKeyPayload!
+  revokeApiKey(userId: String!): User!
+  signup(email: String!): ApiKeyPayload!
   syncAllProjects: [Project!]!
   syncProject(input: SyncProjectInput!): Project!
 }
 
 type Project {
   allGitHubKeys: [String!]!
+  blacklisted: Boolean
   category: String
   collaborators: [String!]!
   createdAt: DateTime!
@@ -38,14 +45,11 @@ type Project {
   """GitHub metadata"""
   githubMetadata: JSON
   githubSync: Boolean
-  blacklisted: Boolean
   icon: String
   id: ID!
   image: String
   lastCommitAt: DateTime
   markdown: String
-  valid: Boolean!
-  validationErrors: [String!]!
   order: Float
   published: Boolean
   repoUrl: String
@@ -53,27 +57,27 @@ type Project {
   tags: [String!]!
   title: String!
   updatedAt: DateTime!
+  valid: Boolean!
+  validationErrors: [String!]!
+}
+
+input ProjectFilterInput {
+  category: String
+  featured: Boolean
+  tag: String
 }
 
 type Query {
+  filteredProjects(filter: ProjectFilterInput): [Project!]!
   ping: String!
   project(repoUrl: String!): Project
   projects: [Project!]!
-  filteredProjects(filter: ProjectFilterInput): [Project!]!
 }
 
 input SyncProjectInput {
   branch: String
   repoUrl: String!
 }
-
-
-
-
-input ProjectFilterInput {
-  tag: String
-  category: String
-  featured: Boolean
 
 type User {
   accessToken: String
