@@ -12,6 +12,6 @@ import { GithubController } from './github.controller';
   imports: [PrismaModule, PassportModule, ConfigModule],
   providers: [AuthService, AuthResolver, GithubStrategy, ApiKeyGuard],
   controllers: [GithubController],
-  exports: [ApiKeyGuard],
+  exports: [ApiKeyGuard, AuthService],
 })
 export class AuthModule {}
