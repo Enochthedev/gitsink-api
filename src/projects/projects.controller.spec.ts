@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
@@ -14,7 +15,10 @@ describe('ProjectsController', () => {
       controllers: [ProjectsController],
       imports: [CacheModule.register()],
       providers: [ProjectsService, PrismaService, ParserService, ConfigService],
-    }).compile();
+    })
+      .overrideGuard(ApiKeyGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
 
     controller = module.get<ProjectsController>(ProjectsController);
   });
