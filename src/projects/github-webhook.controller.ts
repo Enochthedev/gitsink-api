@@ -1,7 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { ConfigService } from '@nestjs/config';
 
+@ApiTags('webhook')
 @Controller('webhook/github')
 export class GitHubWebhookController {
   constructor(
