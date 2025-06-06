@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import bcrypt from 'bcryptjs';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -40,10 +41,14 @@ class MockPrismaService {
     ),
   };
   user = {
-    findFirst: jest.fn(
-      async ({ where }) =>
-        this.users.find((u) => u.apiKey === where.apiKey) || null,
-    ),
+    findFirst: jest.fn(async ({ where }) => {
+      for (const u of this.users) {
+        if (await bcrypt.compare(where.apiKey, u.apiKey)) {
+          return u;
+        }
+      }
+      return null;
+    }),
     update: jest.fn(async ({ where, data }) => {
       const user = this.users.find((u) => u.id === where.id);
       Object.assign(user, data);
@@ -73,7 +78,7 @@ describe('Projects Module (e2e)', () => {
     prisma.users.push({
       id: 'u1',
       email: 'test@example.com',
-      apiKey: 'valid-key',
+      apiKey: await bcrypt.hash('valid-key', 10),
       githubId: null,
       createdAt: new Date(),
     });
