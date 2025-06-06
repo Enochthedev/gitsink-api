@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsResolver } from './projects.resolver';
 import { ProjectsService } from './projects.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
-import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 
 describe('ProjectsResolver', () => {
   let resolver: ProjectsResolver;
@@ -17,8 +16,6 @@ describe('ProjectsResolver', () => {
       ],
     })
       .overrideGuard(ApiKeyGuard)
-      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
-      .overrideGuard(ApiKeyAuthGuard)
       .useValue({ canActivate: jest.fn().mockReturnValue(true) })
       .compile();
 

@@ -6,11 +6,8 @@ import { UseGuards } from '@nestjs/common';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { ProjectFilterInput } from './dto/project-filter.input';
 
-import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
-
-@UseGuards(ApiKeyAuthGuard)
-@Resolver(() => Project)
 @UseGuards(ApiKeyGuard)
+@Resolver(() => Project)
 export class ProjectsResolver {
   constructor(private readonly projectsService: ProjectsService) {}
 
