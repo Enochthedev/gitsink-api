@@ -41,6 +41,11 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+The application applies different Helmet security policies depending on `NODE_ENV`.
+Set `NODE_ENV=development` when running locally to enable a relaxed policy that
+allows the GraphQL Playground. In production, `NODE_ENV=production` activates a
+stricter policy.
+
 ## Run tests
 
 ```bash
