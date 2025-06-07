@@ -15,16 +15,16 @@ export class ProjectsResolver {
   async syncProject(
     @Args('input') input: SyncProjectInput,
     @Context() context: { userId?: string },
-  ): Promise<Project> {
+  ): Promise<{ enqueued: boolean }> {
     if (!context.userId) {
       throw new Error('Unauthorized');
     }
-    return this.projectsService.syncProjectFromGitHub(
+    await this.projectsService.queueSyncProject(
       context.userId,
       input.repoUrl,
       input.branch,
-      false,
     );
+    return { enqueued: true };
   }
 
   @Query(() => String)
@@ -66,13 +66,14 @@ export class ProjectsResolver {
     return this.projectsService.getProjectByRepoUrl(repoUrl, context.userId);
   }
 
-  @Mutation(() => [Project])
+  @Mutation(() => String)
   async syncAllProjects(
     @Context() context: { userId?: string },
-  ): Promise<Project[]> {
+  ): Promise<string> {
     if (!context.userId) {
       throw new Error('Unauthorized');
     }
-    return this.projectsService.syncAllReposForUser(context.userId);
+    await this.projectsService.syncAllReposForUser(context.userId);
+    return 'queued';
   }
 }

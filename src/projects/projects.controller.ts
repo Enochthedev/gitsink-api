@@ -49,13 +49,13 @@ export class ProjectsController {
   async sync(
     @Body() input: SyncProjectInput,
     @Req() req: RequestWithUser,
-  ): Promise<Project> {
-    // Branch is optional; default handled in service
-    return this.projectsService.syncProjectFromGitHub(
+  ): Promise<{ enqueued: boolean }> {
+    await this.projectsService.queueSyncProject(
       req.user.id,
       input.repoUrl,
       input.branch,
     );
+    return { enqueued: true };
   }
 
   @Post('sync-all')
@@ -63,7 +63,8 @@ export class ProjectsController {
    * Synchronize every GitHub repository linked to the authenticated user.
    */
   @ApiBody({ description: 'No body required', required: false })
-  async syncAll(@Req() req: RequestWithUser): Promise<Project[]> {
-    return this.projectsService.syncAllReposForUser(req.user.id);
+  async syncAll(@Req() req: RequestWithUser): Promise<{ queued: boolean }> {
+    await this.projectsService.syncAllReposForUser(req.user.id);
+    return { queued: true };
   }
 }

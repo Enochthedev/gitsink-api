@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { PinoLogger } from 'nestjs-pino';
+import { SyncQueueService } from './sync-queue.service';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
@@ -20,6 +21,7 @@ describe('ProjectsController', () => {
         PrismaService,
         ParserService,
         ConfigService,
+        { provide: SyncQueueService, useValue: { addJob: jest.fn() } },
         {
           provide: PinoLogger,
           useValue: {

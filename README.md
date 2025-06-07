@@ -23,6 +23,7 @@
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Project setup
+Before running the server copy `.env.example` to `.env` and provide your database, GitHub and JWT credentials.
 
 ```bash
 npm install

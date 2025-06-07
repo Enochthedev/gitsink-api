@@ -21,7 +21,12 @@ export class GithubController {
       githubId: string;
       email?: string;
     };
-    await this.authService.findOrCreateWithGitHub(githubId, accessToken, email);
-    return res.redirect('/dashboard');
+    const user = await this.authService.findOrCreateWithGitHub(
+      githubId,
+      accessToken,
+      email,
+    );
+    const token = this.authService.generateJwt(user);
+    return res.json({ token });
   }
 }

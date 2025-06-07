@@ -13,6 +13,7 @@ import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
 import { decrypt } from '../utils/encryption';
 import { PinoLogger } from 'nestjs-pino';
+import { SyncQueueService } from './sync-queue.service';
 
 /**
  * Service encapsulating all project-related persistence logic. It handles
@@ -25,10 +26,19 @@ export class ProjectsService {
     private parser: ParserService,
     private config: ConfigService,
     private readonly logger: PinoLogger,
+    private readonly syncQueue: SyncQueueService,
 
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) {
     this.logger.setContext(ProjectsService.name);
+  }
+
+  async queueSyncProject(
+    userId: string,
+    repoUrl: string,
+    branch = 'main',
+  ): Promise<void> {
+    await this.syncQueue.addJob(userId, repoUrl, branch);
   }
 
   /**
@@ -237,7 +247,7 @@ export class ProjectsService {
    * Synchronize all repositories for the given user, respecting any blacklist
    * flags found in `Profile.md`.
    */
-  async syncAllReposForUser(userId: string): Promise<Project[]> {
+  async syncAllReposForUser(userId: string): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user?.githubToken) {
       throw new Error('GitHub token not found for user');
@@ -252,7 +262,6 @@ export class ProjectsService {
       { headers },
     );
 
-    const syncedProjects: Project[] = [];
     for (const repo of repos.data) {
       const repoUrl = repo.html_url;
       const { owner, repo: repoName } = parseGitHubRepoUrl(String(repoUrl));
@@ -320,15 +329,13 @@ export class ProjectsService {
           continue;
         }
 
-        const project = await this.syncProjectFromGitHub(
+        await this.queueSyncProject(
           userId,
           String(repoUrl),
           typeof repo.default_branch === 'string'
             ? repo.default_branch
             : 'main',
-          false,
         );
-        syncedProjects.push(project);
       } catch (e) {
         this.logger.warn(
           { err: e },
@@ -338,6 +345,5 @@ export class ProjectsService {
     }
 
     await this.cache.del(`projects:${userId}`);
-    return syncedProjects;
   }
 }
