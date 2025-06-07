@@ -15,10 +15,20 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { UserContextGuard } from './auth/user-context.guard';
 import { Request, Response } from 'express';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        transport:
+          process.env.NODE_ENV === 'production'
+            ? undefined
+            : { target: 'pino-pretty' },
+      },
+    }),
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: () => ({

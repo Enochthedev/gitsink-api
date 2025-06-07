@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -18,6 +19,16 @@ describe('ProjectsService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: ParserService, useValue: {} },
         { provide: ConfigService, useValue: { get: jest.fn() } },
+        {
+          provide: PinoLogger,
+          useValue: {
+            setContext: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            log: jest.fn(),
+            debug: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
