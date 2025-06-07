@@ -6,6 +6,7 @@ import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ApiKeyGuard } from '../auth/api-key.guard';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
@@ -14,7 +15,22 @@ describe('ProjectsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProjectsController],
       imports: [CacheModule.register()],
-      providers: [ProjectsService, PrismaService, ParserService, ConfigService],
+      providers: [
+        ProjectsService,
+        PrismaService,
+        ParserService,
+        ConfigService,
+        {
+          provide: PinoLogger,
+          useValue: {
+            setContext: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            log: jest.fn(),
+            debug: jest.fn(),
+          },
+        },
+      ],
     })
       .overrideGuard(ApiKeyGuard)
       .useValue({ canActivate: jest.fn().mockReturnValue(true) })
