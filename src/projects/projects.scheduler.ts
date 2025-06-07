@@ -1,16 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ProjectsService } from './projects.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class ProjectsScheduler {
-  private readonly logger = new Logger(ProjectsScheduler.name);
-
   constructor(
     private readonly projectsService: ProjectsService,
     private readonly prisma: PrismaService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(ProjectsScheduler.name);
+  }
+
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleCron(): Promise<void> {
