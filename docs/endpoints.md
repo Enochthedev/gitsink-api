@@ -12,8 +12,9 @@ This project exposes both REST and GraphQL APIs. All REST endpoints require an A
 | POST | `/projects/sync` | Sync a single GitHub repository. |
 | POST | `/projects/sync-all` | Sync all GitHub repositories linked to the user. |
 | POST | `/webhook/github` | GitHub webhook endpoint used to trigger project syncs. |
+| POST | `/auth/login` | Exchange an email and API key for a JWT. |
 | GET | `/auth/github` | Initiate GitHub OAuth login. |
-| GET | `/auth/github/callback` | OAuth callback that links the GitHub account. |
+| GET | `/auth/github/callback` | OAuth callback that returns a JWT. |
 
 ### Request Bodies
 
@@ -50,8 +51,8 @@ GraphQL is served at `/graphql`. The following queries and mutations are availab
 - `project(repoUrl)`: fetch a project by repository URL.
 
 ### Mutations
-- `syncProject(input)`: sync a single repository.
-- `syncAllProjects`: sync all repositories for the user.
+- `syncProject(input)`: enqueue a sync job for a repository.
+- `syncAllProjects`: enqueue sync jobs for all repositories.
 - `signup(email)`: create a new user and API key.
 - `connectGitHub(userId, githubId, githubToken)`: link a GitHub account.
 - `regenerateApiKey(userId)`: create a new API key.
