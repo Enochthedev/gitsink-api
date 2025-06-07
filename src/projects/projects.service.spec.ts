@@ -5,6 +5,7 @@ import { ParserService } from '../parser/parser.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { PinoLogger } from 'nestjs-pino';
+import { SyncQueueService } from './sync-queue.service';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -19,6 +20,7 @@ describe('ProjectsService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: ParserService, useValue: {} },
         { provide: ConfigService, useValue: { get: jest.fn() } },
+        { provide: SyncQueueService, useValue: { addJob: jest.fn() } },
         {
           provide: PinoLogger,
           useValue: {

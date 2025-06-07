@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { User } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { encrypt } from '../utils/encryption';
 import * as bcrypt from 'bcryptjs';
@@ -12,6 +13,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
+    private jwt: JwtService,
   ) {}
 
   /**
@@ -128,5 +130,10 @@ export class AuthService {
   async oauth(userId: string, code: string): Promise<User> {
     const githubId = await this.exchangeCodeForGitHubId(code);
     return this.connectGitHub(userId, githubId);
+  }
+
+  generateJwt(user: User): string {
+    const payload = { sub: user.id };
+    return this.jwt.sign(payload);
   }
 }
