@@ -4,9 +4,11 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet, { HelmetOptions } from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({ origin: '*', credentials: true });
 

@@ -12,6 +12,7 @@ import { GitHubRepo } from '../types/github.types';
 import { isInputJsonValue } from '../utils/is-json';
 import { ConfigService } from '@nestjs/config';
 import { decrypt } from '../utils/encryption';
+import { PinoLogger } from 'nestjs-pino';
 
 /**
  * Service encapsulating all project-related persistence logic. It handles
@@ -23,9 +24,12 @@ export class ProjectsService {
     private prisma: PrismaService,
     private parser: ParserService,
     private config: ConfigService,
+    private readonly logger: PinoLogger,
 
     @Inject(CACHE_MANAGER) private cache: Cache,
-  ) {}
+  ) {
+    this.logger.setContext(ProjectsService.name);
+  }
 
   /**
    * Fetch project data from GitHub and upsert it in the database.
@@ -65,12 +69,12 @@ export class ProjectsService {
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 404) {
-          console.warn(`Portfolio.md not found at ${rawMdUrl}`);
+          this.logger.warn(`Portfolio.md not found at ${rawMdUrl}`);
         } else {
-          console.error(`Error fetching Portfolio.md: ${err.message}`);
+          this.logger.error(`Error fetching Portfolio.md: ${err.message}`);
         }
       } else {
-        console.error(
+        this.logger.error(
           `Unexpected error: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
@@ -271,7 +275,7 @@ export class ProjectsService {
         }
       } catch (err) {
         if (axios.isAxiosError(err) && err.response?.status !== 404) {
-          console.warn(
+          this.logger.warn(
             `Error fetching Profile.md for ${String(repo.full_name)}: ${err.message}`,
           );
         }
@@ -326,7 +330,10 @@ export class ProjectsService {
         );
         syncedProjects.push(project);
       } catch (e) {
-        console.warn(`Failed to sync repo: ${String(repo.full_name)}`, e);
+        this.logger.warn(
+          { err: e },
+          `Failed to sync repo: ${String(repo.full_name)}`,
+        );
       }
     }
 
