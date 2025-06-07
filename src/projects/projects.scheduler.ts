@@ -14,10 +14,9 @@ export class ProjectsScheduler {
     this.logger.setContext(ProjectsScheduler.name);
   }
 
-
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleCron(): Promise<void> {
-    this.logger.log('Running daily repository sync');
+    this.logger.info('Running daily repository sync');
     const users = await this.prisma.user.findMany();
     for (const user of users) {
       try {
