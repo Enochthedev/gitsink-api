@@ -29,7 +29,7 @@ Swagger docs are available at `http://localhost:3000/docs` and GraphQL Playgroun
 
 ## Environment variables
 
-Refer to `.env.example` for all options. Important variables include `DATABASE_URL`, `GITHUB_PERSONAL_TOKEN`, `REDIS_URL`, `JWT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `TOKEN_ENCRYPTION_KEY`.
+Refer to `.env.example` for all options. Important variables include `DATABASE_URL`, `GITHUB_PERSONAL_TOKEN`, `REDIS_URL`, `JWT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `TOKEN_ENCRYPTION_KEY`. Additional values like `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` and `CORS_ORIGIN` configure the mailer and CORS support.
 
 ## Running tests
 

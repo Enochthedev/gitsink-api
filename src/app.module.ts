@@ -8,6 +8,8 @@ import { ParserModule } from './parser/parser.module';
 import { ProjectsModule } from './projects/projects.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { MailModule } from './mail/mail.module';
+import { WaitlistModule } from './waitlist/waitlist.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -55,6 +57,8 @@ import { LoggerModule } from 'nestjs-pino';
     ProjectsModule,
     PrismaModule,
     AuthModule,
+    MailModule,
+    WaitlistModule,
   ],
   controllers: [AppController],
   providers: [
