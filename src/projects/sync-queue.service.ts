@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Queue, Worker } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
 import { ProjectsService } from './projects.service';
@@ -9,6 +9,7 @@ export class SyncQueueService {
 
   constructor(
     private readonly config: ConfigService,
+    @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
   ) {
     this.queue = new Queue('sync', {
