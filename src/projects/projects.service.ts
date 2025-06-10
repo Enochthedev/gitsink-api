@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
@@ -26,6 +26,7 @@ export class ProjectsService {
     private parser: ParserService,
     private config: ConfigService,
     private readonly logger: PinoLogger,
+    @Inject(forwardRef(() => SyncQueueService))
     private readonly syncQueue: SyncQueueService,
 
     @Inject(CACHE_MANAGER) private cache: Cache,
