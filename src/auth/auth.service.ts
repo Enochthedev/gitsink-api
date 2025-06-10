@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { encrypt } from '../utils/encryption';
+import { MailService } from '../mail/mail.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -14,18 +15,77 @@ export class AuthService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
+    private mail: MailService,
   ) {}
 
   /**
    * Register a new user and create an API key.
    */
-  async signup(email: string): Promise<{ user: User; apiKey: string }> {
+  async signup(
+    email: string,
+    password?: string,
+    username?: string,
+  ): Promise<{ user: User; apiKey: string }> {
     const apiKey = randomBytes(32).toString('hex');
-    const hashed = await bcrypt.hash(apiKey, 10);
+    const hashedKey = await bcrypt.hash(apiKey, 10);
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
     const user = await this.prisma.user.create({
-      data: { email, apiKey: hashed },
+      data: { email, username, apiKey: hashedKey, password: hashedPassword },
     });
+    await this.mail.sendSignupEmail(email);
     return { user, apiKey };
+  }
+
+  sendSigninEmail(email: string) {
+    return this.mail.sendSigninEmail(email);
+  }
+
+  sendForgotPassword(email: string, token: string) {
+    return this.mail.sendForgotPassword(email, token);
+  }
+
+  sendPasswordResetConfirmation(email: string) {
+    return this.mail.sendPasswordResetConfirmation(email);
+  }
+
+  getUserByEmail(email: string) {
+    return this.prisma.user.findUnique({ where: { email } });
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) return;
+    const token = randomBytes(16).toString('hex');
+    const hashed = await bcrypt.hash(token, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken: hashed,
+        resetTokenExpires: new Date(Date.now() + 3600 * 1000),
+      },
+    });
+    await this.sendForgotPassword(email, token);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
+    const users = await this.prisma.user.findMany({ where: { resetToken: { not: null } } });
+    for (const u of users) {
+      if (
+        u.resetToken &&
+        (await bcrypt.compare(token, u.resetToken)) &&
+        u.resetTokenExpires &&
+        u.resetTokenExpires > new Date()
+      ) {
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({
+          where: { id: u.id },
+          data: { password: hashed, resetToken: null, resetTokenExpires: null },
+        });
+        await this.sendPasswordResetConfirmation(u.email);
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

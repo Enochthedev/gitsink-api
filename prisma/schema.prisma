@@ -16,6 +16,10 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  username  String?
+  password  String?
+  resetToken String?
+  resetTokenExpires DateTime?
   githubId  String?  @unique
   githubToken String?
   accessToken String?
@@ -71,4 +75,10 @@ model Project {
   @@index([lastCommitAt])
   
   @@unique([ownerId, repoUrl])
+}
+
+model WaitlistEntry {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
 }

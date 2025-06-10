@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { HttpErrorFilter } from './utils/http-error.filter';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet, { HelmetOptions } from 'helmet';
@@ -10,7 +11,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.useGlobalPipes(new ValidationPipe());
-  app.enableCors({ origin: '*', credentials: true });
+  app.useGlobalFilters(new HttpErrorFilter());
+  const origins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*';
+  app.enableCors({ origin: origins, credentials: true });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('GitSink API')

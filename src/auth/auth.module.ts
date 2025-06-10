@@ -10,12 +10,14 @@ import { GithubStrategy } from './github.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GithubController } from './github.controller';
 import { LocalAuthController } from './local-auth.controller';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     ConfigModule,
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
