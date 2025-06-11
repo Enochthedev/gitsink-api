@@ -1,6 +1,6 @@
 # GitSink API
 
-GitSink API is a NestJS service for synchronising GitHub repositories and storing structured project data. It exposes both REST and GraphQL endpoints that allow developers to manage a portfolio of repositories.
+GitSink API is a NestJS service for synchronising GitHub repositories and storing structured project data. It exposes both REST and GraphQL endpoints that allow developers to manage a portfolio of repositories. Full documentation lives in the [`docs` directory](docs/) and the accompanying Docusaurus site.
 
 ## Features
 
@@ -65,6 +65,20 @@ Validate a `Portfolio.md` file using the provided script:
 npm run validate-md docs/portfolio.md
 ```
 
+## CI/CD
+
+Automated workflows run on every pull request. The `ci.yml` workflow builds the
+project and executes tests, while `validate-markdown.yml` checks example
+markdown files. Documentation builds are validated with `docs.yml`. See
+[docs/ci-cd.md](docs/ci-cd.md) for details.
+
+## Contributing
+
+We welcome contributions from the community! Please read
+[CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on setting up the project,
+running tests and submitting pull requests. All participants are expected to
+adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## License
 
-This project is provided without a license (UNLICENSED).
+This project is licensed under the [MIT License](LICENSE).
