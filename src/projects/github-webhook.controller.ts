@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { ConfigService } from '@nestjs/config';
 import { GitHubWebhookPayload } from './dto/github-webhook.payload';
@@ -17,6 +17,7 @@ export class GitHubWebhookController {
     type: GitHubWebhookPayload,
     description: 'GitHub webhook payload containing repository info and ref',
   })
+  @ApiOkResponse({ schema: { example: { success: true } } })
   async handleWebhook(
     @Body() body: GitHubWebhookPayload,
   ): Promise<{ success: boolean }> {
