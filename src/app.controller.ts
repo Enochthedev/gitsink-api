@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { ParseResult } from './parser/types/portfolio.types';
 
@@ -9,6 +9,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
+  @ApiOkResponse({ description: 'Parsed Portfolio markdown' })
   getHello(): ParseResult {
     return this.appService.getHello();
   }
