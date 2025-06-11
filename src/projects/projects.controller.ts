@@ -7,7 +7,12 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiSecurity, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiSecurity,
+  ApiBody,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { SyncProjectInput } from './dto/sync-project.input';
 import { Project } from './entities/project.entity';
@@ -23,13 +28,19 @@ export class ProjectsController {
 
   /**
    * Retrieve all projects for the authenticated user.
-   */
+  */
   @Get()
+  @ApiOkResponse({
+    description: 'List of projects',
+    type: Project,
+    isArray: true,
+  })
   async findAll(@Req() req: RequestWithUser): Promise<Project[]> {
     return this.projectsService.getAllProjectsForUser(req.user.id);
   }
 
   @Get(':repoUrl')
+  @ApiOkResponse({ description: 'Project data', type: Project })
   async findOne(
     @Param('repoUrl') repoUrl: string,
     @Req() req: RequestWithUser,
@@ -46,6 +57,7 @@ export class ProjectsController {
     type: SyncProjectInput,
     description: 'Repository URL and optional branch to sync',
   })
+  @ApiOkResponse({ schema: { example: { enqueued: true } } })
   async sync(
     @Body() input: SyncProjectInput,
     @Req() req: RequestWithUser,
@@ -61,8 +73,9 @@ export class ProjectsController {
   @Post('sync-all')
   /**
    * Synchronize every GitHub repository linked to the authenticated user.
-   */
+  */
   @ApiBody({ description: 'No body required', required: false })
+  @ApiOkResponse({ schema: { example: { queued: true } } })
   async syncAll(@Req() req: RequestWithUser): Promise<{ queued: boolean }> {
     await this.projectsService.syncAllReposForUser(req.user.id);
     return { queued: true };

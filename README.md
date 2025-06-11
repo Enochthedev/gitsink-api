@@ -27,6 +27,11 @@ npm run start:dev
 
 Swagger docs are available at `http://localhost:3000/docs` and GraphQL Playground at `http://localhost:3000/graphql` when `NODE_ENV=development`.
 
+Additional examples for REST and GraphQL requests live in the
+[`docs` directory](docs/). A Postman collection can be imported from
+`docs/gitsink.postman.json`.
+The full GraphQL schema is generated at `src/schema.gql`.
+
 ## Environment variables
 
 Refer to `.env.example` for all options. Important variables include `DATABASE_URL`, `GITHUB_PERSONAL_TOKEN`, `REDIS_URL`, `JWT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `TOKEN_ENCRYPTION_KEY`. Additional values like `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` and `CORS_ORIGIN` configure the mailer and CORS support.
