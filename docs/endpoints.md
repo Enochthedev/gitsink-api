@@ -12,7 +12,10 @@ This project exposes both REST and GraphQL APIs. All REST endpoints require an A
 | POST | `/projects/sync` | Sync a single GitHub repository. |
 | POST | `/projects/sync-all` | Sync all GitHub repositories linked to the user. |
 | POST | `/webhook/github` | GitHub webhook endpoint used to trigger project syncs. |
-| POST | `/auth/login` | Exchange an email and API key for a JWT. |
+| POST | `/auth/signup` | Create a user and API key. |
+| POST | `/auth/login` | Exchange an email and password for a JWT. |
+| POST | `/auth/forgot-password` | Request a password reset email. |
+| POST | `/auth/reset-password` | Complete the password reset process. |
 | GET | `/auth/github` | Initiate GitHub OAuth login. |
 | GET | `/auth/github/callback` | OAuth callback that returns a JWT. |
 
@@ -37,6 +40,81 @@ No body required.
 {
   "repository": { "html_url": "https://github.com/user/repo" },
   "ref": "refs/heads/main"
+}
+```
+
+#### `POST /auth/signup`
+
+```
+{
+  "email": "user@example.com",
+  "username": "user123",
+  "password": "secret"
+}
+```
+
+#### `POST /auth/login`
+
+```
+{
+  "email": "user@example.com",
+  "password": "secret"
+}
+```
+
+#### `POST /auth/forgot-password`
+
+```
+{
+  "email": "user@example.com"
+}
+```
+
+#### `POST /auth/reset-password`
+
+```
+{
+  "token": "<resetToken>",
+  "password": "newPass"
+}
+```
+
+### Example Responses
+
+#### `GET /projects`
+
+```json
+[
+  {
+    "id": "1",
+    "title": "Test Project",
+    "repoUrl": "https://github.com/user/repo",
+    "tags": ["demo"]
+  }
+]
+```
+
+#### `POST /projects/sync`
+
+```json
+{
+  "enqueued": true
+}
+```
+
+#### `POST /auth/signup`
+
+```json
+{
+  "apiKey": "<newKey>"
+}
+```
+
+#### `POST /auth/login`
+
+```json
+{
+  "token": "<jwt>"
 }
 ```
 

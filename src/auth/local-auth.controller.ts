@@ -4,8 +4,17 @@ import {
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { SignupDto } from './dto/signup.dto';
+import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcryptjs';
 
 @ApiTags('auth')
@@ -14,8 +23,10 @@ export class LocalAuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
+  @ApiBody({ type: SignupDto })
+  @ApiOkResponse({ schema: { example: { apiKey: 'string' } } })
   async signup(
-    @Body() body: { email: string; username?: string; password?: string },
+    @Body() body: SignupDto,
   ) {
     const { apiKey } = await this.authService.signup(
       body.email,
@@ -26,14 +37,19 @@ export class LocalAuthController {
   }
 
   @Post('forgot-password')
-  async forgotPassword(@Body('email') email: string) {
-    await this.authService.requestPasswordReset(email);
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiOkResponse({ schema: { example: { sent: true } } })
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    await this.authService.requestPasswordReset(body.email);
     return { sent: true };
   }
 
   @Post('reset-password')
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiOkResponse({ schema: { example: { success: true } } })
+  @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async resetPassword(
-    @Body() body: { token: string; password: string },
+    @Body() body: ResetPasswordDto,
   ) {
     const ok = await this.authService.resetPassword(body.token, body.password);
     if (!ok) {
@@ -43,7 +59,10 @@ export class LocalAuthController {
   }
 
   @Post('login')
-  async login(@Body() body: { email: string; password?: string }) {
+  @ApiBody({ type: LoginDto })
+  @ApiOkResponse({ schema: { example: { token: 'jwt' } } })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  async login(@Body() body: LoginDto) {
     const user = await this.authService.getUserByEmail(body.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
