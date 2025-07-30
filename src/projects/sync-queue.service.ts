@@ -20,7 +20,11 @@ export class SyncQueueService {
       'sync',
       async (job) => {
         const { userId, repoUrl, branch } = job.data;
-        await this.projectsService.syncProjectFromGitHub(userId, repoUrl, branch);
+        await this.projectsService.syncProjectFromGitHub(
+          userId,
+          repoUrl,
+          branch,
+        );
       },
       { connection: { url: this.config.get<string>('REDIS_URL') } },
     );

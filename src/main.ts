@@ -6,13 +6,16 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet, { HelmetOptions } from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { Logger } from 'nestjs-pino';
+import { ThrottleExceptionFilter } from './common/filters/throttle-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpErrorFilter());
-  const origins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*';
+  const origins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : '*';
   app.enableCors({ origin: origins, credentials: true });
 
   const swaggerConfig = new DocumentBuilder()
@@ -54,6 +57,7 @@ async function bootstrap() {
       }),
     );
   }
+  app.useGlobalFilters(new HttpErrorFilter(), new ThrottleExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();

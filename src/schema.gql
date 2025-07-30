@@ -23,7 +23,7 @@ type Mutation {
   regenerateApiKey(userId: String!): ApiKeyPayload!
   revokeApiKey(userId: String!): User!
   signup(email: String!): ApiKeyPayload!
-  syncAllProjects: [Project!]!
+  syncAllProjects: String!
   syncProject(input: SyncProjectInput!): Project!
 }
 

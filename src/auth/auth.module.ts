@@ -10,14 +10,14 @@ import { GithubStrategy } from './github.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GithubController } from './github.controller';
 import { LocalAuthController } from './local-auth.controller';
-import { MailModule } from '../mail/mail.module';
+import { QueuesModule } from '@queues/queues.module';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     ConfigModule,
-    MailModule,
+    QueuesModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -27,7 +27,13 @@ import { MailModule } from '../mail/mail.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, AuthResolver, GithubStrategy, JwtStrategy, ApiKeyGuard],
+  providers: [
+    AuthService,
+    AuthResolver,
+    GithubStrategy,
+    JwtStrategy,
+    ApiKeyGuard,
+  ],
   controllers: [GithubController, LocalAuthController],
   exports: [ApiKeyGuard, AuthService],
 })

@@ -14,6 +14,15 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@mail/*": ["src/mail/*"],
+      "@type/*": ["src/types/*"],
+      "@queues/*": ["src/queues/*"],
+      "@auth/*": ["src/auth/*"],
+      "@prisma/*": ["src/prisma/*"],
+      "@common/*": ["src/common/*"],
+      "@waitlist/*": ["src/waitlist/*"],
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -21,6 +30,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
   }
 }

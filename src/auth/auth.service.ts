@@ -6,16 +6,15 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { encrypt } from '../utils/encryption';
-import { MailService } from '../mail/mail.service';
 import * as bcrypt from 'bcryptjs';
-
+import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
-    private mail: MailService,
+    private enqueue: EnqueueService,
   ) {}
 
   /**
@@ -32,20 +31,20 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: { email, username, apiKey: hashedKey, password: hashedPassword },
     });
-    await this.mail.sendSignupEmail(email);
+    await this.enqueue.enqueueSignupEmail(email);
     return { user, apiKey };
   }
 
   sendSigninEmail(email: string) {
-    return this.mail.sendSigninEmail(email);
+    return this.enqueue.enqueueSigninEmail(email);
   }
 
   sendForgotPassword(email: string, token: string) {
-    return this.mail.sendForgotPassword(email, token);
+    return this.enqueue.enqueueForgotPassword(email, token);
   }
 
   sendPasswordResetConfirmation(email: string) {
-    return this.mail.sendPasswordResetConfirmation(email);
+    return this.enqueue.enqueuePasswordResetConfirmation(email);
   }
 
   getUserByEmail(email: string) {
@@ -68,7 +67,9 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    const users = await this.prisma.user.findMany({ where: { resetToken: { not: null } } });
+    const users = await this.prisma.user.findMany({
+      where: { resetToken: { not: null } },
+    });
     for (const u of users) {
       if (
         u.resetToken &&
