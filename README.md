@@ -1,89 +1,133 @@
-# GitSink API
+# 🧠 Gitsink API
 
-GitSink API is a NestJS service for synchronising GitHub repositories and storing structured project data. It exposes both REST and GraphQL endpoints that allow developers to manage a portfolio of repositories. Full documentation lives in the [`docs` directory](docs/) and the accompanying Docusaurus site.
+**Gitsink** is a modular, performance-optimized GitHub sync API developed by [Wave](https://github.com/enochthedev). It powers project enrichment, metadata extraction, and real-time syncing for dev dashboards, bots, and automation workflows.
 
-## Features
+---
 
-- GitHub OAuth login and API key authentication
-- Parses a `Portfolio.md` file from each repository using Zod schemas
-- Daily background syncs and optional GitHub webhooks
-- REST API documented with Swagger and a GraphQL schema served at `/graphql`
-- PostgreSQL via Prisma and Redis caching
+## 🚀 Features
 
-## Project setup
+- 🔁 GitHub repo syncing via OAuth
+- 🗂️ Enrichment using `Portfolio.md` and GitHub metadata
+- 🔐 REST & GraphQL APIs with API key support
+- 🩺 Healthcheck endpoints for container orchestration
+- 📊 Monitoring with Prometheus & Grafana
+- ⚙️ Docker-based deployment with Caddy proxy
+- 📈 Artillery + K9 performance testing suite
 
-1. Copy `.env.example` to `.env` and fill in your database, GitHub and JWT details.
-2. Install dependencies:
+---
 
-```bash
-npm install
-```
+## 🛠️ Stack
 
-3. Start the development server:
+- **Backend**: NestJS + Prisma + TypeScript
+- **Database**: PostgreSQL
+- **Cache/Queue**: Redis
+- **Containerization**: Docker + Docker Compose
+- **Reverse Proxy**: Caddy (auto TLS support)
+- **Monitoring**: Prometheus + Grafana
+- **Testing**: Artillery, K9
 
-```bash
-npm run start:dev
-```
+---
 
-Swagger docs are available at `http://localhost:3000/docs` and GraphQL Playground at `http://localhost:3000/graphql` when `NODE_ENV=development`.
+## ⚙️ Getting Started
 
-Additional examples for REST and GraphQL requests live in the
-[`docs` directory](docs/). A Postman collection can be imported from
-`docs/gitsink.postman.json`.
-The full GraphQL schema is generated at `src/schema.gql`.
-
-## Environment variables
-
-Refer to `.env.example` for all options. Important variables include `DATABASE_URL`, `GITHUB_PERSONAL_TOKEN`, `REDIS_URL`, `JWT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `TOKEN_ENCRYPTION_KEY`. Additional values like `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` and `CORS_ORIGIN` configure the mailer and CORS support.
-
-## Running tests
+### 1. Clone & Setup
 
 ```bash
-npm run test        # unit tests
-npm run test:e2e    # e2e tests
-npm run test:cov    # coverage report
+git clone https://github.com/enochthedev/gitsink-api.git
+cd gitsink-api
+cp .env.example .env
 ```
 
-## Prisma helpers
+### 2. .env Config
+
+``` dotenv
+PORT=3000
+DOMAIN=gitsink.localhost
+NODE_ENV=development
+
+DATABASE_URL=postgresql://user:pass@postgres:5432/gitsink
+REDIS_URL=redis://redis:6379
+
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_client_secret
+```
+
+### 🐳 Run with Docker
 
 ```bash
-npm run prisma:generate  # generate Prisma client
-npm run prisma:migrate   # run migrations
-npm run prisma:seed      # seed the database
+docker-compose up --build
 ```
 
-## Key API routes
+Available services:
 
-- `GET /projects` – list projects for the authenticated user
-- `GET /projects/:repoUrl` – fetch a project by repository URL
-- `POST /projects/sync` – sync a single GitHub repository
-- `POST /projects/sync-all` – sync all repositories for the user
-- `POST /webhook/github` – webhook endpoint for GitHub events
+| Service | URL |
+| ------- | --- |
+| API | {$DOMAIN} |
+| Swagger UI | {$DOMAIN}/api-docs |
+| Grafana | {$DOMAIN}:3001 |
+| Redis | {$DOMAIN}:6379 |
+| Prometheus | {$DOMAIN}:9090 |
 
-See [docs/endpoints.md](docs/endpoints.md) and [docs/user-flow.md](docs/user-flow.md) for a full walkthrough.
+### 🌐 Access Swagger UI
 
-## Markdown validation
+Visit [{$DOMAIN}/api-docs]({$DOMAIN}/api-docs) to explore the API documentation.
 
-Validate a `Portfolio.md` file using the provided script:
+### 📈 Performance Testing
+
+Artillery
 
 ```bash
-npm run validate-md docs/portfolio.md
+npm run test:perf:artillery:{ModuleName}
 ```
 
-## CI/CD
+### K9 (k6-compatible)
 
-Automated workflows run on every pull request. The `ci.yml` workflow builds the
-project and executes tests, while `validate-markdown.yml` checks example
-markdown files. Documentation builds are validated with `docs.yml`. See
-[docs/ci-cd.md](docs/ci-cd.md) for details.
+```bash
+npm run test:perf:k6:{ModuleName}
+```
 
-## Contributing
+Use results to analyze latency, throughput, and request bottlenecks.
 
-We welcome contributions from the community! Please read
-[CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on setting up the project,
-running tests and submitting pull requests. All participants are expected to
-adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
+### 🔍 Monitoring
 
-## License
+- **Prometheus**: Scrapes metrics from the API and Redis
+- **Grafana**: Pre-configured dashboards for API performance, Redis health, and more
+- Useful dashboards: API Latency, Request Rate, DB/Redis health
+- **Caddy**: Reverse proxy with automatic TLS for secure access
 
-This project is licensed under the [MIT License](LICENSE).
+### 🧪 Testing & CI
+
+- **Unit Tests**: Run with `npm run test`
+- **E2E Tests**: Run with `npm run test:e2e`
+- **CI/CD**: Integrate with GitHub Actions or Railway for automated testing and deployment
+- **Scripts**: Add custom scripts in `/scripts` for seeding, smoke tests, etc.
+- **Test Coverage**: Use `npm run test:cov` to generate coverage reports
+- **Linting**: Ensure code quality with `npm run lint` and `npm run lint:fix`
+- **Prettier**: Format code with `npm run format` and `npm run format:check`
+- **Commit Hooks**: Use Husky for pre-commit checks to ensure code quality
+- **ESLint**: Enforce coding standards with ESLint rules
+- **Commitlint**: Enforce conventional commit messages
+- **Husky**: Set up Git hooks for linting and formatting checks
+- **Commitizen**: Use Commitizen for standardized commit messages
+- **Changelog**: Maintain a changelog with `standard-version` for versioning
+- **GitHub Actions**: Set up workflows for CI/CD, including linting, testing, and deployment
+
+### 👤 Author
+
+Developed by Wave.
+Built to help devs expose, sync, and enrich their GitHub project data with speed and clarity.
+
+### 📜 License
+
+This project is licensed under the **Business Source License 1.1 (BSL-1.1)**.
+
+- ✅ You may **view the source code**.
+- ❌ You **may not** use it for commercial purposes **until** the Change Date.
+- 🔓 On the Change Date, this project will be automatically released under the **Apache 2.0** license.
+
+**Change Date**: August 2, 2028  
+**Licensor**: Enoch Omosebi (Wave)
+
+For commercial licensing, contact: [wavedidwhat@gmail.com](mailto:wavedidwhat@gmail.com)
+
+---
