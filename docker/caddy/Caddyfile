@@ -1,0 +1,21 @@
+{$DOMAIN:-localhost} {
+  encode gzip
+
+	handle_path /api/* {
+		reverse_proxy gitsink-api:3000
+	}
+
+	handle_path /grafana/* {
+		reverse_proxy gitsink-grafana:3000
+	}
+
+  handle_path /guide/* {
+		root * /app/gitsink-docs/build
+		try_files {path} /index.html
+		file_server
+	}
+
+	handle {
+		respond "Welcome to Gitsink Gateway" 200
+	}
+}

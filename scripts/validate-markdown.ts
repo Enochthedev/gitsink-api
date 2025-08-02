@@ -14,10 +14,11 @@ async function main(): Promise<void> {
     parser.parseMarkdown(contents);
     console.log(`${file} is valid`);
   } catch (err) {
-    console.error(`Validation failed: ${err instanceof Error ? err.message : err}`);
+    console.error(
+      `Validation failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
     process.exit(1);
   }
 }
 
 void main();
-

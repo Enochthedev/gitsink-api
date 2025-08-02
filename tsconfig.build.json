@@ -5,13 +5,21 @@
       "node"
     ]
   },
+  "include": [
+    "src/**/*"
+  ],
 
   "exclude": [
     "node_modules",
     "test",
     "dist",
     "**/*spec.ts",
-    "docs/docs-site/**"
+    "**/*test.ts",
+    "docs-site/**/*",
+    "docs/docs-site/**",
+    "performance/**/*",
+    "docker/**/*",
+    "scripts/**/*"
   ]
 
 }

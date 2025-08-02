@@ -1,2 +1,21 @@
 {
+    "files.associations": {
+        "Caddyfile": "caddyfile",
+        "Dockerfile": "dockerfile",
+        "docker-compose.yml": "docker-compose"
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "yaml.schemas": {
+        // Avoid wrong schema on grafana datasource file
+        "": ["docker/grafana/provisioning/datasources/prometheus.yaml"]
+    }
 }

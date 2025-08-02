@@ -1,0 +1,9 @@
+services:
+  gitsink-api:
+    volumes:
+      - .:/app
+    command: npm run start:dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development

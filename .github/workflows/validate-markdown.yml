@@ -2,6 +2,10 @@ name: Validate Markdown
 
 on:
   pull_request:
+    paths:
+      - 'docs/portfolio.md'
+      - '.github/workflows/validate-md.yml'
+      - 'src/parser/**'
 
 jobs:
   validate:
@@ -13,4 +17,4 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run validate-md docs/portfolio.md
+      - run: npx ts-node scripts/validate-markdown.ts docs/portfolio.md

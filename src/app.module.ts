@@ -22,6 +22,7 @@ import { QueuesModule } from './queues/queues.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ThrottleExceptionFilter } from './common/filters/throttle-exception.filter';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { ThrottleExceptionFilter } from './common/filters/throttle-exception.fil
     MailModule,
     WaitlistModule,
     QueuesModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [

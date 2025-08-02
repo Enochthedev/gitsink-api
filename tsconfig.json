@@ -31,5 +31,17 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "noImplicitOverride": true,
-  }
+  },
+  "include": [
+    "src/**/*",
+    "scripts/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "docs/**/*",
+    "performance/**/*",
+    "docs-site/**/*"
+  ]
 }

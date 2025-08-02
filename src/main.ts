@@ -25,7 +25,7 @@ async function bootstrap() {
     .addApiKey({ type: 'apiKey', name: 'x-api-key', in: 'header' }, 'x-api-key')
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('api-docs', app, document);
 
   if (process.env.ENABLE_HELMET !== 'false') {
     const devPolicy: HelmetOptions = { contentSecurityPolicy: false };
