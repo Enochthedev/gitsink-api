@@ -7,13 +7,25 @@ on:
 
 jobs:
   build:
+    name: API Build & Lint
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+
       - run: npm ci
-      - run: npm run lint
-      - run: npm run build
+
+      - name: Run ESLint (warnings allowed for now)
+        run: npm run lint -- --max-warnings=100
+
+      # Uncomment when tests are added
+      # - name: Run Tests
+      #   run: npm test
+
+      - name: Build API
+        run: npm run build
