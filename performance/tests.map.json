@@ -1,0 +1,18 @@
+{
+  "waitlist": {
+    "endpoint": "/waitlist",
+    "methods": ["POST"],
+    "tests": {
+      "k6": ["load", "throttle", "spike"],
+      "artillery": ["load", "soak"]
+    }
+  },
+  "auth": {
+    "endpoint": "/auth/login",
+    "methods": ["POST"],
+    "tests": {
+      "k6": ["login-load", "login-spike"],
+      "artillery": ["login-load"]
+    }
+  }
+}
