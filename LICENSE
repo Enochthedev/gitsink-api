@@ -1,21 +1,15 @@
-MIT License
+Business Source License 1.1
 
-Copyright (c) 2024 GitSink
+Licensor: Enoch Omosebi
+Licensed Work: Gitsink API
+Change Date: 2028-08-02
+Change License: Apache-2.0
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Terms:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. You may make and use non-production copies of the Licensed Work for non-commercial purposes.
+2. You may not use the Licensed Work, or any derivative work, for commercial purposes except with the express permission of the Licensor.
+3. After the Change Date, the Licensed Work will be automatically re-licensed under the Change License.
+4. You must include this license notice with any use of the Licensed Work.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+This license is governed by the text of the Business Source License 1.1 as published by MariaDB at https://mariadb.com/bsl11.
