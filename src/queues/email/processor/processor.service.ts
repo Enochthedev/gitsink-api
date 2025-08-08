@@ -11,7 +11,7 @@ export class ProcessorService implements OnModuleInit {
   constructor(
     private readonly mailService: MailService,
     private readonly config: ConfigService,
-  ) {}
+  ) { }
   onModuleInit() {
     const host = this.config.get<string>('REDIS_HOST') || 'localhost';
     const port = this.config.get<number>('REDIS_PORT') || 6379;
@@ -48,6 +48,14 @@ export class ProcessorService implements OnModuleInit {
 
               case 'passwordResetConfirmation':
                 await this.mailService.sendPasswordResetConfirmation(email);
+                break;
+
+              case 'magicLinkSignIn':
+                console.log(`🔗 Sending magic link email to ${email}`);
+                if (!token) {
+                  throw new Error('Token is required for magicLinkSignIn email');
+                }
+                await this.mailService.sendMagicLinkSignInEmail(email, token);
                 break;
 
               default:

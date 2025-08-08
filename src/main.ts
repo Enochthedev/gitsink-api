@@ -7,6 +7,8 @@ import helmet, { HelmetOptions } from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { Logger } from 'nestjs-pino';
 import { ThrottleExceptionFilter } from './common/filters/throttle-exception.filter';
+import * as Sentry from '@sentry/node';
+import { SentryInterceptor } from '@interceptors/sentry.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -26,6 +28,17 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api-docs', app, document);
+
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      tracesSampleRate: 1.0,
+      environment: process.env.NODE_ENV,
+      // Http integration is automatically included in @sentry/node
+      // No need to explicitly add it
+    });
+    app.useGlobalInterceptors(new SentryInterceptor());
+  }
 
   if (process.env.ENABLE_HELMET !== 'false') {
     const devPolicy: HelmetOptions = { contentSecurityPolicy: false };

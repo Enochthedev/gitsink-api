@@ -3,8 +3,10 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { ApiKeyService } from './api-key.service';
 import { ConfigService } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { RequestWithUser } from './request-with-user';
@@ -13,8 +15,9 @@ import { RequestWithUser } from './request-with-user';
 export class ApiKeyGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
+    private readonly apiKeyService: ApiKeyService,
     private readonly config: ConfigService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType<'http' | 'graphql'>();
@@ -22,25 +25,49 @@ export class ApiKeyGuard implements CanActivate {
       type === 'http'
         ? context.switchToHttp().getRequest()
         : (GqlExecutionContext.create(context).getContext()
-            .req as RequestWithUser);
+          .req as RequestWithUser);
+
+    // Extract API key from headers
     const headerKey = request.headers['x-api-key'] as string | undefined;
     const authHeader = request.headers['authorization'];
     const bearerKey = authHeader?.startsWith('Bearer ')
       ? authHeader.slice(7)
       : undefined;
     const apiKey = headerKey || bearerKey;
-    if (!apiKey) throw new UnauthorizedException('API key missing');
 
-    const bypass = this.config.get<string>('LOCAL_API_KEY');
-    if (bypass && apiKey === bypass) {
-      // local development bypass - skip database lookup
-      request.user = { id: 'local-user' } as any;
-      return true;
+    if (!apiKey) {
+      throw new UnauthorizedException('API key missing');
     }
 
-    const user = await this.authService.validateApiKey(apiKey);
-    if (!user) throw new UnauthorizedException('Invalid API key');
-    request.user = user;
+    // Prepare usage information for tracking
+    const usageInfo = {
+      endpoint: request.url || request.route?.path || 'unknown',
+      method: request.method || 'unknown',
+      statusCode: 200, // Will be updated later by middleware
+      duration: 0, // Will be updated later by middleware
+      ipAddress: request.ip || request.connection?.remoteAddress,
+      userAgent: request.headers['user-agent'],
+      timestamp: new Date(),
+    };
+
+    // Validate API key with enhanced service
+    const validationResult = await this.apiKeyService.validateApiKey(apiKey, usageInfo);
+
+    if (!validationResult.isValid) {
+      throw new UnauthorizedException('Invalid API key');
+    }
+
+    if (validationResult.rateLimitExceeded) {
+      throw new ForbiddenException('Rate limit exceeded');
+    }
+
+    // Attach user and usage info to request for later use
+    request.user = validationResult.user;
+    request.apiKeyUsage = {
+      usageCount: validationResult.usageCount,
+      startTime: Date.now(),
+    };
+
     return true;
   }
 }

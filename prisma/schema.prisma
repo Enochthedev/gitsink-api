@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "darwin-arm64"]
 }
 
@@ -15,71 +9,314 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  username  String?
-  password  String?
-  resetToken String?
+  id                String              @id @default(uuid())
+  email             String              @unique
+  githubId          String?             @unique
+  githubToken       String?
+  accessToken       String?
+  apiKey            String?             @unique
+  apiKeyUpdatedAt   DateTime?
+  createdAt         DateTime            @default(now())
+  password          String?
+  resetToken        String?
   resetTokenExpires DateTime?
-  githubId  String?  @unique
-  githubToken String?
-  accessToken String?
-  apiKey    String?  @unique
-  projects  Project[]
-  createdAt DateTime @default(now())
+  username          String?             @unique
+  projects          Project[]
+  lastLoginAt       DateTime?
+  refreshTokens     RefreshToken[]      // relation to stored refresh tokens per session
+  deletedAt         DateTime?           // soft delete support
+  
+  // Enhanced user fields for new functionality
+  tier              String              @default("free") // free, premium, enterprise
+  settings          Json                @default("{}")
+  profileConfig     Json                @default("{}")
+  platformTokens    Json                @default("{}")
+  lastSyncAt        DateTime?
+  syncCount         Int                 @default(0)
+  apiCallCount      Int                 @default(0)
+  monthlyApiCalls   Int                 @default(0)
+  lastApiCallReset  DateTime            @default(now())
+  
+  // Relations to new tables
+  publicProfile     PublicProfile?
+  platformConnections PlatformConnection[]
+  syncHistory       SyncHistory[]
+  auditLogs         AuditLog[]
+  
+  @@index([tier])
+  @@index([lastSyncAt])
+  @@index([monthlyApiCalls])
 }
 
 model Project {
-  id             String   @id @default(uuid())
-
-  title          String
-  description    String
-
-  tags           String[]        // ← can be empty, but not optional
-  icon           String?         // optional
-  image          String?         // optional
-
-  demoUrl        String?         // optional
-  repoUrl        String?         // optional
-
-  featured       Boolean? @default(false)
-  published      Boolean? @default(false)
-  order          Int?            // optional UI sort order
-  category       String?         // optional
-
-  githubSync     Boolean? @default(true)
-  blacklisted    Boolean? @default(false)
-  markdown       String?         // optional, raw md body
-  valid          Boolean  @default(true)
+  id               String    @id @default(uuid())
+  title            String
+  description      String
+  tags             String[]
+  icon             String?
+  image            String?
+  demoUrl          String?
+  repoUrl          String?
+  featured         Boolean?  @default(false)
+  published        Boolean?  @default(false)
+  order            Int?
+  category         String?
+  githubSync       Boolean?  @default(true)
+  blacklisted      Boolean?  @default(false)
+  markdown         String?
+  valid            Boolean   @default(true)
   validationErrors String[]
+  collaborators    String[]
+  firstCommitAt    DateTime?
+  lastCommitAt     DateTime?
+  githubMetadata   Json?
+  customMetadata   Json?
+  syncedAt         DateTime?
+  ownerId          String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime? // soft delete support
+  
+  // Enhanced project fields
+  platform         String    @default("github") // github, gitlab, bitbucket
+  platformId       String?   // platform-specific repository ID
+  defaultBranch    String?   @default("main")
+  language         String?   // primary programming language
+  languages        Json      @default("{}")  // language breakdown
+  starCount        Int       @default(0)
+  forkCount        Int       @default(0)
+  isPrivate        Boolean   @default(false)
+  license          String?
+  topics           String[]  @default([])
+  size             Int?      // repository size in KB
+  openIssues       Int       @default(0)
+  hasWiki          Boolean   @default(false)
+  hasPages         Boolean   @default(false)
+  archived         Boolean   @default(false)
+  disabled         Boolean   @default(false)
+  pushedAt         DateTime?
+  
+  // Relations
+  owner            User         @relation(fields: [ownerId], references: [id])
+  syncHistory      SyncHistory[]
+  aiAnalysis       AIAnalysis[]
 
-  collaborators  String[]        // ← can be empty, but not optional
-  firstCommitAt  DateTime?       // optional
-  lastCommitAt   DateTime?       // optional
-
-  githubMetadata Json?           // optional
-  customMetadata Json?           // optional
-
-  syncedAt       DateTime?       // optional
-
-  ownerId        String
-  owner          User     @relation(fields: [ownerId], references: [id])
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
+  @@unique([ownerId, repoUrl])
+  @@unique([platform, platformId])
   @@index([ownerId])
   @@index([published, featured])
   @@index([category])
   @@index([title])
   @@index([tags])
   @@index([lastCommitAt])
-  
-  @@unique([ownerId, repoUrl])
+  @@index([platform])
+  @@index([language])
+  @@index([starCount])
+  @@index([pushedAt])
+  @@index([topics])
+  @@index([isPrivate])
+  @@index([archived])
 }
 
 model WaitlistEntry {
   id        String   @id @default(uuid())
   email     String   @unique
   createdAt DateTime @default(now())
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String    @unique // hash of the refresh token, never store raw tokens
+  expiresAt  DateTime
+  deviceId   String?   // device identifier
+  ipAddress  String?   // IP address when token was created
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime? // when token was last used for refresh
+  usageCount Int       @default(0) // how many times token was used
+  user       User      @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@index([lastUsedAt])
+}
+
+/// Stores one-time magic link tokens for email sign-in
+model MagicLinkToken {
+  id         String   @id @default(uuid())
+  tokenHash  String   @unique   // Hash of the magic link token
+  email      String             // Associated user email
+  expiresAt  DateTime           // Expiration timestamp
+  createdAt  DateTime @default(now())  // Creation timestamp
+
+  @@index([email]) // look up tokens by email efficiently
+}
+
+/// Public developer profiles for showcasing projects
+model PublicProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  username     String   @unique
+  displayName  String?
+  bio          String?
+  avatar       String?
+  location     String?
+  website      String?
+  socialLinks  Json     @default("[]")
+  theme        Json     @default("{}")
+  settings     Json     @default("{}")
+  isPublic     Boolean  @default(false)
+  customDomain String?  @unique
+  viewCount    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([username])
+  @@index([isPublic])
+  @@index([customDomain])
+  @@index([viewCount])
+}
+
+/// Platform connections for multi-platform repository support
+model PlatformConnection {
+  id               String    @id @default(uuid())
+  userId           String
+  platform         String    // github, gitlab, bitbucket
+  platformUserId   String
+  platformUsername String?
+  accessToken      String?
+  refreshToken     String?
+  tokenExpiresAt   DateTime?
+  scopes           String[]
+  isActive         Boolean   @default(true)
+  lastSyncAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, platform])
+  @@unique([platform, platformUserId])
+  @@index([userId])
+  @@index([platform])
+  @@index([isActive])
+  @@index([lastSyncAt])
+}
+
+/// Sync history and audit trail for repository operations
+model SyncHistory {
+  id            String    @id @default(uuid())
+  userId        String
+  projectId     String?
+  operation     String    // sync, create, update, delete
+  platform      String
+  repositoryUrl String
+  status        String    // started, completed, failed
+  changes       Json      @default("[]")
+  metadata      Json      @default("{}")
+  error         String?
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  duration      Int?      // duration in milliseconds
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project       Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  @@index([userId, startedAt])
+  @@index([projectId])
+  @@index([status])
+  @@index([platform])
+  @@index([startedAt])
+}
+
+/// AI analysis results for project enrichment
+model AIAnalysis {
+  id         String   @id @default(uuid())
+  projectId  String
+  version    Int      @default(1)
+  analysis   Json     // stores the complete AI analysis result
+  confidence Float?   // confidence score 0.0-1.0
+  model      String?  // AI model used for analysis
+  createdAt  DateTime @default(now())
+  
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, version])
+  @@index([projectId])
+  @@index([confidence])
+  @@index([createdAt])
+}
+
+/// Comprehensive audit logging for security and compliance
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String   // login, logout, api_call, sync, etc.
+  resource    String?  // resource being acted upon
+  resourceId  String?  // ID of the resource
+  details     Json     @default("{}")
+  ipAddress   String?
+  userAgent   String?
+  success     Boolean  @default(true)
+  error       String?
+  timestamp   DateTime @default(now())
+  
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([userId, timestamp])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+  @@index([success])
+}
+
+/// API usage tracking for rate limiting and analytics
+model ApiUsage {
+  id         String   @id @default(uuid())
+  userId     String?
+  apiKey     String?
+  endpoint   String
+  method     String
+  statusCode Int
+  duration   Int      // response time in milliseconds
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime @default(now())
+  
+  @@index([userId, timestamp])
+  @@index([apiKey, timestamp])
+  @@index([endpoint])
+  @@index([timestamp])
+  @@index([statusCode])
+}
+
+/// System health and performance metrics
+model SystemMetric {
+  id        String   @id @default(uuid())
+  metric    String   // metric name
+  value     Float    // metric value
+  tags      Json     @default("{}")  // additional tags/dimensions
+  timestamp DateTime @default(now())
+  
+  @@index([metric, timestamp])
+  @@index([timestamp])
+}
+
+/// JWT token blacklist for logout functionality
+model TokenBlacklist {
+  id        String   @id @default(uuid())
+  jti       String   @unique // JWT ID
+  tokenType String   // access or refresh
+  userId    String?
+  reason    String?  // reason for blacklisting
+  expiresAt DateTime // when the original token expires
+  createdAt DateTime @default(now())
+  
+  @@index([jti])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([createdAt])
 }

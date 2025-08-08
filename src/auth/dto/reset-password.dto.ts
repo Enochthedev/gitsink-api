@@ -5,5 +5,5 @@ export class ResetPasswordDto {
   token!: string;
 
   @ApiProperty({ example: 'newPassword123' })
-  password!: string;
+  newPassword!: string;
 }

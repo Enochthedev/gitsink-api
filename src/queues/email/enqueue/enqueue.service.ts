@@ -53,6 +53,14 @@ export class EnqueueService {
     });
   }
 
+  async enqueueMagicLinkSignInEmail(email: string, token: string) {
+    await this.enqueueEmail({
+      type: 'magicLinkSignIn',
+      email,
+      token,
+    });
+  }
+
   async enqueuePasswordResetConfirmation(email: string) {
     await this.enqueueEmail({
       type: 'passwordResetConfirmation',

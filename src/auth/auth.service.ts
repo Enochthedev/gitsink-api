@@ -1,41 +1,662 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { User } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { JwtTokenService } from './jwt-token.service';
 import axios from 'axios';
 import { encrypt } from '../utils/encryption';
 import * as bcrypt from 'bcryptjs';
-import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
+import { EnqueueService } from '@queues/email/enqueue/enqueue.service';
+import { MetricsService } from '@metrics/metrics.service';
+import { Counter, Histogram } from 'prom-client';
+import { v4 as uuidv4 } from 'uuid';
+
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
+  // Custom metrics for auth operations
+  private readonly authOperationsCounter: Counter<string>;
+  private readonly authOperationDuration: Histogram<string>;
+  private readonly authFailuresCounter: Counter<string>;
+  private readonly passwordStrengthGauge: Counter<string>;
+  private readonly apiKeyUsageCounter: Counter<string>;
+
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
-    private jwt: JwtService,
+    private jwtService: JwtService,
+    private jwtTokenService: JwtTokenService,
     private enqueue: EnqueueService,
-  ) {}
+    private metricsService: MetricsService,
+  ) {
+    // Initialize custom auth metrics
+    this.authOperationsCounter = this.metricsService.createCustomCounter(
+      'auth_operations_total',
+      'Total number of authentication operations',
+      ['operation', 'status', 'method'],
+    );
+
+    this.authOperationDuration = this.metricsService.createCustomHistogram(
+      'auth_operation_duration_seconds',
+      'Duration of authentication operations',
+      ['operation'],
+      [0.1, 0.5, 1, 2, 5, 10],
+    );
+
+    this.authFailuresCounter = this.metricsService.createCustomCounter(
+      'auth_failures_total',
+      'Total number of authentication failures',
+      ['operation', 'reason'],
+    );
+
+    this.passwordStrengthGauge = this.metricsService.createCustomCounter(
+      'password_strength_total',
+      'Password strength distribution',
+      ['strength_level'],
+    );
+
+    this.apiKeyUsageCounter = this.metricsService.createCustomCounter(
+      'api_key_usage_total',
+      'API key usage statistics',
+      ['operation', 'result'],
+    );
+  }
 
   /**
-   * Register a new user and create an API key.
+   * Register a new user and create an API key with enhanced security and metrics.
    */
   async signup(
     email: string,
     password?: string,
     username?: string,
+    clientInfo?: { ip?: string; userAgent?: string },
   ): Promise<{ user: User; apiKey: string }> {
-    const apiKey = randomBytes(32).toString('hex');
-    const hashedKey = await bcrypt.hash(apiKey, 10);
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-    const user = await this.prisma.user.create({
-      data: { email, username, apiKey: hashedKey, password: hashedPassword },
-    });
-    await this.enqueue.enqueueSignupEmail(email);
-    return { user, apiKey };
+    const operationStart = Date.now();
+    const operation = 'signup';
+
+    try {
+      // Input validation
+      if (!this.isValidEmail(email)) {
+        this.authFailuresCounter.inc({ operation, reason: 'invalid_email' });
+        throw new BadRequestException('Invalid email format');
+      }
+
+      if (password && !this.isPasswordStrong(password)) {
+        this.authFailuresCounter.inc({ operation, reason: 'weak_password' });
+        throw new BadRequestException(
+          'Password does not meet security requirements',
+        );
+      }
+
+      // Track password strength if provided
+      if (password) {
+        const strength = this.calculatePasswordStrength(password);
+        this.passwordStrengthGauge.inc({ strength_level: strength });
+      }
+
+      // Check for existing user
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (existingUser) {
+        await this._simulateHash(); // Prevents timing attacks
+        this.authFailuresCounter.inc({ operation, reason: 'email_exists' });
+        throw new ConflictException('Email already in use');
+      }
+
+      // Check for existing username if provided
+      if (username) {
+        const existingUsername = await this.prisma.user.findUnique({
+          where: { username },
+        });
+        if (existingUsername) {
+          await this._simulateHash(); // Timing safe
+          this.authFailuresCounter.inc({
+            operation,
+            reason: 'username_exists',
+          });
+          throw new ConflictException('Username already taken');
+        }
+      }
+
+      // Generate secure API key and hash credentials
+      const apiKey = this.generateSecureApiKey();
+      const [hashedKey, hashedPassword] = await Promise.all([
+        bcrypt.hash(apiKey, 12), // Increased rounds for better security
+        password ? bcrypt.hash(password, 12) : Promise.resolve(null),
+      ]);
+
+      let user: User;
+      try {
+        // Track database operation
+        const dbStart = Date.now();
+        user = await this.prisma.user.create({
+          data: {
+            email,
+            username,
+            apiKey: hashedKey,
+            password: hashedPassword,
+            // Track signup metadata for security
+            lastLoginAt: new Date(),
+            createdAt: new Date(),
+          },
+        });
+
+        const dbDuration = (Date.now() - dbStart) / 1000;
+        this.metricsService.recordDatabaseQueryDuration(
+          'INSERT',
+          dbDuration,
+          'users',
+        );
+        this.metricsService.incrementDatabaseQueries('INSERT', 'users');
+      } catch (error) {
+        this.logger.error(`Failed to create user for ${email}`, error);
+        this.authFailuresCounter.inc({ operation, reason: 'database_error' });
+        throw new InternalServerErrorException('Could not create user');
+      }
+
+      // Queue welcome email (non-blocking)
+      try {
+        await this.enqueue.enqueueSignupEmail(email);
+        this.logger.log(`Welcome email queued for ${email}`);
+      } catch (err) {
+        this.logger.error(`Failed to queue welcome email for ${email}`, err);
+        // Don't fail signup if email fails
+      }
+
+      // Log successful signup for security monitoring
+      this.logger.log(`User signup successful: ${email}`, {
+        userId: user.id,
+        hasPassword: !!password,
+        hasUsername: !!username,
+        clientInfo,
+      });
+
+      const operationDuration = (Date.now() - operationStart) / 1000;
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'email',
+      });
+      this.authOperationDuration.observe({ operation }, operationDuration);
+
+      // Ensure consistent response time for security
+      await this._delayToPreventTimingAttack(Date.now() - operationStart);
+
+      return { user, apiKey };
+    } catch (error) {
+      const operationDuration = (Date.now() - operationStart) / 1000;
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'email',
+      });
+      this.authOperationDuration.observe({ operation }, operationDuration);
+
+      // Re-throw the error after metrics
+      throw error;
+    }
   }
 
+  /**
+   * Validate User Credentials for Sign In
+   */
+  async validateUser(email: string, password: string): Promise<User | null> {
+    const operationStart = Date.now();
+    const operation = 'signin_validate_user';
+
+    try {
+      const user = await this.getUserByEmail(email);
+      this.metricsService.incrementDatabaseQueries('SELECT', 'users');
+
+      if (!user || !user.password) {
+        // Simulate hash to prevent timing attacks
+        await this._simulateHash();
+        this.authFailuresCounter.inc({
+          operation,
+          reason: 'user_not_found',
+        });
+        return null;
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordValid) {
+        this.authFailuresCounter.inc({
+          operation,
+          reason: 'invalid_password',
+        });
+        return null;
+      }
+
+      // Update last login
+      await this.updateLastLogin(user.id);
+
+      const operationDuration = (Date.now() - operationStart) / 1000;
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'validate',
+      });
+      this.authOperationDuration.observe({ operation }, operationDuration);
+
+      return user;
+    } catch (error) {
+      this.logger.error('User validation error', error);
+      return null;
+    }
+  }
+
+  /**
+   * Sign in User and generate JWT
+   */
+  async signin(
+    email: string,
+    password: string,
+    deviceInfo?: { deviceId?: string; ipAddress?: string },
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    refreshExpiresIn: number;
+    user: {
+      id: string;
+      email: string;
+      username: string | null;
+      tier: string;
+    };
+  }> {
+    const user = await this.validateUser(email, password);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Generate token pair using enhanced service
+    const tokenPair = await this.jwtTokenService.generateTokenPair(
+      user,
+      deviceInfo,
+    );
+
+    this.authOperationsCounter.inc({
+      operation: 'signin',
+      status: 'success',
+      method: 'password',
+    });
+
+    return {
+      accessToken: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
+      expiresIn: tokenPair.expiresIn,
+      refreshExpiresIn: tokenPair.refreshExpiresIn,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        tier: user.tier,
+      },
+    };
+  }
+
+  /**
+   * MISSING METHOD: Generate and send magic link
+   */
+  async sendMagicLinkSignInEmail(email: string): Promise<void> {
+    const user = await this.getUserByEmail(email);
+
+    if (!user) {
+      // Still simulate timing to prevent email enumeration
+      await this._simulateHash();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      this.logger.warn(`Magic link requested for non-existent email: ${email}`);
+      return;
+    }
+
+    // Generate magic link token
+    const token = this.generateSecureToken();
+    const hashedToken = await bcrypt.hash(token, 12);
+
+    // Store token in database with expiration
+    await this.prisma.magicLinkToken.create({
+      data: {
+        tokenHash: hashedToken,
+        email: user.email,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+      },
+    });
+
+    // Send magic link email
+    await this.enqueue.enqueueMagicLinkSignInEmail(email, token);
+
+    this.authOperationsCounter.inc({
+      operation: 'signin_email',
+      status: 'sent',
+      method: 'email',
+    });
+
+    this.logger.log(`Magic link sent to ${email}`);
+  }
+
+  /**
+   *  Store refresh token
+   */
+  async storeRefreshToken(userId: string, refreshToken: string): Promise<void> {
+    try {
+      const decoded: any = this.jwtService.decode(refreshToken);
+      if (!decoded || !decoded.jti || !decoded.exp) {
+        throw new Error('Invalid token format');
+      }
+
+      const tokenHash = await bcrypt.hash(refreshToken, 12);
+
+      await this.prisma.refreshToken.create({
+        data: {
+          id: decoded.jti,
+          userId,
+          tokenHash,
+          expiresAt: new Date(decoded.exp * 1000),
+        },
+      });
+    } catch (error) {
+      this.logger.error('Failed to store refresh token', error);
+      throw new InternalServerErrorException('Failed to create session');
+    }
+  }
+
+  /**
+   * MISSING METHOD: Refresh access token
+   */
+  async refreshToken(refreshToken: string): Promise<{
+    accessToken: string;
+    expiresIn: number;
+  }> {
+    try {
+      const payload: { sub: string; type: string; jti: string } =
+        await this.jwtService.verifyAsync(refreshToken);
+
+      if (payload.type !== 'refresh') {
+        throw new UnauthorizedException('Invalid token type');
+      }
+
+      // Check if refresh token exists in database
+      const storedToken = await this.prisma.refreshToken.findFirst({
+        where: {
+          id: payload.jti,
+          userId: payload.sub,
+          expiresAt: { gt: new Date() },
+        },
+        include: { user: true },
+      });
+
+      if (!storedToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+      // Validate refresh token against stored hash
+      const isValidToken = await bcrypt.compare(
+        refreshToken,
+        storedToken.tokenHash,
+      );
+      if (!isValidToken) {
+        this.logger.warn('Refresh token hash mismatch', {
+          userId: payload.sub,
+          jti: payload.jti,
+        });
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+      // Generate new access token
+      const newAccessToken = this.generateAccessToken(storedToken.user);
+
+      return {
+        accessToken: newAccessToken,
+        expiresIn: 900, // 15 minutes
+      };
+    } catch (error) {
+      this.logger.error('Failed to refresh token', error);
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  /**
+   * Enhanced API key validation with metrics and security logging
+   */
+  async validateApiKey(
+    apiKey: string,
+    clientInfo?: { ip?: string; userAgent?: string },
+  ): Promise<User | null> {
+    const operationStart = Date.now();
+    const operation = 'validate_api_key';
+
+    try {
+      if (!apiKey || apiKey.length < 32) {
+        this.apiKeyUsageCounter.inc({ operation, result: 'invalid_format' });
+        return null;
+      }
+
+      // Track database query for API key lookup
+      const dbStart = Date.now();
+      const users = await this.prisma.user.findMany({
+        where: { apiKey: { not: null } },
+      });
+
+      const dbDuration = (Date.now() - dbStart) / 1000;
+      this.metricsService.recordDatabaseQueryDuration(
+        'SELECT',
+        dbDuration,
+        'users',
+      );
+      this.metricsService.incrementDatabaseQueries('SELECT', 'users');
+
+      for (const user of users) {
+        if (user.apiKey && (await bcrypt.compare(apiKey, user.apiKey))) {
+          // Update last login time
+          await this.prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() },
+          });
+
+          this.logger.log(`API key validation successful for user ${user.id}`, {
+            userId: user.id,
+            clientInfo,
+          });
+
+          this.apiKeyUsageCounter.inc({ operation, result: 'success' });
+          const operationDuration = (Date.now() - operationStart) / 1000;
+          this.authOperationDuration.observe({ operation }, operationDuration);
+
+          return user;
+        }
+      }
+
+      // Log failed API key attempt for security monitoring
+      this.logger.warn('Invalid API key attempted', {
+        keyPrefix: apiKey.substring(0, 8) + '...',
+        clientInfo,
+      });
+
+      this.apiKeyUsageCounter.inc({ operation, result: 'invalid' });
+      this.authFailuresCounter.inc({
+        operation: 'api_auth',
+        reason: 'invalid_key',
+      });
+
+      return null;
+    } catch (error) {
+      this.logger.error('API key validation error', error);
+      this.apiKeyUsageCounter.inc({ operation, result: 'error' });
+      return null;
+    }
+  }
+
+  /**
+   * Enhanced password reset with security monitoring
+   */
+  async requestPasswordReset(
+    email: string,
+    clientInfo?: { ip?: string; userAgent?: string },
+  ): Promise<void> {
+    const operationStart = Date.now();
+    const operation = 'password_reset_request';
+
+    try {
+      const user = await this.prisma.user.findUnique({ where: { email } });
+
+      if (!user) {
+        // Still simulate the same timing to prevent email enumeration
+        await this._simulateHash();
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        this.authFailuresCounter.inc({ operation, reason: 'user_not_found' });
+        this.logger.warn(
+          `Password reset requested for non-existent email: ${email}`,
+          { clientInfo },
+        );
+        return;
+      }
+
+      const token = this.generateSecureToken();
+      const hashed = await bcrypt.hash(token, 12);
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          resetToken: hashed,
+          resetTokenExpires: new Date(Date.now() + 3600 * 1000), // 1 hour
+        },
+      });
+
+      await this.sendForgotPassword(email, token);
+
+      this.logger.log(`Password reset token generated for ${email}`, {
+        userId: user.id,
+        clientInfo,
+      });
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'email',
+      });
+      const operationDuration = (Date.now() - operationStart) / 1000;
+      this.authOperationDuration.observe({ operation }, operationDuration);
+    } catch (error) {
+      this.logger.error(`Password reset request failed for ${email}`, error);
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'email',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced API key regeneration with security logging
+   */
+  async regenerateApiKey(
+    userId: string,
+    reason?: string,
+    clientInfo?: { ip?: string; userAgent?: string },
+  ): Promise<{ user: User; apiKey: string }> {
+    const operationStart = Date.now();
+    const operation = 'regenerate_api_key';
+
+    try {
+      const apiKey = this.generateSecureApiKey();
+      const hashed = await bcrypt.hash(apiKey, 12);
+
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          apiKey: hashed,
+          // Track when key was regenerated
+          apiKeyUpdatedAt: new Date(),
+        },
+      });
+
+      this.logger.log(`API key regenerated for user ${userId}`, {
+        userId,
+        reason,
+        clientInfo,
+      });
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'regenerate',
+      });
+      const operationDuration = (Date.now() - operationStart) / 1000;
+      this.authOperationDuration.observe({ operation }, operationDuration);
+
+      return { user, apiKey };
+    } catch (error) {
+      this.logger.error(
+        `API key regeneration failed for user ${userId}`,
+        error,
+      );
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'regenerate',
+      });
+      throw error;
+    }
+  }
+
+  // Enhanced security helper methods
+  private generateSecureApiKey(): string {
+    return randomBytes(32).toString('hex');
+  }
+
+  private generateSecureToken(): string {
+    return randomBytes(32).toString('hex');
+  }
+
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) && email.length <= 254;
+  }
+
+  private isPasswordStrong(password: string): boolean {
+    // At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special char
+    const strongRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return strongRegex.test(password);
+  }
+
+  private calculatePasswordStrength(password: string): string {
+    let score = 0;
+
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[@$!%*?&]/.test(password)) score++;
+    if (password.length >= 16) score++;
+
+    if (score >= 6) return 'strong';
+    if (score >= 4) return 'medium';
+    if (score >= 2) return 'weak';
+    return 'very_weak';
+  }
+
+  // Existing methods with added metrics tracking...
   sendSigninEmail(email: string) {
+    this.authOperationsCounter.inc({
+      operation: 'signin_email',
+      status: 'sent',
+      method: 'email',
+    });
     return this.enqueue.enqueueSigninEmail(email);
   }
 
@@ -48,144 +669,239 @@ export class AuthService {
   }
 
   getUserByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
-  }
-
-  async requestPasswordReset(email: string): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) return;
-    const token = randomBytes(16).toString('hex');
-    const hashed = await bcrypt.hash(token, 10);
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        resetToken: hashed,
-        resetTokenExpires: new Date(Date.now() + 3600 * 1000),
-      },
+    const dbStart = Date.now();
+    return this.prisma.user.findUnique({ where: { email } }).then((result) => {
+      const dbDuration = (Date.now() - dbStart) / 1000;
+      this.metricsService.recordDatabaseQueryDuration(
+        'SELECT',
+        dbDuration,
+        'users',
+      );
+      this.metricsService.incrementDatabaseQueries('SELECT', 'users');
+      return result;
     });
-    await this.sendForgotPassword(email, token);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    const users = await this.prisma.user.findMany({
-      where: { resetToken: { not: null } },
-    });
-    for (const u of users) {
-      if (
-        u.resetToken &&
-        (await bcrypt.compare(token, u.resetToken)) &&
-        u.resetTokenExpires &&
-        u.resetTokenExpires > new Date()
-      ) {
-        const hashed = await bcrypt.hash(newPassword, 10);
-        await this.prisma.user.update({
-          where: { id: u.id },
-          data: { password: hashed, resetToken: null, resetTokenExpires: null },
-        });
-        await this.sendPasswordResetConfirmation(u.email);
-        return true;
+    const operationStart = Date.now();
+    const operation = 'password_reset';
+
+    try {
+      if (!this.isPasswordStrong(newPassword)) {
+        this.authFailuresCounter.inc({ operation, reason: 'weak_password' });
+        throw new BadRequestException(
+          'Password does not meet security requirements',
+        );
       }
+
+      const users = await this.prisma.user.findMany({
+        where: {
+          resetToken: { not: null },
+          resetTokenExpires: { gt: new Date() },
+        },
+      });
+
+      for (const user of users) {
+        if (user.resetToken && (await bcrypt.compare(token, user.resetToken))) {
+          const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+          await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+              password: hashedPassword,
+              resetToken: null,
+              resetTokenExpires: null,
+            },
+          });
+
+          await this.sendPasswordResetConfirmation(user.email);
+
+          this.authOperationsCounter.inc({
+            operation,
+            status: 'success',
+            method: 'token',
+          });
+          const operationDuration = (Date.now() - operationStart) / 1000;
+          this.authOperationDuration.observe({ operation }, operationDuration);
+
+          return true;
+        }
+      }
+
+      this.authFailuresCounter.inc({ operation, reason: 'invalid_token' });
+      return false;
+    } catch (error) {
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'token',
+      });
+      throw error;
     }
-    return false;
   }
 
   /**
-   * Attach a GitHub ID to an existing user.
+   * Attach a GitHub ID to an existing user with enhanced logging.
    */
   async connectGitHub(
     userId: string,
     githubId: string,
     githubToken?: string,
   ): Promise<User> {
-    // GitHub token may be undefined when linking via OAuth
-    const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
-    const encrypted = githubToken
-      ? key
-        ? encrypt(githubToken, key)
-        : githubToken
-      : null;
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { githubId, githubToken: encrypted },
-    });
-  }
+    const operation = 'connect_github';
 
-  /**
-   * Generate a new API key for the user.
-   */
-  async regenerateApiKey(
-    userId: string,
-  ): Promise<{ user: User; apiKey: string }> {
-    const apiKey = randomBytes(32).toString('hex');
-    const hashed = await bcrypt.hash(apiKey, 10);
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: { apiKey: hashed },
-    });
-    return { user, apiKey };
+    try {
+      const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+      const encrypted = githubToken
+        ? key
+          ? encrypt(githubToken, key)
+          : githubToken
+        : null;
+
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: { githubId, githubToken: encrypted },
+      });
+
+      this.logger.log(`GitHub connected for user ${userId}`, {
+        userId,
+        githubId,
+        hasToken: !!githubToken,
+      });
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'oauth',
+      });
+      return user;
+    } catch (error) {
+      this.logger.error(`GitHub connection failed for user ${userId}`, error);
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'oauth',
+      });
+      throw error;
+    }
   }
 
   async revokeApiKey(userId: string): Promise<User> {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { apiKey: null },
-    });
+    const operation = 'revoke_api_key';
+
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: { apiKey: null },
+      });
+
+      this.logger.log(`API key revoked for user ${userId}`);
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'revoke',
+      });
+
+      return user;
+    } catch (error) {
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'revoke',
+      });
+      throw error;
+    }
   }
 
-  /**
-   * Validate an API key and return the associated user if it exists.
-   */
-  async validateApiKey(apiKey: string): Promise<User | null> {
-    // Look up all users with an API key set and compare using bcrypt
-    const users = await this.prisma.user.findMany({
-      where: { apiKey: { not: null } },
-    });
-    for (const user of users) {
-      if (user.apiKey && (await bcrypt.compare(apiKey, user.apiKey))) {
-        return user;
-      }
-    }
-    return null;
-  }
-  /**
-   * Find or create a user using GitHub OAuth details.
-   */
   async findOrCreateWithGitHub(
     githubId: string,
     accessToken: string,
     email?: string,
   ): Promise<User> {
-    const existing = await this.prisma.user.findUnique({ where: { githubId } });
-    if (existing) {
-      return this.prisma.user.update({
-        where: { id: existing.id },
-        data: { accessToken },
+    const operation = 'oauth_signin';
+
+    try {
+      const existing = await this.prisma.user.findUnique({
+        where: { githubId },
       });
+
+      if (existing) {
+        const user = await this.prisma.user.update({
+          where: { id: existing.id },
+          data: { accessToken, lastLoginAt: new Date() },
+        });
+
+        this.authOperationsCounter.inc({
+          operation,
+          status: 'success',
+          method: 'oauth_existing',
+        });
+        return user;
+      }
+
+      const user = await this.prisma.user.create({
+        data: {
+          email: email ?? `${githubId}@github.local`,
+          githubId,
+          accessToken,
+          createdAt: new Date(),
+          lastLoginAt: new Date(),
+        },
+      });
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'oauth_new',
+      });
+      return user;
+    } catch (error) {
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'oauth',
+      });
+      throw error;
     }
-    return this.prisma.user.create({
-      data: {
-        email: email ?? `${githubId}@github.local`,
-        githubId,
-        accessToken,
-      },
-    });
   }
 
   async exchangeCodeForGitHubId(code: string): Promise<string> {
-    const tokenResp = await axios.post(
-      'https://github.com/login/oauth/access_token',
-      {
-        client_id: this.config.get<string>('GITHUB_CLIENT_ID'),
-        client_secret: this.config.get<string>('GITHUB_CLIENT_SECRET'),
-        code,
-      },
-      { headers: { Accept: 'application/json' } },
-    );
-    const token = tokenResp.data.access_token as string;
-    const userResp = await axios.get('https://api.github.com/user', {
-      headers: { Authorization: `token ${token}` },
-    });
-    return String(userResp.data.id);
+    const operation = 'github_token_exchange';
+
+    try {
+      const tokenResp = await axios.post<{ access_token: string }>(
+        'https://github.com/login/oauth/access_token',
+        {
+          client_id: this.config.get<string>('GITHUB_CLIENT_ID'),
+          client_secret: this.config.get<string>('GITHUB_CLIENT_SECRET'),
+          code,
+        },
+        { headers: { Accept: 'application/json' } },
+      );
+
+      const token = tokenResp.data.access_token;
+      const userResp = await axios.get<{ id: number }>(
+        'https://api.github.com/user',
+        {
+          headers: { Authorization: `token ${token}` },
+        },
+      );
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'github_api',
+      });
+      return String(userResp.data.id);
+    } catch (error) {
+      this.logger.error('GitHub token exchange failed', error);
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'github_api',
+      });
+      throw new UnauthorizedException('GitHub authentication failed');
+    }
   }
 
   async oauth(userId: string, code: string): Promise<User> {
@@ -193,8 +909,61 @@ export class AuthService {
     return this.connectGitHub(userId, githubId);
   }
 
+  async getUserById(userId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+  }
+
+  async updateLastLogin(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { lastLoginAt: new Date() },
+    });
+  }
+
   generateJwt(user: User): string {
-    const payload = { sub: user.id };
-    return this.jwt.sign(payload);
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+    };
+    return this.jwtService.sign(payload, {
+      expiresIn: '7d', // or whatever expiration you want
+    });
+  }
+
+  generateAccessToken(user: User): string {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+      type: 'access',
+    };
+    return this.jwtService.sign(payload, { expiresIn: '15m' }); // Short-lived
+  }
+
+  generateRefreshToken(user: User): string {
+    const payload = { sub: user.id, type: 'refresh', jti: uuidv4() };
+    return this.jwtService.sign(payload, { expiresIn: '7d' }); // Long-lived
+  }
+
+  /**
+   * Simulates a password hash operation to prevent timing attacks
+   */
+  private async _simulateHash(): Promise<void> {
+    await bcrypt.hash('dummy', 12);
+  }
+
+  /**
+   * Adds a delay to ensure consistent response times to prevent timing attacks
+   */
+  private async _delayToPreventTimingAttack(
+    elapsedMs: number,
+    minMs = 500, // Increased for better security
+  ): Promise<void> {
+    if (elapsedMs < minMs) {
+      await new Promise((res) => setTimeout(res, minMs - elapsedMs));
+    }
   }
 }

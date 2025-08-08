@@ -10,6 +10,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
+import { PlatformsModule } from './platforms/platforms.module';
+import { AIEnrichmentModule } from './ai-enrichment/ai-enrichment.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -23,6 +25,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ThrottleExceptionFilter } from './common/filters/throttle-exception.filter';
 import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -83,8 +86,11 @@ import { HealthModule } from './health/health.module';
     AuthModule,
     MailModule,
     WaitlistModule,
+    PlatformsModule,
+    AIEnrichmentModule,
     QueuesModule,
     HealthModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [

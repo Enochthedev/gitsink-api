@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
+import { RequestWithUser } from '@auth/request-with-user';
 
 @Injectable()
 export class UserContextGuard implements CanActivate {
@@ -8,11 +9,13 @@ export class UserContextGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Determine request object for REST or GraphQL
-    let req: any = context.switchToHttp().getRequest();
-    let gqlCtx: any = null;
+    let req: RequestWithUser = context
+      .switchToHttp()
+      .getRequest<RequestWithUser>();
+    let gqlCtx: GqlExecutionContext | null = null;
     if (!req) {
       gqlCtx = GqlExecutionContext.create(context);
-      req = gqlCtx.getContext().req;
+      req = gqlCtx.getContext<{ req: RequestWithUser }>().req;
     }
 
     let userId: string | undefined;

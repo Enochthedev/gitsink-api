@@ -3,7 +3,8 @@ export type MailJobType =
   | 'signup'
   | 'forgotPassword'
   | 'signin'
-  | 'passwordResetConfirmation';
+  | 'passwordResetConfirmation'
+  | 'magicLinkSignIn';
 
 export interface MailJob {
   type: MailJobType;
