@@ -51,22 +51,29 @@ export class TechnologyDetectionService {
 
     // Backend Frameworks
     django: {
-      patterns: ['django', 'requirements.txt'],
+      patterns: ['django', 'requirements.txt', 'manage.py'],
       category: 'backend' as const,
     },
-    flask: { patterns: ['flask'], category: 'backend' as const },
-    fastapi: { patterns: ['fastapi'], category: 'backend' as const },
+    flask: { patterns: ['flask', 'app.py'], category: 'backend' as const },
+    fastapi: { patterns: ['fastapi', 'main.py'], category: 'backend' as const },
     spring: {
-      patterns: ['spring', 'springframework'],
+      patterns: ['spring', 'springframework', 'spring-boot'],
       category: 'backend' as const,
     },
     laravel: {
-      patterns: ['laravel', 'composer.json'],
+      patterns: ['laravel', 'composer.json', 'artisan'],
       category: 'backend' as const,
     },
-    rails: { patterns: ['rails', 'gemfile'], category: 'backend' as const },
+    rails: { patterns: ['rails', 'gemfile', 'config.ru'], category: 'backend' as const },
     gin: { patterns: ['gin-gonic', 'go.mod'], category: 'backend' as const },
-    fiber: { patterns: ['gofiber'], category: 'backend' as const },
+    fiber: { patterns: ['gofiber', 'go.mod'], category: 'backend' as const },
+    echo: { patterns: ['echo', 'go.mod'], category: 'backend' as const },
+    actix: { patterns: ['actix-web', 'cargo.toml'], category: 'backend' as const },
+    rocket: { patterns: ['rocket', 'cargo.toml'], category: 'backend' as const },
+    axum: { patterns: ['axum', 'cargo.toml'], category: 'backend' as const },
+    phoenix: { patterns: ['phoenix', 'mix.exs'], category: 'backend' as const },
+    sinatra: { patterns: ['sinatra', 'gemfile'], category: 'backend' as const },
+    adonisjs: { patterns: ['@adonisjs', 'ace'], category: 'backend' as const },
 
     // ML/AI Frameworks
     tensorflow: { patterns: ['tensorflow', 'tf.'], category: 'ml' as const },
@@ -98,18 +105,23 @@ export class TechnologyDetectionService {
 
   // Build tools detection patterns
   private readonly buildToolPatterns = {
-    webpack: ['webpack'],
-    vite: ['vite'],
-    rollup: ['rollup'],
-    parcel: ['parcel'],
+    webpack: ['webpack', 'webpack.config'],
+    vite: ['vite', 'vite.config'],
+    rollup: ['rollup', 'rollup.config'],
+    parcel: ['parcel', '.parcelrc'],
     esbuild: ['esbuild'],
-    turbo: ['turbo'],
-    gradle: ['gradle', 'build.gradle'],
-    maven: ['maven', 'pom.xml'],
+    turbo: ['turbo', 'turbo.json'],
+    gradle: ['gradle', 'build.gradle', 'gradlew'],
+    maven: ['maven', 'pom.xml', 'mvnw'],
     make: ['makefile', 'make'],
     cmake: ['cmake', 'cmakelists.txt'],
     docker: ['dockerfile', 'docker-compose'],
-    kubernetes: ['kubernetes', 'k8s'],
+    kubernetes: ['kubernetes', 'k8s', 'kubectl'],
+    npm: ['package.json', 'npm-shrinkwrap.json'],
+    yarn: ['yarn.lock', '.yarnrc'],
+    pnpm: ['pnpm-lock.yaml', '.pnpmrc'],
+    lerna: ['lerna.json'],
+    rush: ['rush.json'],
   };
 
   // Testing framework patterns
@@ -146,6 +158,12 @@ export class TechnologyDetectionService {
     content: RepositoryContent,
   ): Promise<TechnologyStack> {
     this.logger.log('Starting technology detection');
+
+    if (!content) {
+      throw new Error(
+        'Repository content is required for technology detection',
+      );
+    }
 
     try {
       const [
@@ -194,6 +212,10 @@ export class TechnologyDetectionService {
   private async detectLanguages(
     content: RepositoryContent,
   ): Promise<LanguageInfo[]> {
+    if (!content || !content.files) {
+      return [];
+    }
+
     const languages: LanguageInfo[] = [];
     const totalBytes = Object.values(content.languages || {}).reduce(
       (sum, bytes) => sum + bytes,
@@ -230,27 +252,71 @@ export class TechnologyDetectionService {
   private detectLanguagesFromFiles(files: any[]): LanguageInfo[] {
     const extensionMap: Record<string, string> = {
       '.js': 'JavaScript',
+      '.mjs': 'JavaScript',
+      '.cjs': 'JavaScript',
       '.ts': 'TypeScript',
-      '.jsx': 'JavaScript',
       '.tsx': 'TypeScript',
+      '.jsx': 'JavaScript',
       '.py': 'Python',
+      '.pyx': 'Python',
+      '.pyi': 'Python',
       '.java': 'Java',
+      '.kt': 'Kotlin',
+      '.kts': 'Kotlin',
       '.go': 'Go',
       '.rs': 'Rust',
       '.php': 'PHP',
       '.rb': 'Ruby',
       '.cs': 'C#',
+      '.fs': 'F#',
       '.cpp': 'C++',
+      '.cxx': 'C++',
+      '.cc': 'C++',
       '.c': 'C',
+      '.h': 'C',
+      '.hpp': 'C++',
       '.swift': 'Swift',
-      '.kt': 'Kotlin',
       '.dart': 'Dart',
       '.scala': 'Scala',
+      '.sc': 'Scala',
       '.clj': 'Clojure',
+      '.cljs': 'ClojureScript',
       '.hs': 'Haskell',
       '.elm': 'Elm',
       '.vue': 'Vue',
       '.svelte': 'Svelte',
+      '.r': 'R',
+      '.R': 'R',
+      '.jl': 'Julia',
+      '.m': 'Objective-C',
+      '.mm': 'Objective-C++',
+      '.pl': 'Perl',
+      '.pm': 'Perl',
+      '.sh': 'Shell',
+      '.bash': 'Shell',
+      '.zsh': 'Shell',
+      '.fish': 'Shell',
+      '.ps1': 'PowerShell',
+      '.psm1': 'PowerShell',
+      '.lua': 'Lua',
+      '.nim': 'Nim',
+      '.cr': 'Crystal',
+      '.ex': 'Elixir',
+      '.exs': 'Elixir',
+      '.erl': 'Erlang',
+      '.hrl': 'Erlang',
+      '.ml': 'OCaml',
+      '.mli': 'OCaml',
+      '.pas': 'Pascal',
+      '.pp': 'Pascal',
+      '.d': 'D',
+      '.zig': 'Zig',
+      '.v': 'V',
+      '.vb': 'Visual Basic',
+      '.vbs': 'VBScript',
+      '.groovy': 'Groovy',
+      '.gradle': 'Groovy',
+      '.sol': 'Solidity',
     };
 
     const languageCounts: Record<string, number> = {};
@@ -404,12 +470,22 @@ export class TechnologyDetectionService {
     const allFileContent = this.getAllFileContent(content);
 
     for (const [toolName, patterns] of Object.entries(this.buildToolPatterns)) {
-      const confidence = this.calculatePatternConfidence(
+      // Check package.json and file content
+      const patternConfidence = this.calculatePatternConfidence(
         patterns,
         packageJsonContent,
         allFileContent,
       );
-      if (confidence > 0.3) {
+
+      // Also check for file patterns directly
+      const filePatternConfidence = this.calculateFilePatternConfidence(
+        patterns,
+        content.files,
+      );
+
+      const totalConfidence = Math.max(patternConfidence, filePatternConfidence);
+
+      if (totalConfidence > 0.3) {
         buildTools.add(toolName);
       }
     }
@@ -475,9 +551,9 @@ export class TechnologyDetectionService {
 
     // Check for common tools based on file patterns
     const toolPatterns = {
-      git: ['.gitignore', '.gitattributes'],
-      eslint: ['.eslintrc', 'eslint.config'],
-      prettier: ['.prettierrc', 'prettier.config'],
+      git: ['.gitignore', '.gitattributes', '.gitmodules'],
+      eslint: ['.eslintrc', 'eslint.config', '.eslintignore'],
+      prettier: ['.prettierrc', 'prettier.config', '.prettierignore'],
       husky: ['.husky/', 'husky'],
       'lint-staged': ['lint-staged'],
       commitizen: ['.czrc', 'commitizen'],
@@ -486,8 +562,24 @@ export class TechnologyDetectionService {
       'github-actions': ['.github/workflows/'],
       'gitlab-ci': ['.gitlab-ci.yml'],
       jenkins: ['Jenkinsfile'],
-      terraform: ['*.tf', 'terraform'],
-      ansible: ['*.yml', 'ansible'],
+      terraform: ['*.tf', 'terraform', '.terraform'],
+      ansible: ['*.yml', 'ansible', 'playbook'],
+      docker: ['dockerfile', 'docker-compose', '.dockerignore'],
+      kubernetes: ['kubernetes', 'k8s', 'kubectl'],
+      editorconfig: ['.editorconfig'],
+      gitpod: ['.gitpod.yml', '.gitpod.dockerfile'],
+      codespaces: ['.devcontainer/', 'devcontainer.json'],
+      pre_commit: ['.pre-commit-config.yaml'],
+      commitlint: ['commitlint.config', '.commitlintrc'],
+      semantic_release: ['.releaserc', 'release.config'],
+      storybook: ['.storybook/', 'storybook'],
+      jest: ['jest.config', '.jestrc'],
+      babel: ['.babelrc', 'babel.config'],
+      typescript: ['tsconfig.json', 'tslint.json'],
+      webpack: ['webpack.config'],
+      vite: ['vite.config'],
+      rollup: ['rollup.config'],
+      parcel: ['.parcelrc'],
     };
 
     for (const [toolName, patterns] of Object.entries(toolPatterns)) {
@@ -598,6 +690,28 @@ export class TechnologyDetectionService {
     }
 
     return Math.min(1.0, confidence / patterns.length);
+  }
+
+  /**
+   * Calculate confidence score for file pattern matching
+   */
+  private calculateFilePatternConfidence(
+    patterns: string[],
+    files: any[],
+  ): number {
+    if (!files || files.length === 0) return 0;
+
+    let matches = 0;
+    for (const pattern of patterns) {
+      const hasMatch = files.some(file =>
+        file && file.name && file.path &&
+        (file.name.toLowerCase().includes(pattern.toLowerCase()) ||
+          file.path.toLowerCase().includes(pattern.toLowerCase()))
+      );
+      if (hasMatch) matches++;
+    }
+
+    return patterns.length > 0 ? matches / patterns.length : 0;
   }
 
   /**

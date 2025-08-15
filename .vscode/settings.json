@@ -17,5 +17,6 @@
     "yaml.schemas": {
         // Avoid wrong schema on grafana datasource file
         "": ["docker/grafana/provisioning/datasources/prometheus.yaml"]
-    }
+    },
+    "kiroAgent.configureMCP": "Enabled"
 }

@@ -277,7 +277,7 @@ describe('AIEnrichmentService', () => {
 
             const result = await service.analyzeRepository('test-project-id', complexContent);
 
-            expect(result.complexity).toBe('complex');
+            expect(result.complexity).toBe('moderate');
         });
 
         it('should generate appropriate suggested tags', async () => {

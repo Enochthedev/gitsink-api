@@ -106,6 +106,30 @@ export class ProjectCategorizationService {
             directoryPatterns: ['tutorials', 'examples', 'lessons', 'course'],
             weight: 0.7,
         },
+        'e-commerce': {
+            patterns: ['shop', 'store', 'cart', 'payment', 'checkout', 'product'],
+            filePatterns: ['cart.js', 'payment.py', 'product.model.js'],
+            directoryPatterns: ['shop', 'store', 'products', 'cart'],
+            weight: 0.9,
+        },
+        'social-media': {
+            patterns: ['social', 'chat', 'message', 'post', 'feed', 'follow'],
+            filePatterns: ['chat.js', 'message.py', 'post.model.js'],
+            directoryPatterns: ['chat', 'messages', 'posts', 'social'],
+            weight: 0.9,
+        },
+        'finance': {
+            patterns: ['finance', 'banking', 'payment', 'transaction', 'wallet', 'crypto'],
+            filePatterns: ['transaction.js', 'wallet.py', 'payment.model.js'],
+            directoryPatterns: ['finance', 'banking', 'payments', 'transactions'],
+            weight: 0.9,
+        },
+        'healthcare': {
+            patterns: ['health', 'medical', 'patient', 'doctor', 'hospital', 'clinic'],
+            filePatterns: ['patient.js', 'medical.py', 'health.model.js'],
+            directoryPatterns: ['health', 'medical', 'patients', 'doctors'],
+            weight: 0.9,
+        },
     };
 
     // Secondary category mappings
@@ -124,10 +148,23 @@ export class ProjectCategorizationService {
     /**
      * Categorize a project based on its content
      */
-    async categorizeProject(content: RepositoryContent): Promise<ProjectCategory> {
+    async categorizeProject(
+        content: RepositoryContent,
+        manualOverride?: { category?: string; tags?: string[] }
+    ): Promise<ProjectCategory> {
         this.logger.log('Starting project categorization');
 
+        if (!content) {
+            this.logger.warn('No content provided for categorization');
+            return this.getDefaultCategory();
+        }
+
         try {
+            // If manual override is provided, use it as primary category
+            if (manualOverride?.category && this.isValidCategory(manualOverride.category)) {
+                return this.createManualOverrideResult(manualOverride, content);
+            }
+
             const categoryScores = await this.calculateCategoryScores(content);
             const primaryCategory = this.selectPrimaryCategory(categoryScores);
             const secondaryCategories = this.selectSecondaryCategories(categoryScores, primaryCategory);
@@ -138,7 +175,7 @@ export class ProjectCategorizationService {
                 primary: primaryCategory,
                 secondary: secondaryCategories,
                 confidence,
-                tags,
+                tags: manualOverride?.tags ? [...new Set([...tags, ...manualOverride.tags])] : tags,
             };
 
             this.logger.log(`Project categorized as: ${primaryCategory} (confidence: ${confidence})`);
@@ -147,6 +184,35 @@ export class ProjectCategorizationService {
             this.logger.error('Project categorization failed:', error);
             return this.getDefaultCategory();
         }
+    }
+
+    /**
+     * Validate if a category is supported
+     */
+    private isValidCategory(category: string): boolean {
+        const validCategories = Object.keys(this.categoryPatterns);
+        return validCategories.includes(category) || category === 'other';
+    }
+
+    /**
+     * Create result with manual override
+     */
+    private createManualOverrideResult(
+        override: { category?: string; tags?: string[] },
+        content: RepositoryContent
+    ): ProjectCategory {
+        const primaryCategory = override.category!;
+        const categoryScores = { [primaryCategory]: 1.0 };
+        const secondaryCategories = this.selectSecondaryCategories(categoryScores, primaryCategory);
+        const autoTags = this.generateCategoryTags(primaryCategory, secondaryCategories, content);
+        const tags = override.tags ? [...new Set([...autoTags, ...override.tags])] : autoTags;
+
+        return {
+            primary: primaryCategory,
+            secondary: secondaryCategories,
+            confidence: 1.0, // High confidence for manual override
+            tags,
+        };
     }
 
     /**
@@ -201,13 +267,18 @@ export class ProjectCategorizationService {
      * Check file name patterns
      */
     private checkFilePatterns(content: RepositoryContent, patterns: string[]): number {
+        if (!content || !content.files || !Array.isArray(content.files)) {
+            return 0;
+        }
+
         let matches = 0;
         const totalPatterns = patterns.length;
 
         for (const pattern of patterns) {
             const hasMatch = content.files.some(file =>
-                file.name.toLowerCase().includes(pattern.toLowerCase()) ||
-                file.path.toLowerCase().includes(pattern.toLowerCase())
+                file && file.name && file.path &&
+                (file.name.toLowerCase().includes(pattern.toLowerCase()) ||
+                    file.path.toLowerCase().includes(pattern.toLowerCase()))
             );
             if (hasMatch) matches++;
         }
@@ -219,8 +290,13 @@ export class ProjectCategorizationService {
      * Check directory patterns
      */
     private checkDirectoryPatterns(content: RepositoryContent, patterns: string[]): number {
+        if (!content || !content.files || !Array.isArray(content.files)) {
+            return 0;
+        }
+
         const directories = new Set(
             content.files
+                .filter(f => f && f.path)
                 .map(f => f.path.split('/')[0])
                 .filter(dir => dir && !dir.startsWith('.'))
                 .map(dir => dir.toLowerCase())
@@ -241,8 +317,12 @@ export class ProjectCategorizationService {
      * Check patterns in file content
      */
     private checkContentPatterns(content: RepositoryContent, patterns: string[]): number {
+        if (!content || !content.files || !Array.isArray(content.files)) {
+            return 0;
+        }
+
         const allContent = content.files
-            .filter(f => f.content && f.size < 50000) // Only check smaller files
+            .filter(f => f && f.content && f.size && f.size < 50000) // Only check smaller files
             .map(f => f.content)
             .join(' ')
             .toLowerCase();
@@ -477,5 +557,124 @@ export class ProjectCategorizationService {
             confidence: 0.1,
             tags: ['uncategorized'],
         };
+    }
+
+    /**
+     * Get all available categories
+     */
+    getAvailableCategories(): string[] {
+        return Object.keys(this.categoryPatterns);
+    }
+
+    /**
+     * Get category hierarchy for filtering
+     */
+    getCategoryHierarchy(): Record<string, string[]> {
+        return this.secondaryCategories;
+    }
+
+    /**
+     * Filter projects by category
+     */
+    filterProjectsByCategory(
+        projects: any[],
+        primaryCategory?: string,
+        secondaryCategories?: string[],
+        tags?: string[]
+    ): any[] {
+        return projects.filter(project => {
+            if (!project.category) return false;
+
+            // Filter by primary category
+            if (primaryCategory && project.category.primary !== primaryCategory) {
+                return false;
+            }
+
+            // Filter by secondary categories
+            if (secondaryCategories && secondaryCategories.length > 0) {
+                const hasMatchingSecondary = secondaryCategories.some(sec =>
+                    project.category.secondary?.includes(sec)
+                );
+                if (!hasMatchingSecondary) return false;
+            }
+
+            // Filter by tags
+            if (tags && tags.length > 0) {
+                const hasMatchingTag = tags.some(tag =>
+                    project.category.tags?.includes(tag)
+                );
+                if (!hasMatchingTag) return false;
+            }
+
+            return true;
+        });
+    }
+
+    /**
+     * Search projects by category-related terms
+     */
+    searchProjectsByCategory(projects: any[], searchTerm: string): any[] {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+
+        return projects.filter(project => {
+            if (!project.category) return false;
+
+            // Search in primary category
+            if (project.category.primary.toLowerCase().includes(lowerSearchTerm)) {
+                return true;
+            }
+
+            // Search in secondary categories
+            if (project.category.secondary?.some((sec: string) =>
+                sec.toLowerCase().includes(lowerSearchTerm)
+            )) {
+                return true;
+            }
+
+            // Search in tags
+            if (project.category.tags?.some((tag: string) =>
+                tag.toLowerCase().includes(lowerSearchTerm)
+            )) {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    /**
+     * Get category statistics from a list of projects
+     */
+    getCategoryStatistics(projects: any[]): Record<string, number> {
+        const stats: Record<string, number> = {};
+
+        projects.forEach(project => {
+            if (project.category?.primary) {
+                stats[project.category.primary] = (stats[project.category.primary] || 0) + 1;
+            }
+        });
+
+        return stats;
+    }
+
+    /**
+     * Suggest similar categories based on content
+     */
+    async suggestSimilarCategories(
+        content: RepositoryContent,
+        currentCategory: string,
+        limit: number = 3
+    ): Promise<string[]> {
+        const categoryScores = await this.calculateCategoryScores(content);
+
+        // Remove current category and sort by score
+        delete categoryScores[currentCategory];
+
+        const sortedCategories = Object.entries(categoryScores)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, limit)
+            .map(([category]) => category);
+
+        return sortedCategories;
     }
 }
