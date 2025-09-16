@@ -1,0 +1,425 @@
+{
+  "timestamp": "2025-09-04T12:00:35.278Z",
+  "summary": {
+    "totalChecks": 55,
+    "passed": 7,
+    "failed": 48,
+    "warnings": 0,
+    "critical": 20,
+    "high": 13,
+    "medium": 14,
+    "low": 0
+  },
+  "vulnerabilities": [
+    {
+      "type": "configuration",
+      "severity": "high",
+      "title": "Missing environment variable: JWT_SECRET",
+      "description": "Required environment variable JWT_SECRET is not set",
+      "recommendation": "Set JWT_SECRET environment variable with a secure value"
+    },
+    {
+      "type": "configuration",
+      "severity": "high",
+      "title": "Missing environment variable: TOKEN_ENCRYPTION_KEY",
+      "description": "Required environment variable TOKEN_ENCRYPTION_KEY is not set",
+      "recommendation": "Set TOKEN_ENCRYPTION_KEY environment variable with a secure value"
+    },
+    {
+      "type": "configuration",
+      "severity": "high",
+      "title": "Missing environment variable: DATABASE_URL",
+      "description": "Required environment variable DATABASE_URL is not set",
+      "recommendation": "Set DATABASE_URL environment variable with a secure value"
+    },
+    {
+      "type": "configuration",
+      "severity": "high",
+      "title": "Missing environment variable: SESSION_SECRET",
+      "description": "Required environment variable SESSION_SECRET is not set",
+      "recommendation": "Set SESSION_SECRET environment variable with a secure value"
+    },
+    {
+      "type": "configuration",
+      "severity": "medium",
+      "title": "Missing security dependency: bcrypt",
+      "description": "Security-related package bcrypt is not installed",
+      "recommendation": "Consider installing bcrypt for enhanced security"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded API key",
+      "description": "API key appears to be hardcoded in source code in src/audit/interfaces/audit.interface.ts",
+      "recommendation": "Remove or secure the hardcoded api key in src/audit/interfaces/audit.interface.ts",
+      "file": "src/audit/interfaces/audit.interface.ts",
+      "code": "API_KEY = 'api_key'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.integration.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.integration.spec.ts",
+      "file": "src/auth/auth.integration.spec.ts",
+      "code": "Password = '123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.penetration.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.penetration.spec.ts",
+      "file": "src/auth/auth.penetration.spec.ts",
+      "code": "Password = 'A'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "Password = '123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "password = 'password123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "password = 'password123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "password = 'wrongpassword'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "password = 'password123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "password = 'password123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "password = 'wrongpassword'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "password = 'password123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "Password = '123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded API key",
+      "description": "API key appears to be hardcoded in source code in src/auth/auth.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded api key in src/auth/auth.service.spec.ts",
+      "file": "src/auth/auth.service.spec.ts",
+      "code": "ApiKey = 'short'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/common/services/logging.service.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/common/services/logging.service.spec.ts",
+      "file": "src/common/services/logging.service.spec.ts",
+      "code": "password = 'secret123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/common/validation/validation.decorators.spec.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/common/validation/validation.decorators.spec.ts",
+      "file": "src/common/validation/validation.decorators.spec.ts",
+      "code": "password = 'WeakPassword123'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded API key",
+      "description": "API key appears to be hardcoded in source code in src/common/validation/validation.decorators.spec.ts",
+      "recommendation": "Remove or secure the hardcoded api key in src/common/validation/validation.decorators.spec.ts",
+      "file": "src/common/validation/validation.decorators.spec.ts",
+      "code": "apiKey = 'gsk_'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded API key",
+      "description": "API key appears to be hardcoded in source code in src/common/validation/validation.decorators.spec.ts",
+      "recommendation": "Remove or secure the hardcoded api key in src/common/validation/validation.decorators.spec.ts",
+      "file": "src/common/validation/validation.decorators.spec.ts",
+      "code": "apiKey = 'api_'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded API key",
+      "description": "API key appears to be hardcoded in source code in src/common/validation/validation.decorators.spec.ts",
+      "recommendation": "Remove or secure the hardcoded api key in src/common/validation/validation.decorators.spec.ts",
+      "file": "src/common/validation/validation.decorators.spec.ts",
+      "code": "apiKey = 'gsk_'"
+    },
+    {
+      "type": "code-security",
+      "severity": "critical",
+      "title": "Hardcoded password",
+      "description": "Password appears to be hardcoded in source code in src/security/security-test-utils.ts",
+      "recommendation": "Remove or secure the hardcoded password in src/security/security-test-utils.ts",
+      "file": "src/security/security-test-utils.ts",
+      "code": "password='hacked'"
+    },
+    {
+      "type": "infrastructure",
+      "severity": "critical",
+      "title": ".env file in version control",
+      "description": ".env file is tracked in git, potentially exposing secrets",
+      "recommendation": "Remove .env from git and add to .gitignore"
+    },
+    {
+      "type": "infrastructure",
+      "severity": "medium",
+      "title": "Missing *.key in .gitignore",
+      "description": "Sensitive files matching *.key might be committed to git",
+      "recommendation": "Add *.key to .gitignore"
+    },
+    {
+      "type": "infrastructure",
+      "severity": "medium",
+      "title": "Missing *.pem in .gitignore",
+      "description": "Sensitive files matching *.pem might be committed to git",
+      "recommendation": "Add *.pem to .gitignore"
+    },
+    {
+      "type": "infrastructure",
+      "severity": "medium",
+      "title": "Missing secrets/ in .gitignore",
+      "description": "Sensitive files matching secrets/ might be committed to git",
+      "recommendation": "Add secrets/ to .gitignore"
+    },
+    {
+      "type": "infrastructure",
+      "severity": "medium",
+      "title": "Missing config/local.* in .gitignore",
+      "description": "Sensitive files matching config/local.* might be committed to git",
+      "recommendation": "Add config/local.* to .gitignore"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/auth.penetration.spec.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/auth.resolver.spec.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/auth.security.spec.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/enhanced-jwt.guard.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/jwt-token-cleanup.service.spec.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/jwt-token-cleanup.service.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/magic-link.service.spec.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/request-with-user.ts"
+    },
+    {
+      "type": "authentication",
+      "severity": "high",
+      "title": "JWT without expiration",
+      "description": "JWT tokens should have expiration time",
+      "recommendation": "Set expiresIn option for JWT tokens",
+      "file": "src/auth/strategies/jwt.strategy.ts"
+    },
+    {
+      "type": "data-protection",
+      "severity": "medium",
+      "title": "Missing email validation",
+      "description": "Email field without proper validation",
+      "recommendation": "Add email validation to prevent invalid data",
+      "file": "src/auth/entities/user.entity.ts"
+    },
+    {
+      "type": "data-protection",
+      "severity": "medium",
+      "title": "Potential sensitive data logging",
+      "description": "Logging configuration might expose sensitive data",
+      "recommendation": "Ensure sensitive data is not logged",
+      "file": "src/auth/dto/login.dto.ts"
+    },
+    {
+      "type": "data-protection",
+      "severity": "medium",
+      "title": "Potential sensitive data logging",
+      "description": "Logging configuration might expose sensitive data",
+      "recommendation": "Ensure sensitive data is not logged",
+      "file": "src/common/interceptors/logging.interceptor.ts"
+    },
+    {
+      "type": "data-protection",
+      "severity": "medium",
+      "title": "Potential sensitive data logging",
+      "description": "Logging configuration might expose sensitive data",
+      "recommendation": "Ensure sensitive data is not logged",
+      "file": "src/common/services/logging.service.spec.ts"
+    },
+    {
+      "type": "data-protection",
+      "severity": "medium",
+      "title": "Potential sensitive data logging",
+      "description": "Logging configuration might expose sensitive data",
+      "recommendation": "Ensure sensitive data is not logged",
+      "file": "src/common/services/logging.service.ts"
+    },
+    {
+      "type": "data-protection",
+      "severity": "medium",
+      "title": "Potential sensitive data logging",
+      "description": "Logging configuration might expose sensitive data",
+      "recommendation": "Ensure sensitive data is not logged",
+      "file": "src/common/utils/logging.utils.ts"
+    },
+    {
+      "type": "logging",
+      "severity": "medium",
+      "title": "Potential information disclosure in errors",
+      "description": "Error handling might expose stack traces to users",
+      "recommendation": "Sanitize error responses in production",
+      "file": "src/common/exceptions/error-handler.service.ts"
+    },
+    {
+      "type": "logging",
+      "severity": "medium",
+      "title": "Potential information disclosure in errors",
+      "description": "Error handling might expose stack traces to users",
+      "recommendation": "Sanitize error responses in production",
+      "file": "src/common/filters/global-exception.filter.ts"
+    },
+    {
+      "type": "logging",
+      "severity": "medium",
+      "title": "Potential information disclosure in errors",
+      "description": "Error handling might expose stack traces to users",
+      "recommendation": "Sanitize error responses in production",
+      "file": "src/common/utils/error.utils.ts"
+    }
+  ],
+  "recommendations": [
+    "Regularly update dependencies to patch known vulnerabilities",
+    "Implement comprehensive input validation and sanitization",
+    "Use strong, unique secrets for all cryptographic operations",
+    "Enable HTTPS for all communications",
+    "Implement proper authentication and authorization mechanisms",
+    "Add security headers to all HTTP responses",
+    "Implement rate limiting to prevent abuse",
+    "Use parameterized queries to prevent SQL injection",
+    "Implement proper error handling to prevent information disclosure",
+    "Add comprehensive security testing to CI/CD pipeline",
+    "Implement security event logging and monitoring",
+    "Regular security audits and penetration testing",
+    "Train development team on secure coding practices",
+    "Implement data encryption for sensitive information",
+    "Use Content Security Policy (CSP) to prevent XSS attacks",
+    "Review and harden application configuration",
+    "Implement multi-factor authentication where possible",
+    "Implement data classification and protection policies"
+  ],
+  "compliance": {
+    "owasp": 60,
+    "gdpr": 40,
+    "security": 0
+  }
+}

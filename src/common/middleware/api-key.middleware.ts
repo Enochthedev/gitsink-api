@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NestMiddleware,
-  UnauthorizedException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware, UnauthorizedException, Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '@auth/auth.service';
 import { MetricsService } from '@metrics/metrics.service';
@@ -62,14 +57,11 @@ export class ApiKeyMiddleware implements NestMiddleware {
 
       this.apiKeyMetrics.inc({ result: 'success', endpoint: req.path });
 
-      this.logger.debug(
-        `API key authentication successful for user ${user.id}`,
-        {
-          userId: user.id,
-          endpoint: req.path,
-          clientInfo,
-        },
-      );
+      this.logger.debug(`API key authentication successful for user ${user.id}`, {
+        userId: user.id,
+        endpoint: req.path,
+        clientInfo,
+      });
 
       next();
     } catch (error) {
@@ -82,7 +74,7 @@ export class ApiKeyMiddleware implements NestMiddleware {
     // Define which paths require API key authentication
     const apiKeyRoutes = ['/api/', '/projects/', '/parser/'];
 
-    return apiKeyRoutes.some((route) => path.startsWith(route));
+    return apiKeyRoutes.some(route => path.startsWith(route));
   }
 
   private extractApiKey(req: Request): string | null {

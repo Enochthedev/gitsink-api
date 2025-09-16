@@ -1,0 +1,557 @@
+name: Automated Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      rollback_type:
+        description: 'Type of rollback'
+        required: true
+        type: choice
+        options:
+          - previous-version
+          - specific-version
+          - backup-restore
+      target_version:
+        description: 'Target version (for specific-version rollback)'
+        required: false
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+      skip_verification:
+        description: 'Skip post-rollback verification (emergency only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  PAGERDUTY_INTEGRATION_KEY: ${{ secrets.PAGERDUTY_INTEGRATION_KEY }}
+
+jobs:
+  validate-rollback:
+    name: Validate Rollback Request
+    runs-on: ubuntu-latest
+    outputs:
+      rollback-approved: ${{ steps.validation.outputs.approved }}
+      target-version: ${{ steps.validation.outputs.target-version }}
+      current-version: ${{ steps.validation.outputs.current-version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate rollback parameters
+        id: validation
+        run: |
+          echo "Validating rollback request..."
+          
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          ROLLBACK_TYPE="${{ github.event.inputs.rollback_type }}"
+          TARGET_VERSION="${{ github.event.inputs.target_version }}"
+          REASON="${{ github.event.inputs.reason }}"
+          
+          # Get current version
+          case $ENVIRONMENT in
+            staging)
+              CURRENT_VERSION=$(curl -s https://staging-api.gitsink.com/api/version | jq -r '.version' || echo "unknown")
+              ;;
+            production)
+              CURRENT_VERSION=$(curl -s https://api.gitsink.com/api/version | jq -r '.version' || echo "unknown")
+              ;;
+          esac
+          
+          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          # Validate rollback type
+          case $ROLLBACK_TYPE in
+            previous-version)
+              # Get previous version from git tags
+              PREVIOUS_VERSION=$(git tag --sort=-version:refname | head -2 | tail -1)
+              if [[ -z "$PREVIOUS_VERSION" ]]; then
+                echo "❌ No previous version found"
+                exit 1
+              fi
+              echo "target-version=$PREVIOUS_VERSION" >> $GITHUB_OUTPUT
+              ;;
+            specific-version)
+              if [[ -z "$TARGET_VERSION" ]]; then
+                echo "❌ Target version required for specific-version rollback"
+                exit 1
+              fi
+              
+              # Validate target version exists
+              if ! git tag | grep -q "^$TARGET_VERSION$"; then
+                echo "❌ Target version $TARGET_VERSION not found in git tags"
+                exit 1
+              fi
+              echo "target-version=$TARGET_VERSION" >> $GITHUB_OUTPUT
+              ;;
+            backup-restore)
+              # Check if backups exist
+              if [[ ! -d "backups" ]]; then
+                echo "❌ No backups directory found"
+                exit 1
+              fi
+              
+              LATEST_BACKUP=$(ls -t backups/*_$ENVIRONMENT 2>/dev/null | head -1)
+              if [[ -z "$LATEST_BACKUP" ]]; then
+                echo "❌ No backups found for $ENVIRONMENT environment"
+                exit 1
+              fi
+              echo "target-version=backup-restore" >> $GITHUB_OUTPUT
+              ;;
+          esac
+          
+          # Validate reason is provided
+          if [[ -z "$REASON" ]]; then
+            echo "❌ Rollback reason is required"
+            exit 1
+          fi
+          
+          echo "✅ Rollback validation passed"
+          echo "approved=true" >> $GITHUB_OUTPUT
+
+      - name: Production rollback approval
+        if: github.event.inputs.environment == 'production'
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ secrets.PRODUCTION_APPROVERS }}
+          minimum-approvals: 2
+          issue-title: "🚨 PRODUCTION ROLLBACK APPROVAL REQUIRED"
+          issue-body: |
+            ## 🚨 Production Rollback Request
+            
+            **URGENT: Manual approval required for production rollback**
+            
+            ### Rollback Details
+            - **Environment**: ${{ github.event.inputs.environment }}
+            - **Rollback Type**: ${{ github.event.inputs.rollback_type }}
+            - **Current Version**: ${{ steps.validation.outputs.current-version }}
+            - **Target Version**: ${{ steps.validation.outputs.target-version }}
+            - **Reason**: ${{ github.event.inputs.reason }}
+            - **Requested by**: ${{ github.actor }}
+            - **Timestamp**: ${{ github.event.head_commit.timestamp }}
+            
+            ### Pre-Rollback Checklist
+            - [ ] Incident has been properly documented
+            - [ ] Rollback plan has been reviewed
+            - [ ] Stakeholders have been notified
+            - [ ] Database migration rollback plan confirmed (if applicable)
+            - [ ] Monitoring and alerting are in place
+            
+            **⚠️ This action will rollback the production environment. Please ensure this is necessary and safe.**
+            
+            Please review and approve this rollback request.
+
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: [validate-rollback]
+    if: needs.validate-rollback.outputs.rollback-approved == 'true'
+    environment: ${{ github.event.inputs.environment }}
+    concurrency:
+      group: rollback-${{ github.event.inputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup rollback environment
+        run: |
+          echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+          echo "ROLLBACK_TYPE=${{ github.event.inputs.rollback_type }}" >> $GITHUB_ENV
+          echo "TARGET_VERSION=${{ needs.validate-rollback.outputs.target-version }}" >> $GITHUB_ENV
+          echo "CURRENT_VERSION=${{ needs.validate-rollback.outputs.current-version }}" >> $GITHUB_ENV
+          echo "ROLLBACK_ID=rollback-$(date +%s)" >> $GITHUB_ENV
+
+      - name: Send rollback start notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          channel: '#alerts'
+          webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+          custom_payload: |
+            {
+              "text": "🔄 ROLLBACK INITIATED",
+              "attachments": [
+                {
+                  "color": "warning",
+                  "fields": [
+                    {
+                      "title": "Environment",
+                      "value": "${{ env.ENVIRONMENT }}",
+                      "short": true
+                    },
+                    {
+                      "title": "From Version",
+                      "value": "${{ env.CURRENT_VERSION }}",
+                      "short": true
+                    },
+                    {
+                      "title": "To Version",
+                      "value": "${{ env.TARGET_VERSION }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Reason",
+                      "value": "${{ github.event.inputs.reason }}",
+                      "short": false
+                    },
+                    {
+                      "title": "Initiated by",
+                      "value": "${{ github.actor }}",
+                      "short": true
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Create pre-rollback backup
+        run: |
+          echo "Creating pre-rollback backup..."
+          ./scripts/docker-deploy.sh backup -e "$ENVIRONMENT" -f
+          
+          # Tag current state for potential recovery
+          BACKUP_TAG="pre-rollback-$ENVIRONMENT-$(date +%Y%m%d-%H%M%S)"
+          git tag "$BACKUP_TAG"
+          echo "Created backup tag: $BACKUP_TAG"
+
+      - name: Execute version rollback
+        if: env.ROLLBACK_TYPE == 'previous-version' || env.ROLLBACK_TYPE == 'specific-version'
+        run: |
+          echo "Executing version rollback to $TARGET_VERSION..."
+          
+          # Checkout target version
+          git checkout "$TARGET_VERSION"
+          
+          # Update environment configuration for target version
+          if [[ -f ".env.$ENVIRONMENT" ]]; then
+            sed -i "s/IMAGE_TAG=.*/IMAGE_TAG=$TARGET_VERSION/" ".env.$ENVIRONMENT"
+          fi
+          
+          # Deploy target version
+          ./scripts/docker-deploy.sh deploy -e "$ENVIRONMENT" -f
+          
+          echo "Version rollback completed"
+
+      - name: Execute backup restore rollback
+        if: env.ROLLBACK_TYPE == 'backup-restore'
+        run: |
+          echo "Executing backup restore rollback..."
+          
+          # Stop current services
+          ./scripts/docker-deploy.sh stop -e "$ENVIRONMENT" -f
+          
+          # Restore from backup
+          ./scripts/docker-deploy.sh restore -e "$ENVIRONMENT" -f
+          
+          echo "Backup restore rollback completed"
+
+      - name: Wait for rollback completion
+        run: |
+          echo "Waiting for rollback to complete..."
+          
+          # Wait for services to be ready
+          timeout 600 bash -c "
+            while ! ./scripts/docker-health-check.sh -e '$ENVIRONMENT'; do
+              echo 'Waiting for services to be ready...'
+              sleep 15
+            done
+          "
+          
+          echo "Rollback deployment is ready"
+
+      - name: Verify rollback success
+        if: github.event.inputs.skip_verification != 'true'
+        id: verification
+        run: |
+          echo "Verifying rollback success..."
+          
+          # Health checks
+          ./scripts/docker-health-check.sh -e "$ENVIRONMENT" -v
+          
+          # Version verification
+          case $ENVIRONMENT in
+            staging)
+              DEPLOYED_VERSION=$(curl -s https://staging-api.gitsink.com/api/version | jq -r '.version' || echo "unknown")
+              ;;
+            production)
+              DEPLOYED_VERSION=$(curl -s https://api.gitsink.com/api/version | jq -r '.version' || echo "unknown")
+              ;;
+          esac
+          
+          echo "Deployed version: $DEPLOYED_VERSION"
+          echo "deployed-version=$DEPLOYED_VERSION" >> $GITHUB_OUTPUT
+          
+          # Basic functionality tests
+          case $ENVIRONMENT in
+            staging)
+              curl -f https://staging-api.gitsink.com/health || exit 1
+              curl -f https://staging-api.gitsink.com/api/health || exit 1
+              ;;
+            production)
+              curl -f https://api.gitsink.com/health || exit 1
+              curl -f https://api.gitsink.com/api/health || exit 1
+              ;;
+          esac
+          
+          echo "✅ Rollback verification successful"
+
+      - name: Run post-rollback tests
+        if: github.event.inputs.skip_verification != 'true'
+        run: |
+          echo "Running post-rollback tests..."
+          
+          # Install dependencies for testing
+          npm ci
+          
+          # Run critical path tests
+          npm run test:e2e -- --testNamePattern="critical" --testTimeout=60000
+          
+          echo "Post-rollback tests completed"
+
+      - name: Emergency rollback on verification failure
+        if: failure() && steps.verification.conclusion == 'failure'
+        run: |
+          echo "🚨 Rollback verification failed, attempting emergency recovery..."
+          
+          # Try to restore from pre-rollback backup
+          BACKUP_TAG=$(git tag | grep "pre-rollback-$ENVIRONMENT" | tail -1)
+          if [[ -n "$BACKUP_TAG" ]]; then
+            echo "Restoring from emergency backup: $BACKUP_TAG"
+            git checkout "$BACKUP_TAG"
+            ./scripts/docker-deploy.sh deploy -e "$ENVIRONMENT" -f
+          else
+            echo "No emergency backup found, manual intervention required"
+            exit 1
+          fi
+
+      - name: Update rollback status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}';
+            const environment = '${{ env.ENVIRONMENT }}';
+            const targetVersion = '${{ env.TARGET_VERSION }}';
+            const deployedVersion = '${{ steps.verification.outputs.deployed-version || 'unknown' }}';
+            
+            const state = status === 'success' ? 'success' : 'failure';
+            const description = status === 'success' 
+              ? `✅ Rollback to ${targetVersion} completed successfully`
+              : `❌ Rollback to ${targetVersion} failed`;
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: state,
+              description: description,
+              context: `rollback/${environment}`
+            });
+            
+            // Create incident issue if rollback failed
+            if (status === 'failure') {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🚨 CRITICAL: Rollback Failed - ${environment.toUpperCase()}`,
+                body: `
+                ## 🚨 Critical Incident: Rollback Failure
+                
+                **Environment**: ${environment}
+                **Target Version**: ${targetVersion}
+                **Current Status**: FAILED
+                **Rollback ID**: ${{ env.ROLLBACK_ID }}
+                
+                ### Immediate Actions Required
+                1. Check system status and health
+                2. Verify data integrity
+                3. Assess user impact
+                4. Consider manual intervention
+                
+                ### Rollback Details
+                - **Initiated by**: ${{ github.actor }}
+                - **Reason**: ${{ github.event.inputs.reason }}
+                - **Timestamp**: ${new Date().toISOString()}
+                
+                **This requires immediate attention from the on-call team.**
+                `,
+                labels: ['incident', 'critical', 'rollback-failure', environment]
+              });
+            }
+
+      - name: Send rollback completion notification
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#alerts'
+          webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+          custom_payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅ ROLLBACK COMPLETED' || '❌ ROLLBACK FAILED' }}",
+              "attachments": [
+                {
+                  "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                  "fields": [
+                    {
+                      "title": "Environment",
+                      "value": "${{ env.ENVIRONMENT }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Target Version",
+                      "value": "${{ env.TARGET_VERSION }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Status",
+                      "value": "${{ job.status }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Deployed Version",
+                      "value": "${{ steps.verification.outputs.deployed-version || 'unknown' }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Rollback ID",
+                      "value": "${{ env.ROLLBACK_ID }}",
+                      "short": false
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Send PagerDuty alert on failure
+        if: failure() && github.event.inputs.environment == 'production'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const https = require('https');
+            
+            const payload = {
+              routing_key: '${{ env.PAGERDUTY_INTEGRATION_KEY }}',
+              event_action: 'trigger',
+              dedup_key: 'gitsink-rollback-failure-${{ env.ROLLBACK_ID }}',
+              payload: {
+                summary: 'GitSink Production Rollback Failed - Critical Incident',
+                source: 'GitHub Actions Rollback',
+                severity: 'critical',
+                component: 'production-deployment',
+                group: 'infrastructure',
+                class: 'rollback-failure',
+                custom_details: {
+                  environment: '${{ env.ENVIRONMENT }}',
+                  target_version: '${{ env.TARGET_VERSION }}',
+                  rollback_id: '${{ env.ROLLBACK_ID }}',
+                  reason: '${{ github.event.inputs.reason }}',
+                  initiated_by: '${{ github.actor }}'
+                }
+              }
+            };
+            
+            const data = JSON.stringify(payload);
+            
+            const options = {
+              hostname: 'events.pagerduty.com',
+              port: 443,
+              path: '/v2/enqueue',
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': data.length
+              }
+            };
+            
+            const req = https.request(options, (res) => {
+              console.log(`PagerDuty alert sent: ${res.statusCode}`);
+            });
+            
+            req.on('error', (error) => {
+              console.error('PagerDuty alert failed:', error);
+            });
+            
+            req.write(data);
+            req.end();
+
+  post-rollback-monitoring:
+    name: Post-Rollback Monitoring
+    runs-on: ubuntu-latest
+    needs: [execute-rollback]
+    if: needs.execute-rollback.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extended monitoring
+        run: |
+          echo "Starting extended post-rollback monitoring..."
+          
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          
+          # Monitor for 15 minutes after rollback
+          for i in {1..30}; do
+            echo "Monitoring check $i/30..."
+            
+            if ./scripts/docker-health-check.sh -e "$ENVIRONMENT" -v; then
+              echo "✅ Health check $i passed"
+            else
+              echo "❌ Health check $i failed"
+              exit 1
+            fi
+            
+            sleep 30
+          done
+          
+          echo "✅ Extended monitoring completed successfully"
+
+      - name: Generate rollback report
+        run: |
+          cat > rollback-report.md << EOF
+          # Rollback Report
+          
+          ## Summary
+          - **Environment**: ${{ github.event.inputs.environment }}
+          - **Rollback Type**: ${{ github.event.inputs.rollback_type }}
+          - **Target Version**: ${{ needs.validate-rollback.outputs.target-version }}
+          - **Reason**: ${{ github.event.inputs.reason }}
+          - **Initiated by**: ${{ github.actor }}
+          - **Status**: ${{ needs.execute-rollback.result }}
+          - **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          ## Timeline
+          - Rollback initiated: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          - Rollback completed: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          - Monitoring completed: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          ## Post-Rollback Status
+          - System health: ✅ Healthy
+          - Extended monitoring: ✅ Passed
+          
+          ## Next Steps
+          1. Continue monitoring system performance
+          2. Review incident that triggered rollback
+          3. Plan forward fix if applicable
+          4. Update incident documentation
+          EOF
+
+      - name: Upload rollback report
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-report-${{ github.event.inputs.environment }}-${{ github.run_number }}
+          path: rollback-report.md
+          retention-days: 90

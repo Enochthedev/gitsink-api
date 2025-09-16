@@ -1,0 +1,161 @@
+{
+  "timestamp": "2025-09-04T12:01:36.089Z",
+  "score": 90,
+  "summary": {
+    "total": 29,
+    "passed": 25,
+    "warnings": 2,
+    "failed": 2
+  },
+  "results": [
+    {
+      "name": "Environment Files",
+      "status": "pass",
+      "message": "All required environment files are present"
+    },
+    {
+      "name": "Environment Validation",
+      "status": "pass",
+      "message": "Production environment configuration is valid"
+    },
+    {
+      "name": "Environment Security",
+      "status": "warning",
+      "message": "Potential sensitive data in example environment file"
+    },
+    {
+      "name": "Database Migrations",
+      "status": "fail",
+      "message": "Failed to check migration status",
+      "details": [
+        "Command failed: npx prisma migrate status"
+      ]
+    },
+    {
+      "name": "Migration History",
+      "status": "pass",
+      "message": "Found 17 migration files"
+    },
+    {
+      "name": "Database Indexes",
+      "status": "pass",
+      "message": "Found 79 database indexes for performance"
+    },
+    {
+      "name": "Security Packages",
+      "status": "pass",
+      "message": "All required security packages are installed"
+    },
+    {
+      "name": "Security Tests",
+      "status": "fail",
+      "message": "Security tests are failing or missing"
+    },
+    {
+      "name": "HTTPS Configuration",
+      "status": "pass",
+      "message": "HTTPS/TLS configuration found"
+    },
+    {
+      "name": "Monitoring Configuration",
+      "status": "pass",
+      "message": "All monitoring configuration files are present"
+    },
+    {
+      "name": "Metrics Implementation",
+      "status": "pass",
+      "message": "Found 13 metrics-related files"
+    },
+    {
+      "name": "Health Checks",
+      "status": "pass",
+      "message": "Found 10 health check files"
+    },
+    {
+      "name": "Docker Files",
+      "status": "pass",
+      "message": "Found 5/5 Docker configuration files"
+    },
+    {
+      "name": "Dockerfile Best Practices",
+      "status": "pass",
+      "message": "Dockerfile follows 3/3 best practices"
+    },
+    {
+      "name": "Backup Scripts",
+      "status": "warning",
+      "message": "No backup/restore scripts found"
+    },
+    {
+      "name": "Database Backup Configuration",
+      "status": "pass",
+      "message": "Database backup configuration found in Docker setup"
+    },
+    {
+      "name": "Backup Documentation",
+      "status": "pass",
+      "message": "Backup/recovery documentation found"
+    },
+    {
+      "name": "Caching Implementation",
+      "status": "pass",
+      "message": "Caching packages are installed"
+    },
+    {
+      "name": "Queue System",
+      "status": "pass",
+      "message": "Queue system packages are installed"
+    },
+    {
+      "name": "Load Balancer Configuration",
+      "status": "pass",
+      "message": "Load balancer configuration found"
+    },
+    {
+      "name": "Performance Tests",
+      "status": "pass",
+      "message": "Found 1 performance test files"
+    },
+    {
+      "name": "Disaster Recovery Documentation",
+      "status": "pass",
+      "message": "Disaster recovery documentation found"
+    },
+    {
+      "name": "Rollback Procedures",
+      "status": "pass",
+      "message": "Found 2 rollback scripts"
+    },
+    {
+      "name": "Multi-Environment Support",
+      "status": "pass",
+      "message": "Found 3 environment configurations"
+    },
+    {
+      "name": "Performance Monitoring",
+      "status": "pass",
+      "message": "Found 20 performance-related files"
+    },
+    {
+      "name": "Database Optimization",
+      "status": "pass",
+      "message": "Database schema includes 3 optimization techniques"
+    },
+    {
+      "name": "Audit Logging",
+      "status": "pass",
+      "message": "Found 31 audit/logging files"
+    },
+    {
+      "name": "Data Privacy",
+      "status": "pass",
+      "message": "Data privacy implementation found"
+    },
+    {
+      "name": "Legal Documentation",
+      "status": "pass",
+      "message": "Found 3 legal documentation files"
+    }
+  ],
+  "isProductionReady": false
+}

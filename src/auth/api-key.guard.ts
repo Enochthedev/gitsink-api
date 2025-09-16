@@ -17,22 +17,19 @@ export class ApiKeyGuard implements CanActivate {
     private readonly authService: AuthService,
     private readonly apiKeyService: ApiKeyService,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType<'http' | 'graphql'>();
     const request: RequestWithUser =
       type === 'http'
         ? context.switchToHttp().getRequest()
-        : (GqlExecutionContext.create(context).getContext()
-          .req as RequestWithUser);
+        : (GqlExecutionContext.create(context).getContext().req as RequestWithUser);
 
     // Extract API key from headers
     const headerKey = request.headers['x-api-key'] as string | undefined;
     const authHeader = request.headers['authorization'];
-    const bearerKey = authHeader?.startsWith('Bearer ')
-      ? authHeader.slice(7)
-      : undefined;
+    const bearerKey = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
     const apiKey = headerKey || bearerKey;
 
     if (!apiKey) {

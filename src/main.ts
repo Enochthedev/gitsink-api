@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpErrorFilter } from './utils/http-error.filter';
 import { AppModule } from './app.module';
+import { EnhancedValidationPipe } from './common/validation/enhanced-validation.pipe';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet, { HelmetOptions } from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -13,21 +14,14 @@ import { SentryInterceptor } from '@interceptors/sentry.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
-  app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalFilters(new HttpErrorFilter());
-  const origins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',')
-    : '*';
+  // Note: Global pipes and filters are now configured in AppModule
+  // This ensures proper dependency injection for enhanced error handling
+  const origins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*';
   app.enableCors({ origin: origins, credentials: true });
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('GitSink API')
-    .setDescription('REST API documentation')
-    .setVersion('1.0')
-    .addApiKey({ type: 'apiKey', name: 'x-api-key', in: 'header' }, 'x-api-key')
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api-docs', app, document);
+  // Setup comprehensive API documentation
+  const { SwaggerConfig } = await import('./common/swagger/swagger.config');
+  SwaggerConfig.setup(app);
 
   if (process.env.SENTRY_DSN) {
     Sentry.init({
@@ -70,7 +64,21 @@ async function bootstrap() {
       }),
     );
   }
-  app.useGlobalFilters(new HttpErrorFilter(), new ThrottleExceptionFilter());
-  await app.listen(process.env.PORT ?? 3000);
+  // Global filters are now configured in AppModule for proper DI
+
+  // Enable graceful shutdown hooks
+  app.enableShutdownHooks();
+
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+
+  const logger = app.get(Logger);
+  logger.log(`Application is running on port ${port}`);
+  logger.log(`Environment: ${process.env.NODE_ENV}`);
+  logger.log(`Health check available at: http://localhost:${port}/health`);
 }
-void bootstrap();
+
+void bootstrap().catch((error) => {
+  console.error('Failed to start application:', error);
+  process.exit(1);
+});

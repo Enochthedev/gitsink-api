@@ -1,28 +1,910 @@
-name: CI
+name: Enhanced CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop, staging]
   pull_request:
+    branches: [main, develop, staging]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip tests (emergency deployment only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
-    name: Build + Lint
+  # Code Quality and Security Checks
+  code-quality:
+    name: Code Quality & Security
     runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.changes.outputs.should-deploy }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            src:
+              - 'src/**'
+              - 'prisma/**'
+              - 'package*.json'
+              - 'Dockerfile*'
+              - 'docker-compose*.yml'
+            docs:
+              - 'docs/**'
+              - 'gitsink-docs/**'
+            config:
+              - '.github/**'
+              - 'scripts/**'
+          list-files: json
+
+      - name: Set deployment flag
+        id: deployment-flag
+        run: |
+          if [[ "${{ steps.changes.outputs.src }}" == "true" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            VERSION="v$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+          else
+            VERSION="$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint check
+        run: npm run lint
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Security audit (npm)
+        run: npm audit --audit-level=moderate
+
+      - name: Security audit (custom)
+        run: npm run security:audit
+
+      - name: Dependency vulnerability scan
+        uses: actions/dependency-review-action@v3
+        if: github.event_name == 'pull_request'
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ steps.version.outputs.version }}
+          path: dist/
+          retention-days: 7
+
+  # Database and Migration Tests
+  database-tests:
+    name: Database & Migration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: gitsink_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://test_user:test_password@localhost:5432/gitsink_test
+      REDIS_URL: redis://localhost:6379
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Run ESLint (allow warnings)
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Run database migrations
+        run: npm run db:migrate:test
+
+      - name: Seed test database
+        run: npm run db:seed:test
+
+      - name: Run database tests
+        run: npm run test:integration -- --testPathPattern=database
+
+      - name: Test migration rollbacks
+        run: npm run test:integration -- --testPathPattern=migration
+
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Run unit tests
+        run: npm run test:unit -- --coverage --coverageReporters=lcov --coverageReporters=json-summary
+
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 7
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [database-tests]
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: gitsink_integration_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://test_user:test_password@localhost:5432/gitsink_integration_test
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test database
         run: |
-          npx eslint "{src,apps,libs}/**/*.ts" --max-warnings=100 || echo "Warnings found but not failing"
+          npm run prisma:generate
+          npm run db:migrate:test
+          npm run db:seed:test
 
-      - name: Build API
+      - name: Run integration tests
+        run: npm run test:integration -- --coverage --coverageReporters=lcov
+
+      - name: Upload integration test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-coverage
+          path: coverage/
+          retention-days: 7
+
+  # End-to-End Tests
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: gitsink_e2e_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://test_user:test_password@localhost:5432/gitsink_e2e_test
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup E2E database
+        run: |
+          npm run prisma:generate
+          npm run db:migrate:e2e
+          npm run db:seed:e2e
+
+      - name: Run E2E tests
+        run: npm run test:e2e -- --coverage
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7
+
+  # Advanced Security Scanning
+  security-scanning:
+    name: Advanced Security Scanning
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run custom security tests
+        run: npm run test:security
+
+      - name: Run penetration tests
+        run: npm run security:penetration
+
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Upload security test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-test-results
+          path: |
+            security-results/
+            trivy-results.sarif
+            report_html.html
+          retention-days: 30
+
+  # Container Security Scanning
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    if: needs.code-quality.outputs.should-deploy == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image for scanning
+        run: |
+          docker build -t gitsink-security-scan:latest .
+
+      - name: Run Trivy container scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'gitsink-security-scan:latest'
+          format: 'sarif'
+          output: 'container-scan-results.sarif'
+
+      - name: Upload container scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'container-scan-results.sarif'
+
+      - name: Docker Scout CVE scan
+        uses: docker/scout-action@v1
+        if: always()
+        with:
+          command: cves
+          image: gitsink-security-scan:latest
+          only-severities: critical,high
+          write-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: gitsink_perf_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://test_user:test_password@localhost:5432/gitsink_perf_test
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup performance database
+        run: |
+          npm run prisma:generate
+          npm run db:migrate:perf
+          npm run db:seed:perf
+
+      - name: Build for performance testing
         run: npm run build
+
+      - name: Start application for load testing
+        run: |
+          npm run start:load-test &
+          sleep 30
+
+      - name: Run performance tests
+        run: npm run test:perf:all
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: performance/results/
+          retention-days: 30
+
+  # Test Coverage Report
+  coverage-report:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download unit test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/unit/
+
+      - name: Download integration test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: integration-test-coverage
+          path: coverage/integration/
+
+      - name: Merge coverage reports
+        run: |
+          npm ci
+          npm run test:report
+
+      - name: Upload merged coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-coverage-report
+          path: coverage/merged/
+          retention-days: 30
+
+      - name: Comment coverage summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './coverage/merged/coverage-summary.json';
+            if (fs.existsSync(path)) {
+              const coverage = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const { lines, functions, branches, statements } = coverage.total;
+              
+              const comment = `## 📊 Test Coverage Report
+              
+              | Metric | Coverage | Status |
+              |--------|----------|--------|
+              | Lines | ${lines.pct}% | ${lines.pct >= 80 ? '✅' : '❌'} |
+              | Functions | ${functions.pct}% | ${functions.pct >= 80 ? '✅' : '❌'} |
+              | Branches | ${branches.pct}% | ${branches.pct >= 80 ? '✅' : '❌'} |
+              | Statements | ${statements.pct}% | ${statements.pct >= 80 ? '✅' : '❌'} |
+              
+              ${lines.pct >= 80 && functions.pct >= 80 && branches.pct >= 80 && statements.pct >= 80 
+                ? '🎉 All coverage thresholds met!' 
+                : '⚠️ Some coverage thresholds not met. Please add more tests.'}
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  # Build and Push Docker Images
+  build-images:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scanning, container-security]
+    if: needs.code-quality.outputs.should-deploy == 'true'
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ needs.code-quality.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production
+            VERSION=${{ needs.code-quality.outputs.version }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.code-quality.outputs.version }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ needs.code-quality.outputs.version }}
+          path: sbom.spdx.json
+          retention-days: 30
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests, security-scanning, build-images]
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment: 
+      name: staging
+      url: https://staging-api.gitsink.com
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup deployment environment
+        run: |
+          echo "DEPLOYMENT_ENV=staging" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ needs.code-quality.outputs.version }}" >> $GITHUB_ENV
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts-${{ needs.code-quality.outputs.version }}
+          path: dist/
+
+      - name: Create deployment backup
+        run: |
+          echo "Creating backup before deployment..."
+          ./scripts/docker-deploy.sh backup -e staging -f
+
+      - name: Deploy to staging
+        id: deploy
+        run: |
+          echo "Deploying version ${{ env.IMAGE_TAG }} to staging..."
+          
+          # Update environment file with new image tag
+          sed -i "s/IMAGE_TAG=.*/IMAGE_TAG=${{ env.IMAGE_TAG }}/" .env.staging
+          
+          # Deploy using our deployment script
+          ./scripts/docker-deploy.sh deploy -e staging -f
+          
+          echo "deployment-id=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Wait for deployment to be ready
+        run: |
+          echo "Waiting for deployment to be ready..."
+          timeout 300 bash -c 'until ./scripts/docker-health-check.sh -e staging; do sleep 10; done'
+
+      - name: Run smoke tests
+        id: smoke-tests
+        run: |
+          echo "Running smoke tests against staging..."
+          
+          # Health check
+          curl -f https://staging-api.gitsink.com/health || exit 1
+          
+          # API endpoint test
+          curl -f https://staging-api.gitsink.com/api/health || exit 1
+          
+          # Database connectivity test
+          ./scripts/docker-health-check.sh -e staging -x
+          
+          echo "Smoke tests passed!"
+
+      - name: Run deployment verification tests
+        run: |
+          echo "Running deployment verification tests..."
+          npm ci
+          npm run test:e2e -- --testNamePattern="deployment" --testTimeout=60000
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Deployment failed, initiating rollback..."
+          ./scripts/docker-deploy.sh restore -e staging -f
+          
+          # Wait for rollback to complete
+          timeout 180 bash -c 'until ./scripts/docker-health-check.sh -e staging; do sleep 10; done'
+          
+          echo "Rollback completed"
+          exit 1
+
+      - name: Update deployment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}';
+            const deploymentId = '${{ steps.deploy.outputs.deployment-id }}';
+            const version = '${{ env.IMAGE_TAG }}';
+            
+            const state = status === 'success' ? 'success' : 'failure';
+            const description = status === 'success' 
+              ? `🚀 Successfully deployed ${version} to staging` 
+              : `❌ Deployment of ${version} to staging failed and was rolled back`;
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: state,
+              description: description,
+              context: 'deployment/staging',
+              target_url: 'https://staging-api.gitsink.com'
+            });
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, performance-tests]
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.deploy-staging.result == 'success') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment: 
+      name: production
+      url: https://api.gitsink.com
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup deployment environment
+        run: |
+          echo "DEPLOYMENT_ENV=production" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ needs.code-quality.outputs.version }}" >> $GITHUB_ENV
+
+      - name: Manual approval checkpoint
+        if: github.event_name != 'workflow_dispatch'
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ secrets.PRODUCTION_APPROVERS }}
+          minimum-approvals: 2
+          issue-title: "Production Deployment Approval Required"
+          issue-body: |
+            **Production Deployment Request**
+            
+            - **Version**: ${{ needs.code-quality.outputs.version }}
+            - **Branch**: ${{ github.ref_name }}
+            - **Commit**: ${{ github.sha }}
+            - **Triggered by**: ${{ github.actor }}
+            
+            **Pre-deployment Checklist:**
+            - [ ] All tests passed
+            - [ ] Security scans completed
+            - [ ] Staging deployment successful
+            - [ ] Performance tests passed
+            - [ ] Database migrations reviewed
+            
+            Please review and approve this production deployment.
+
+      - name: Create production backup
+        run: |
+          echo "Creating production backup before deployment..."
+          ./scripts/docker-deploy.sh backup -e production -f
+
+      - name: Deploy to production
+        id: deploy
+        run: |
+          echo "Deploying version ${{ env.IMAGE_TAG }} to production..."
+          
+          # Update environment file with new image tag
+          sed -i "s/IMAGE_TAG=.*/IMAGE_TAG=${{ env.IMAGE_TAG }}/" .env.production
+          
+          # Deploy using our deployment script with zero-downtime
+          ./scripts/docker-deploy.sh deploy -e production -f
+          
+          echo "deployment-id=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Wait for production deployment
+        run: |
+          echo "Waiting for production deployment to be ready..."
+          timeout 600 bash -c 'until ./scripts/docker-health-check.sh -e production; do sleep 15; done'
+
+      - name: Run production smoke tests
+        id: production-smoke-tests
+        run: |
+          echo "Running production smoke tests..."
+          
+          # Health check
+          curl -f https://api.gitsink.com/health || exit 1
+          
+          # API endpoint test
+          curl -f https://api.gitsink.com/api/health || exit 1
+          
+          # Database connectivity test
+          ./scripts/docker-health-check.sh -e production -x
+          
+          echo "Production smoke tests passed!"
+
+      - name: Run production verification tests
+        run: |
+          echo "Running production verification tests..."
+          npm ci
+          npm run test:e2e -- --testNamePattern="production" --testTimeout=120000
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Production deployment failed, initiating emergency rollback..."
+          ./scripts/docker-deploy.sh restore -e production -f
+          
+          # Wait for rollback to complete
+          timeout 300 bash -c 'until ./scripts/docker-health-check.sh -e production; do sleep 15; done'
+          
+          echo "Emergency rollback completed"
+          exit 1
+
+      - name: Post-deployment monitoring
+        run: |
+          echo "Setting up post-deployment monitoring..."
+          # Monitor for 5 minutes after deployment
+          for i in {1..10}; do
+            ./scripts/docker-health-check.sh -e production -v
+            sleep 30
+          done
+
+      - name: Update production deployment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}';
+            const deploymentId = '${{ steps.deploy.outputs.deployment-id }}';
+            const version = '${{ env.IMAGE_TAG }}';
+            
+            const state = status === 'success' ? 'success' : 'failure';
+            const description = status === 'success' 
+              ? `🚀 Successfully deployed ${version} to production` 
+              : `❌ Production deployment of ${version} failed and was rolled back`;
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: state,
+              description: description,
+              context: 'deployment/production',
+              target_url: 'https://api.gitsink.com'
+            });
+
+            // Create GitHub release on successful production deployment
+            if (status === 'success') {
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: version,
+                name: `Release ${version}`,
+                body: `Automated release for production deployment ${version}`,
+                draft: false,
+                prerelease: false
+              });
+            }

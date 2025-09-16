@@ -12,24 +12,56 @@ import { MailModule } from './mail/mail.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
 import { PlatformsModule } from './platforms/platforms.module';
 import { AIEnrichmentModule } from './ai-enrichment/ai-enrichment.module';
+import { ProfilesModule } from './profiles/profiles.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_FILTER } from '@nestjs/core';
+import { APP_GUARD, APP_FILTER, APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
 import { UserContextGuard } from './auth/user-context.guard';
 import { Request, Response } from 'express';
 import { LoggerModule } from 'nestjs-pino';
 import { QueuesModule } from './queues/queues.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { SecurityMiddleware } from './common/middleware/security.middleware';
+import { RequestContextMiddleware, UserContextMiddleware, PerformanceTrackingMiddleware } from './common/middleware/request-context.middleware';
+import { LoggingModule } from './common/logging.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ThrottleExceptionFilter } from './common/filters/throttle-exception.filter';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { ErrorHandlerService } from './common/exceptions/error-handler.service';
+import { EnhancedValidationPipe } from './common/validation/enhanced-validation.pipe';
+import { ErrorBoundaryInterceptor } from './common/interceptors/error-boundary.interceptor';
+import { EnhancedLoggerService } from './common/services/enhanced-logger.service';
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { AuditModule } from './audit/audit.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
+import { SandboxModule } from './sandbox/sandbox.module';
+import { SecurityModule } from './common/security.module';
+import { BullModule } from '@nestjs/bullmq';
+import { ConfigValidationService } from './common/config/config-validation.service';
+import { GracefulShutdownService } from './common/services/graceful-shutdown.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD,
+        db: parseInt(process.env.REDIS_DB || '0'),
+        maxRetriesPerRequest: null, // Critical: BullMQ requires this to be null
+        lazyConnect: true,
+        retryDelayOnFailover: 100,
+        enableReadyCheck: false,
+      },
+    }),
+    BullModule.registerQueue(
+      { name: 'sync' },
+      { name: 'email' }
+    ),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -52,10 +84,7 @@ import { MetricsModule } from './metrics/metrics.module';
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        transport:
-          process.env.NODE_ENV === 'production'
-            ? undefined
-            : { target: 'pino-pretty' },
+        transport: process.env.NODE_ENV === 'production' ? undefined : { target: 'pino-pretty' },
       },
     }),
     CacheModule.registerAsync({
@@ -75,11 +104,26 @@ import { MetricsModule } from './metrics/metrics.module';
       playground: true,
       introspection: true,
       csrfPrevention: false,
+      // Enable subscriptions
+      subscriptions: {
+        'graphql-ws': true,
+        'subscriptions-transport-ws': true,
+      },
       // Explicitly type the request context for better safety
-      context: ({ req, res }: { req: Request; res: Response }) => ({
-        req,
-        res,
-      }),
+      context: ({ req, res, connection }: { req?: Request; res?: Response; connection?: any }) => {
+        if (connection) {
+          // For subscriptions
+          return {
+            req: connection.context.req,
+            userId: connection.context.userId,
+          };
+        }
+        // For queries and mutations
+        return {
+          req,
+          res,
+        };
+      },
     }),
     ProjectsModule,
     PrismaModule,
@@ -88,14 +132,24 @@ import { MetricsModule } from './metrics/metrics.module';
     WaitlistModule,
     PlatformsModule,
     AIEnrichmentModule,
+    ProfilesModule,
     QueuesModule,
     HealthModule,
     MetricsModule,
+    AuditModule,
+    WebhooksModule,
+    SandboxModule,
+    SecurityModule,
+    LoggingModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     UserContextGuard,
+    ErrorHandlerService,
+    EnhancedLoggerService,
+    ConfigValidationService,
+    GracefulShutdownService,
     // Apply ThrottlerGuard globally
     {
       provide: APP_GUARD,
@@ -106,15 +160,37 @@ import { MetricsModule } from './metrics/metrics.module';
       provide: APP_GUARD,
       useClass: UserContextGuard,
     },
-    // Add global exception filter for throttling
+    // Global exception filters (order matters - more specific first)
     {
       provide: APP_FILTER,
       useClass: ThrottleExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+    // Global validation pipe
+    {
+      provide: APP_PIPE,
+      useClass: EnhancedValidationPipe,
+    },
+    // Global error boundary interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ErrorBoundaryInterceptor,
     },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer
+      .apply(
+        RequestContextMiddleware,
+        UserContextMiddleware,
+        PerformanceTrackingMiddleware,
+        SecurityMiddleware,
+        LoggerMiddleware
+      )
+      .forRoutes('*');
   }
 }

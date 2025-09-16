@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from '@auth/auth.service';
-import { MagicLinkService } from '@auth/magic-link.service';
-import { MagicLinkCleanupService } from '@auth/magic-link-cleanup.service';
-import { ApiKeyService } from '@auth/api-key.service';
-import { ApiKeyMetricsService } from '@auth/api-key-metrics.service';
-import { JwtTokenService } from '@auth/jwt-token.service';
-import { JwtTokenCleanupService } from '@auth/jwt-token-cleanup.service';
-import { EnhancedJwtGuard } from '@auth/enhanced-jwt.guard';
-import { AuthResolver } from '@auth/auth.resolver';
+import { AuthService } from './auth.service';
+import { MagicLinkService } from './magic-link.service';
+import { MagicLinkCleanupService } from './magic-link-cleanup.service';
+import { ApiKeyService } from './api-key.service';
+import { ApiKeyMetricsService } from './api-key-metrics.service';
+import { JwtTokenService } from './jwt-token.service';
+import { JwtTokenCleanupService } from './jwt-token-cleanup.service';
+import { EnhancedJwtGuard } from './enhanced-jwt.guard';
+import { AuthResolver } from './auth.resolver';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ApiKeyGuard } from '@auth/api-key.guard';
 import { PassportModule } from '@nestjs/passport';
@@ -18,15 +18,12 @@ import { GithubStrategy } from './github.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from '@auth/auth.controller';
 import { QueuesModule } from '@queues/queues.module';
-import { MetricsModule } from '@metrics/metrics.module';
-
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     ConfigModule,
     QueuesModule,
-    MetricsModule,
     ScheduleModule.forRoot(),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -52,6 +49,13 @@ import { MetricsModule } from '@metrics/metrics.module';
     EnhancedJwtGuard,
   ],
   controllers: [AuthController],
-  exports: [ApiKeyGuard, EnhancedJwtGuard, AuthService, MagicLinkService, ApiKeyService, JwtTokenService],
+  exports: [
+    ApiKeyGuard,
+    EnhancedJwtGuard,
+    AuthService,
+    MagicLinkService,
+    ApiKeyService,
+    JwtTokenService,
+  ],
 })
 export class AuthModule { }

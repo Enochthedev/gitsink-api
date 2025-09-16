@@ -4,6 +4,8 @@ import { EnhancedJwtPayload } from './jwt-token.service';
 
 export interface RequestWithUser extends Request {
   user: User;
+  userId?: string;
+  isSandboxMode?: boolean;
   apiKeyUsage?: {
     usageCount: number;
     startTime: number;

@@ -64,12 +64,21 @@ export class TechnologyDetectionService {
       patterns: ['laravel', 'composer.json', 'artisan'],
       category: 'backend' as const,
     },
-    rails: { patterns: ['rails', 'gemfile', 'config.ru'], category: 'backend' as const },
+    rails: {
+      patterns: ['rails', 'gemfile', 'config.ru'],
+      category: 'backend' as const,
+    },
     gin: { patterns: ['gin-gonic', 'go.mod'], category: 'backend' as const },
     fiber: { patterns: ['gofiber', 'go.mod'], category: 'backend' as const },
     echo: { patterns: ['echo', 'go.mod'], category: 'backend' as const },
-    actix: { patterns: ['actix-web', 'cargo.toml'], category: 'backend' as const },
-    rocket: { patterns: ['rocket', 'cargo.toml'], category: 'backend' as const },
+    actix: {
+      patterns: ['actix-web', 'cargo.toml'],
+      category: 'backend' as const,
+    },
+    rocket: {
+      patterns: ['rocket', 'cargo.toml'],
+      category: 'backend' as const,
+    },
     axum: { patterns: ['axum', 'cargo.toml'], category: 'backend' as const },
     phoenix: { patterns: ['phoenix', 'mix.exs'], category: 'backend' as const },
     sinatra: { patterns: ['sinatra', 'gemfile'], category: 'backend' as const },
@@ -154,35 +163,24 @@ export class TechnologyDetectionService {
   /**
    * Detect technologies used in the repository
    */
-  async detectTechnologies(
-    content: RepositoryContent,
-  ): Promise<TechnologyStack> {
+  async detectTechnologies(content: RepositoryContent): Promise<TechnologyStack> {
     this.logger.log('Starting technology detection');
 
     if (!content) {
-      throw new Error(
-        'Repository content is required for technology detection',
-      );
+      throw new Error('Repository content is required for technology detection');
     }
 
     try {
-      const [
-        languages,
-        frameworks,
-        databases,
-        buildTools,
-        testingFrameworks,
-        platforms,
-        tools,
-      ] = await Promise.all([
-        this.detectLanguages(content),
-        this.detectFrameworks(content),
-        this.detectDatabases(content),
-        this.detectBuildTools(content),
-        this.detectTestingFrameworks(content),
-        this.detectPlatforms(content),
-        this.detectTools(content),
-      ]);
+      const [languages, frameworks, databases, buildTools, testingFrameworks, platforms, tools] =
+        await Promise.all([
+          this.detectLanguages(content),
+          this.detectFrameworks(content),
+          this.detectDatabases(content),
+          this.detectBuildTools(content),
+          this.detectTestingFrameworks(content),
+          this.detectPlatforms(content),
+          this.detectTools(content),
+        ]);
 
       const technologyStack: TechnologyStack = {
         languages,
@@ -201,7 +199,11 @@ export class TechnologyDetectionService {
     } catch (error) {
       this.logger.error('Technology detection failed:', error);
       const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error';
       throw new Error(`Technology detection failed: ${errorMessage}`);
     }
   }
@@ -209,9 +211,7 @@ export class TechnologyDetectionService {
   /**
    * Detect programming languages and their usage percentages
    */
-  private async detectLanguages(
-    content: RepositoryContent,
-  ): Promise<LanguageInfo[]> {
+  private async detectLanguages(content: RepositoryContent): Promise<LanguageInfo[]> {
     if (!content || !content.files) {
       return [];
     }
@@ -229,11 +229,7 @@ export class TechnologyDetectionService {
 
     for (const [language, bytes] of Object.entries(content.languages || {})) {
       const percentage = (bytes / totalBytes) * 100;
-      const confidence = this.calculateLanguageConfidence(
-        language,
-        percentage,
-        content,
-      );
+      const confidence = this.calculateLanguageConfidence(language, percentage, content);
 
       languages.push({
         name: language,
@@ -322,11 +318,10 @@ export class TechnologyDetectionService {
     const languageCounts: Record<string, number> = {};
     let totalFiles = 0;
 
-    files.forEach((file) => {
+    files.forEach(file => {
       const language = extensionMap[file.extension];
       if (language) {
-        languageCounts[language] =
-          (languageCounts[language] || 0) + (file.size || 1);
+        languageCounts[language] = (languageCounts[language] || 0) + (file.size || 1);
         totalFiles += file.size || 1;
       }
     });
@@ -360,10 +355,7 @@ export class TechnologyDetectionService {
     else if (percentage < 5) confidence *= 0.8;
 
     // Increase confidence if we find related configuration files
-    const hasRelatedConfig = this.hasRelatedConfigFiles(
-      language,
-      content.files,
-    );
+    const hasRelatedConfig = this.hasRelatedConfigFiles(language, content.files);
     if (hasRelatedConfig) confidence = Math.min(1.0, confidence * 1.1);
 
     return Math.round(confidence * 100) / 100;
@@ -374,12 +366,7 @@ export class TechnologyDetectionService {
    */
   private hasRelatedConfigFiles(language: string, files: any[]): boolean {
     const configPatterns: Record<string, string[]> = {
-      JavaScript: [
-        'package.json',
-        '.eslintrc',
-        '.babelrc',
-        'webpack.config.js',
-      ],
+      JavaScript: ['package.json', '.eslintrc', '.babelrc', 'webpack.config.js'],
       TypeScript: ['tsconfig.json', 'package.json'],
       Python: ['requirements.txt', 'setup.py', 'pyproject.toml', 'Pipfile'],
       Java: ['pom.xml', 'build.gradle', 'gradle.properties'],
@@ -391,9 +378,9 @@ export class TechnologyDetectionService {
     };
 
     const patterns = configPatterns[language] || [];
-    return files.some((file) =>
+    return files.some(file =>
       patterns.some(
-        (pattern) =>
+        pattern =>
           file.name.toLowerCase().includes(pattern.toLowerCase()) ||
           file.path.toLowerCase().includes(pattern.toLowerCase()),
       ),
@@ -403,16 +390,12 @@ export class TechnologyDetectionService {
   /**
    * Detect frameworks used in the repository
    */
-  private async detectFrameworks(
-    content: RepositoryContent,
-  ): Promise<FrameworkInfo[]> {
+  private async detectFrameworks(content: RepositoryContent): Promise<FrameworkInfo[]> {
     const frameworks: FrameworkInfo[] = [];
     const packageJsonContent = this.extractPackageJsonContent(content);
     const allFileContent = this.getAllFileContent(content);
 
-    for (const [frameworkName, config] of Object.entries(
-      this.frameworkPatterns,
-    )) {
+    for (const [frameworkName, config] of Object.entries(this.frameworkPatterns)) {
       const confidence = this.calculateFrameworkConfidence(
         config.patterns,
         packageJsonContent,
@@ -421,10 +404,7 @@ export class TechnologyDetectionService {
       );
 
       if (confidence > 0.3) {
-        const version = this.extractFrameworkVersion(
-          frameworkName,
-          packageJsonContent,
-        );
+        const version = this.extractFrameworkVersion(frameworkName, packageJsonContent);
         frameworks.push({
           name: frameworkName,
           version,
@@ -462,9 +442,7 @@ export class TechnologyDetectionService {
   /**
    * Detect build tools used in the repository
    */
-  private async detectBuildTools(
-    content: RepositoryContent,
-  ): Promise<string[]> {
+  private async detectBuildTools(content: RepositoryContent): Promise<string[]> {
     const buildTools = new Set<string>();
     const packageJsonContent = this.extractPackageJsonContent(content);
     const allFileContent = this.getAllFileContent(content);
@@ -478,10 +456,7 @@ export class TechnologyDetectionService {
       );
 
       // Also check for file patterns directly
-      const filePatternConfidence = this.calculateFilePatternConfidence(
-        patterns,
-        content.files,
-      );
+      const filePatternConfidence = this.calculateFilePatternConfidence(patterns, content.files);
 
       const totalConfidence = Math.max(patternConfidence, filePatternConfidence);
 
@@ -496,16 +471,12 @@ export class TechnologyDetectionService {
   /**
    * Detect testing frameworks used in the repository
    */
-  private async detectTestingFrameworks(
-    content: RepositoryContent,
-  ): Promise<string[]> {
+  private async detectTestingFrameworks(content: RepositoryContent): Promise<string[]> {
     const testingFrameworks = new Set<string>();
     const packageJsonContent = this.extractPackageJsonContent(content);
     const allFileContent = this.getAllFileContent(content);
 
-    for (const [frameworkName, patterns] of Object.entries(
-      this.testingPatterns,
-    )) {
+    for (const [frameworkName, patterns] of Object.entries(this.testingPatterns)) {
       const confidence = this.calculatePatternConfidence(
         patterns,
         packageJsonContent,
@@ -527,9 +498,7 @@ export class TechnologyDetectionService {
     const packageJsonContent = this.extractPackageJsonContent(content);
     const allFileContent = this.getAllFileContent(content);
 
-    for (const [platformName, patterns] of Object.entries(
-      this.platformPatterns,
-    )) {
+    for (const [platformName, patterns] of Object.entries(this.platformPatterns)) {
       const confidence = this.calculatePatternConfidence(
         patterns,
         packageJsonContent,
@@ -583,9 +552,9 @@ export class TechnologyDetectionService {
     };
 
     for (const [toolName, patterns] of Object.entries(toolPatterns)) {
-      const hasPattern = patterns.some((pattern) =>
+      const hasPattern = patterns.some(pattern =>
         content.files.some(
-          (file) =>
+          file =>
             file.path.toLowerCase().includes(pattern.toLowerCase()) ||
             file.name.toLowerCase().includes(pattern.toLowerCase()),
         ),
@@ -607,9 +576,7 @@ export class TechnologyDetectionService {
       return JSON.stringify(content.packageJson).toLowerCase();
     }
 
-    const packageJsonFile = content.files.find(
-      (f) => f.name === 'package.json',
-    );
+    const packageJsonFile = content.files.find(f => f.name === 'package.json');
     return packageJsonFile?.content?.toLowerCase() || '';
   }
 
@@ -618,8 +585,8 @@ export class TechnologyDetectionService {
    */
   private getAllFileContent(content: RepositoryContent): string {
     return content.files
-      .filter((f) => f.content && f.size < 10000) // Only small files to avoid performance issues
-      .map((f) => f.content)
+      .filter(f => f.content && f.size < 10000) // Only small files to avoid performance issues
+      .map(f => f.content)
       .join(' ')
       .toLowerCase();
   }
@@ -647,7 +614,7 @@ export class TechnologyDetectionService {
 
       // Check in file names (medium weight)
       const hasFileMatch = files.some(
-        (f) =>
+        f =>
           f.name.toLowerCase().includes(patternLower) ||
           f.path.toLowerCase().includes(patternLower),
       );
@@ -695,18 +662,18 @@ export class TechnologyDetectionService {
   /**
    * Calculate confidence score for file pattern matching
    */
-  private calculateFilePatternConfidence(
-    patterns: string[],
-    files: any[],
-  ): number {
+  private calculateFilePatternConfidence(patterns: string[], files: any[]): number {
     if (!files || files.length === 0) return 0;
 
     let matches = 0;
     for (const pattern of patterns) {
-      const hasMatch = files.some(file =>
-        file && file.name && file.path &&
-        (file.name.toLowerCase().includes(pattern.toLowerCase()) ||
-          file.path.toLowerCase().includes(pattern.toLowerCase()))
+      const hasMatch = files.some(
+        file =>
+          file &&
+          file.name &&
+          file.path &&
+          (file.name.toLowerCase().includes(pattern.toLowerCase()) ||
+            file.path.toLowerCase().includes(pattern.toLowerCase())),
       );
       if (hasMatch) matches++;
     }
@@ -735,10 +702,7 @@ export class TechnologyDetectionService {
 
       // Try pattern matching
       for (const [depName, version] of Object.entries(dependencies)) {
-        if (
-          depName.includes(frameworkName) ||
-          frameworkName.includes(depName)
-        ) {
+        if (depName.includes(frameworkName) || frameworkName.includes(depName)) {
           return (version as string).replace(/[\^~]/, '');
         }
       }

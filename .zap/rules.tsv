@@ -1,0 +1,39 @@
+# ZAP Security Scanning Rules
+# Format: IGNORE/WARN/FAIL	RULE_ID	URL_REGEX	PARAMETER	STRENGTH
+
+# Ignore health check endpoints for certain tests
+IGNORE	10021	http://localhost:3000/health.*	.*	High
+IGNORE	10021	http://localhost:3000/api/health.*	.*	High
+
+# Ignore CSRF warnings for API endpoints (handled by application)
+WARN	10202	http://localhost:3000/api/.*	.*	Medium
+
+# Fail on high severity SQL injection vulnerabilities
+FAIL	40018	.*	.*	High
+FAIL	40019	.*	.*	High
+FAIL	40020	.*	.*	High
+
+# Fail on XSS vulnerabilities
+FAIL	40012	.*	.*	High
+FAIL	40014	.*	.*	High
+FAIL	40016	.*	.*	High
+FAIL	40017	.*	.*	High
+
+# Warn on missing security headers
+WARN	10016	.*	.*	Low
+WARN	10017	.*	.*	Low
+WARN	10019	.*	.*	Low
+WARN	10020	.*	.*	Low
+
+# Fail on directory traversal
+FAIL	6	.*	.*	High
+
+# Fail on remote file inclusion
+FAIL	7	.*	.*	High
+
+# Warn on information disclosure
+WARN	10024	.*	.*	Medium
+WARN	10025	.*	.*	Medium
+
+# Ignore certain false positives for API responses
+IGNORE	10015	http://localhost:3000/api/.*	.*	Low

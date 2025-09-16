@@ -1,15 +1,26 @@
-import { Resolver, Mutation, Args, Query, Context } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query, Context, Subscription } from '@nestjs/graphql';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { SyncProjectInput } from './dto/sync-project.input';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, Inject } from '@nestjs/common';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { ProjectFilterInput } from './dto/project-filter.input';
+import {
+  EnhancedProjectFilterInput,
+  ProjectSortInput,
+  PaginationInput,
+} from './dto/enhanced-project-filter.input';
+import { ProjectConnection, ProjectAggregation } from './dto/project-connection.output';
+import { PubSub } from 'graphql-subscriptions';
+import { SyncStatusUpdate } from '../common/dto/subscription.dto';
 
 @UseGuards(ApiKeyGuard)
 @Resolver(() => Project)
 export class ProjectsResolver {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    @Inject('PUB_SUB') private pubSub: PubSub,
+  ) {}
 
   @Mutation(() => Project, { name: 'syncProject' })
   async syncProject(
@@ -19,11 +30,7 @@ export class ProjectsResolver {
     if (!context.userId) {
       throw new Error('Unauthorized');
     }
-    await this.projectsService.queueSyncProject(
-      context.userId,
-      input.repoUrl,
-      input.branch,
-    );
+    await this.projectsService.queueSyncProject(context.userId, input.repoUrl, input.branch);
     return { enqueued: true };
   }
 
@@ -49,10 +56,7 @@ export class ProjectsResolver {
     if (!context.userId) {
       throw new Error('Unauthorized');
     }
-    return this.projectsService.getFilteredProjectsForUser(
-      filter || {},
-      context.userId,
-    );
+    return this.projectsService.getFilteredProjectsForUser(filter || {}, context.userId);
   }
 
   @Query(() => Project, { nullable: true })
@@ -67,13 +71,85 @@ export class ProjectsResolver {
   }
 
   @Mutation(() => String)
-  async syncAllProjects(
-    @Context() context: { userId?: string },
-  ): Promise<string> {
+  async syncAllProjects(@Context() context: { userId?: string }): Promise<string> {
     if (!context.userId) {
       throw new Error('Unauthorized');
     }
     await this.projectsService.syncAllReposForUser(context.userId);
     return 'queued';
+  }
+
+  // Enhanced Queries
+  @Query(() => ProjectConnection)
+  async enhancedProjects(
+    @Context() context: { userId?: string },
+    @Args('filter', { nullable: true }) filter?: EnhancedProjectFilterInput,
+    @Args('sort', { nullable: true }) sort?: ProjectSortInput,
+    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+  ): Promise<ProjectConnection> {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
+    return this.projectsService.getEnhancedProjects(
+      context.userId,
+      filter || {},
+      sort,
+      pagination || { offset: 0, limit: 20 },
+    );
+  }
+
+  @Query(() => [Project])
+  async searchProjects(
+    @Args('query') query: string,
+    @Context() context: { userId?: string },
+    @Args('filter', { nullable: true }) filter?: EnhancedProjectFilterInput,
+    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+  ): Promise<Project[]> {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
+    return this.projectsService.searchProjects(
+      context.userId,
+      query,
+      filter || {},
+      pagination || { offset: 0, limit: 20 },
+    );
+  }
+
+  @Query(() => ProjectAggregation)
+  async projectStatistics(
+    @Context() context: { userId?: string },
+    @Args('filter', { nullable: true }) filter?: EnhancedProjectFilterInput,
+  ): Promise<ProjectAggregation> {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
+    return this.projectsService.getProjectStatistics(context.userId, filter || {});
+  }
+
+  @Query(() => [Project])
+  async trendingProjects(
+    @Args('timeframe', { defaultValue: '7d' }) timeframe: string,
+    @Args('limit', { defaultValue: 10 }) limit: number,
+  ): Promise<Project[]> {
+    return this.projectsService.getTrendingProjects(timeframe, limit);
+  }
+
+  @Query(() => [Project])
+  async featuredProjects(@Args('limit', { defaultValue: 10 }) limit: number): Promise<Project[]> {
+    return this.projectsService.getFeaturedProjects(limit);
+  }
+
+  // Subscriptions
+  @Subscription(() => SyncStatusUpdate, {
+    filter: (payload, variables, context) => {
+      return payload.syncStatusUpdate.userId === context.userId;
+    },
+  })
+  syncStatusUpdates(@Context() context: { userId?: string }) {
+    if (!context.userId) {
+      throw new Error('Unauthorized');
+    }
+    return (this.pubSub as any).asyncIterator('syncStatusUpdate');
   }
 }

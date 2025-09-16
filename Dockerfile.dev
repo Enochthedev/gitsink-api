@@ -1,0 +1,58 @@
+# ============================================
+# Development Dockerfile
+# ============================================
+FROM node:20.18.1-alpine3.20
+
+# Install development dependencies
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl \
+    wget \
+    dumb-init && \
+    apk upgrade --no-cache
+
+# Create non-root user for development
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY pnpm-lock.yaml* ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci --include=dev && \
+    npm cache clean --force
+
+# Copy Prisma schema
+COPY prisma ./prisma
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Change ownership of the app directory
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Set development environment
+ENV NODE_ENV=development \
+    PORT=3000
+
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+# Expose port
+EXPOSE 3000
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start in development mode with hot reload
+CMD ["npm", "run", "start:dev"]

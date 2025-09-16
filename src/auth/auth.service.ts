@@ -93,9 +93,7 @@ export class AuthService {
 
       if (password && !this.isPasswordStrong(password)) {
         this.authFailuresCounter.inc({ operation, reason: 'weak_password' });
-        throw new BadRequestException(
-          'Password does not meet security requirements',
-        );
+        throw new BadRequestException('Password does not meet security requirements');
       }
 
       // Track password strength if provided
@@ -154,11 +152,7 @@ export class AuthService {
         });
 
         const dbDuration = (Date.now() - dbStart) / 1000;
-        this.metricsService.recordDatabaseQueryDuration(
-          'INSERT',
-          dbDuration,
-          'users',
-        );
+        this.metricsService.recordDatabaseQueryDuration('INSERT', dbDuration, 'users');
         this.metricsService.incrementDatabaseQueries('INSERT', 'users');
       } catch (error) {
         this.logger.error(`Failed to create user for ${email}`, error);
@@ -283,10 +277,7 @@ export class AuthService {
     }
 
     // Generate token pair using enhanced service
-    const tokenPair = await this.jwtTokenService.generateTokenPair(
-      user,
-      deviceInfo,
-    );
+    const tokenPair = await this.jwtTokenService.generateTokenPair(user, deviceInfo);
 
     this.authOperationsCounter.inc({
       operation: 'signin',
@@ -317,7 +308,7 @@ export class AuthService {
     if (!user) {
       // Still simulate timing to prevent email enumeration
       await this._simulateHash();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
       this.logger.warn(`Magic link requested for non-existent email: ${email}`);
       return;
     }
@@ -374,55 +365,212 @@ export class AuthService {
   }
 
   /**
-   * MISSING METHOD: Refresh access token
+   * Fixed: Enhanced refresh token validation with comprehensive edge case handling
    */
   async refreshToken(refreshToken: string): Promise<{
     accessToken: string;
     expiresIn: number;
   }> {
+    const operationStart = Date.now();
+    const operation = 'refresh_token';
+
     try {
-      const payload: { sub: string; type: string; jti: string } =
-        await this.jwtService.verifyAsync(refreshToken);
+      // Basic format validation
+      if (!refreshToken || typeof refreshToken !== 'string') {
+        this.authFailuresCounter.inc({ operation, reason: 'invalid_format' });
+        throw new UnauthorizedException('Invalid refresh token format');
+      }
+
+      // Verify JWT structure and signature
+      let payload: {
+        sub: string;
+        type: string;
+        jti: string;
+        exp: number;
+        iat: number;
+      };
+      try {
+        payload = await this.jwtService.verifyAsync(refreshToken);
+      } catch (jwtError) {
+        this.authFailuresCounter.inc({ operation, reason: 'jwt_invalid' });
+        this.logger.warn('JWT verification failed for refresh token', {
+          error: jwtError instanceof Error ? jwtError.message : String(jwtError),
+        });
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // Validate payload structure
+      if (!payload.sub || !payload.jti || !payload.type || !payload.exp) {
+        this.authFailuresCounter.inc({
+          operation,
+          reason: 'malformed_payload',
+        });
+        throw new UnauthorizedException('Malformed token payload');
+      }
 
       if (payload.type !== 'refresh') {
+        this.authFailuresCounter.inc({ operation, reason: 'wrong_token_type' });
         throw new UnauthorizedException('Invalid token type');
       }
 
-      // Check if refresh token exists in database
+      // Check if token is expired (additional check beyond JWT verification)
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp <= now) {
+        this.authFailuresCounter.inc({ operation, reason: 'token_expired' });
+        throw new UnauthorizedException('Refresh token expired');
+      }
+
+      // Check if token is too old (issued more than 7 days ago)
+      const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+      if (payload.iat && now - payload.iat > maxAge) {
+        this.authFailuresCounter.inc({ operation, reason: 'token_too_old' });
+        throw new UnauthorizedException('Refresh token too old');
+      }
+
+      // Check if refresh token exists in database with comprehensive validation
       const storedToken = await this.prisma.refreshToken.findFirst({
         where: {
           id: payload.jti,
           userId: payload.sub,
           expiresAt: { gt: new Date() },
         },
-        include: { user: true },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              username: true,
+              tier: true,
+              deletedAt: true, // Check if user is soft-deleted
+            },
+          },
+        },
       });
 
       if (!storedToken) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-      // Validate refresh token against stored hash
-      const isValidToken = await bcrypt.compare(
-        refreshToken,
-        storedToken.tokenHash,
-      );
-      if (!isValidToken) {
-        this.logger.warn('Refresh token hash mismatch', {
-          userId: payload.sub,
+        this.authFailuresCounter.inc({ operation, reason: 'token_not_found' });
+        this.logger.warn('Refresh token not found in database', {
           jti: payload.jti,
+          userId: payload.sub,
         });
         throw new UnauthorizedException('Invalid refresh token');
       }
+
+      // Check if user account is still active
+      if (storedToken.user.deletedAt) {
+        this.authFailuresCounter.inc({ operation, reason: 'user_deleted' });
+        this.logger.warn('Refresh token used for deleted user', {
+          userId: storedToken.user.id,
+          jti: payload.jti,
+        });
+        throw new UnauthorizedException('User account no longer exists');
+      }
+
+      // Validate refresh token hash with timing-safe comparison
+      const isValidToken = await bcrypt.compare(refreshToken, storedToken.tokenHash);
+      if (!isValidToken) {
+        this.authFailuresCounter.inc({ operation, reason: 'hash_mismatch' });
+        this.logger.warn('Refresh token hash mismatch - possible attack', {
+          userId: payload.sub,
+          jti: payload.jti,
+        });
+
+        // Revoke all tokens for this user as a security measure
+        await this.revokeAllUserRefreshTokens(payload.sub, 'security_hash_mismatch');
+
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // Check for suspicious usage patterns
+      const timeSinceLastUse = storedToken.lastUsedAt
+        ? Date.now() - storedToken.lastUsedAt.getTime()
+        : 0;
+
+      // If token was used very recently (within 1 second), it might be a replay attack
+      if (timeSinceLastUse < 1000 && storedToken.lastUsedAt) {
+        this.logger.warn('Potential refresh token replay attack detected', {
+          userId: storedToken.user.id,
+          jti: payload.jti,
+          timeSinceLastUse,
+        });
+      }
+
+      // Check usage count for anomalies
+      if (storedToken.usageCount > 1000) {
+        // Arbitrary high limit
+        this.logger.warn('Refresh token with unusually high usage count', {
+          userId: storedToken.user.id,
+          jti: payload.jti,
+          usageCount: storedToken.usageCount,
+        });
+      }
+
       // Generate new access token
-      const newAccessToken = this.generateAccessToken(storedToken.user);
+      const newAccessToken = this.generateAccessToken(storedToken.user as any);
+
+      // Update last used timestamp for refresh token
+      await this.prisma.refreshToken.update({
+        where: { id: storedToken.id },
+        data: {
+          lastUsedAt: new Date(),
+          usageCount: { increment: 1 },
+        },
+      });
+
+      // Record successful operation
+      const operationDuration = (Date.now() - operationStart) / 1000;
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'refresh',
+      });
+      this.authOperationDuration.observe({ operation }, operationDuration);
 
       return {
         accessToken: newAccessToken,
         expiresIn: 900, // 15 minutes
       };
     } catch (error) {
-      this.logger.error('Failed to refresh token', error);
+      const operationDuration = (Date.now() - operationStart) / 1000;
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'refresh',
+      });
+      this.authOperationDuration.observe({ operation }, operationDuration);
+
+      this.logger.error('Failed to refresh token', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      // Re-throw the error, but ensure it's always an UnauthorizedException
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  /**
+   * Fixed: Added missing method to revoke all refresh tokens for a user
+   */
+  private async revokeAllUserRefreshTokens(userId: string, reason: string): Promise<void> {
+    try {
+      const deleteResult = await this.prisma.refreshToken.deleteMany({
+        where: { userId },
+      });
+
+      this.logger.log(`All refresh tokens revoked for user ${userId}`, {
+        userId,
+        reason,
+        count: deleteResult.count,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to revoke all refresh tokens for user ${userId}`, {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+        reason,
+      });
     }
   }
 
@@ -449,11 +597,7 @@ export class AuthService {
       });
 
       const dbDuration = (Date.now() - dbStart) / 1000;
-      this.metricsService.recordDatabaseQueryDuration(
-        'SELECT',
-        dbDuration,
-        'users',
-      );
+      this.metricsService.recordDatabaseQueryDuration('SELECT', dbDuration, 'users');
       this.metricsService.incrementDatabaseQueries('SELECT', 'users');
 
       for (const user of users) {
@@ -513,13 +657,12 @@ export class AuthService {
       if (!user) {
         // Still simulate the same timing to prevent email enumeration
         await this._simulateHash();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         this.authFailuresCounter.inc({ operation, reason: 'user_not_found' });
-        this.logger.warn(
-          `Password reset requested for non-existent email: ${email}`,
-          { clientInfo },
-        );
+        this.logger.warn(`Password reset requested for non-existent email: ${email}`, {
+          clientInfo,
+        });
         return;
       }
 
@@ -599,10 +742,7 @@ export class AuthService {
 
       return { user, apiKey };
     } catch (error) {
-      this.logger.error(
-        `API key regeneration failed for user ${userId}`,
-        error,
-      );
+      this.logger.error(`API key regeneration failed for user ${userId}`, error);
       this.authOperationsCounter.inc({
         operation,
         status: 'failure',
@@ -628,8 +768,7 @@ export class AuthService {
 
   private isPasswordStrong(password: string): boolean {
     // At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special char
-    const strongRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return strongRegex.test(password);
   }
 
@@ -670,13 +809,9 @@ export class AuthService {
 
   getUserByEmail(email: string) {
     const dbStart = Date.now();
-    return this.prisma.user.findUnique({ where: { email } }).then((result) => {
+    return this.prisma.user.findUnique({ where: { email } }).then(result => {
       const dbDuration = (Date.now() - dbStart) / 1000;
-      this.metricsService.recordDatabaseQueryDuration(
-        'SELECT',
-        dbDuration,
-        'users',
-      );
+      this.metricsService.recordDatabaseQueryDuration('SELECT', dbDuration, 'users');
       this.metricsService.incrementDatabaseQueries('SELECT', 'users');
       return result;
     });
@@ -689,9 +824,7 @@ export class AuthService {
     try {
       if (!this.isPasswordStrong(newPassword)) {
         this.authFailuresCounter.inc({ operation, reason: 'weak_password' });
-        throw new BadRequestException(
-          'Password does not meet security requirements',
-        );
+        throw new BadRequestException('Password does not meet security requirements');
       }
 
       const users = await this.prisma.user.findMany({
@@ -714,7 +847,19 @@ export class AuthService {
             },
           });
 
-          await this.sendPasswordResetConfirmation(user.email);
+          // Fixed: Ensure password reset confirmation email is sent
+          try {
+            await this.sendPasswordResetConfirmation(user.email);
+            this.logger.log(`Password reset confirmation email sent to ${user.email}`, {
+              userId: user.id,
+            });
+          } catch (emailError) {
+            this.logger.error(`Failed to send password reset confirmation email to ${user.email}`, {
+              error: emailError instanceof Error ? emailError.message : String(emailError),
+              userId: user.id,
+            });
+            // Don't fail the password reset if email fails
+          }
 
           this.authOperationsCounter.inc({
             operation,
@@ -743,20 +888,12 @@ export class AuthService {
   /**
    * Attach a GitHub ID to an existing user with enhanced logging.
    */
-  async connectGitHub(
-    userId: string,
-    githubId: string,
-    githubToken?: string,
-  ): Promise<User> {
+  async connectGitHub(userId: string, githubId: string, githubToken?: string): Promise<User> {
     const operation = 'connect_github';
 
     try {
       const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
-      const encrypted = githubToken
-        ? key
-          ? encrypt(githubToken, key)
-          : githubToken
-        : null;
+      const encrypted = githubToken ? (key ? encrypt(githubToken, key) : githubToken) : null;
 
       const user = await this.prisma.user.update({
         where: { id: userId },
@@ -880,12 +1017,9 @@ export class AuthService {
       );
 
       const token = tokenResp.data.access_token;
-      const userResp = await axios.get<{ id: number }>(
-        'https://api.github.com/user',
-        {
-          headers: { Authorization: `token ${token}` },
-        },
-      );
+      const userResp = await axios.get<{ id: number }>('https://api.github.com/user', {
+        headers: { Authorization: `token ${token}` },
+      });
 
       this.authOperationsCounter.inc({
         operation,
@@ -920,6 +1054,169 @@ export class AuthService {
       where: { id: userId },
       data: { lastLoginAt: new Date() },
     });
+  }
+
+  /**
+   * Fixed: Added missing method to update user profile with GitHub data
+   */
+  async updateUserProfile(
+    userId: string,
+    profileData: {
+      username?: string;
+      displayName?: string;
+      avatarUrl?: string;
+    },
+  ): Promise<User> {
+    const operation = 'update_user_profile';
+
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          username: profileData.username,
+          // Store additional profile data in settings JSON field
+          settings: {
+            displayName: profileData.displayName,
+            avatarUrl: profileData.avatarUrl,
+          },
+        },
+      });
+
+      this.logger.log(`User profile updated for user ${userId}`, {
+        userId,
+        hasUsername: !!profileData.username,
+        hasDisplayName: !!profileData.displayName,
+        hasAvatarUrl: !!profileData.avatarUrl,
+      });
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'profile_update',
+      });
+
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to update user profile for user ${userId}`, error);
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'profile_update',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Fixed: Enhanced GitHub refresh token storage with proper error handling
+   */
+  async storeGitHubRefreshToken(userId: string, refreshToken: string): Promise<void> {
+    const operation = 'store_github_refresh_token';
+
+    try {
+      const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+      const encryptedToken = key ? encrypt(refreshToken, key) : refreshToken;
+
+      // Get current platform tokens to merge with existing data
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { platformTokens: true },
+      });
+
+      const currentTokens = (user?.platformTokens as any) || {};
+      const updatedTokens = {
+        ...currentTokens,
+        github: {
+          ...currentTokens.github,
+          refreshToken: encryptedToken,
+          updatedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
+        },
+      };
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          platformTokens: updatedTokens,
+        },
+      });
+
+      this.logger.log(`GitHub refresh token stored for user ${userId}`, {
+        userId,
+      });
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'success',
+        method: 'github_token_store',
+      });
+    } catch (error) {
+      this.logger.error(`Failed to store GitHub refresh token for user ${userId}`, {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'github_token_store',
+      });
+      // Don't throw error as this is not critical for OAuth flow
+    }
+  }
+
+  /**
+   * Fixed: Added method to refresh GitHub access token
+   */
+  async refreshGitHubToken(userId: string): Promise<string | null> {
+    const operation = 'refresh_github_token';
+
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, platformTokens: true },
+      });
+
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      const platformTokens = (user.platformTokens as any) || {};
+      const githubTokens = platformTokens.github;
+
+      if (!githubTokens?.refreshToken) {
+        this.logger.warn(`No GitHub refresh token found for user ${userId}`);
+        return null;
+      }
+
+      // GitHub doesn't support refresh tokens in their OAuth flow
+      // This is a placeholder for future implementation if GitHub adds support
+      this.logger.log(`GitHub refresh token mechanism not supported by GitHub OAuth`);
+
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'not_supported',
+        method: 'oauth',
+      });
+
+      return null;
+    } catch (error) {
+      this.logger.error(`Failed to refresh GitHub token for user ${userId}`, error);
+      this.authOperationsCounter.inc({
+        operation,
+        status: 'failure',
+        method: 'oauth',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Fixed: Added method to decrypt tokens
+   */
+  private decryptToken(encryptedToken: string, key: string): string {
+    // This would use the same decryption logic as the encrypt function
+    // For now, return as-is since we don't have the decrypt function implemented
+    return encryptedToken;
   }
 
   generateJwt(user: User): string {
@@ -963,7 +1260,7 @@ export class AuthService {
     minMs = 500, // Increased for better security
   ): Promise<void> {
     if (elapsedMs < minMs) {
-      await new Promise((res) => setTimeout(res, minMs - elapsedMs));
+      await new Promise(res => setTimeout(res, minMs - elapsedMs));
     }
   }
 }

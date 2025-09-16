@@ -2,9 +2,221 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AIAnalysisResult {
+  analysisDate: DateTime!
+  category: ProjectCategory!
+  complexity: String!
+  confidence: Float!
+  createdAt: DateTime!
+  description: String!
+  id: ID!
+  keyFeatures: [String!]!
+  model: String!
+  projectId: String!
+  suggestedTags: [String!]!
+  technologies: TechnologyStack!
+  version: Int!
+}
+
+type ActivityReportEntity {
+  apiUsage: ApiUsageStats!
+  endDate: DateTime!
+  generatedAt: DateTime!
+  platformActivity: PlatformActivityStats!
+  projectActivity: ProjectActivityStats!
+  reportId: String!
+  startDate: DateTime!
+  summary: ReportSummary!
+  userActivity: UserActivityStats!
+}
+
 type ApiKeyPayload {
   apiKey: String!
   user: User!
+}
+
+type ApiPerformanceStats {
+  averageResponseTime: Float!
+  errorRate: Float!
+  totalRequests: Float!
+}
+
+type ApiUsageStats {
+  totalCalls: Float!
+  uniqueEndpoints: Float!
+  uniqueUsers: Float!
+}
+
+"""Types of actions that can be audited"""
+enum AuditAction {
+  API_CALL
+  API_KEY_GENERATED
+  API_KEY_REGENERATED
+  API_KEY_REVOKED
+  DATA_EXPORT
+  DATA_IMPORT
+  LOGIN
+  LOGOUT
+  MAGIC_LINK_SENT
+  MAGIC_LINK_USED
+  PASSWORD_RESET
+  PLATFORM_CONNECTED
+  PLATFORM_DISCONNECTED
+  PLATFORM_TOKEN_REFRESHED
+  PROFILE_CREATED
+  PROFILE_MADE_PRIVATE
+  PROFILE_MADE_PUBLIC
+  PROFILE_UPDATED
+  PROFILE_VIEWED
+  PROJECT_CREATED
+  PROJECT_DELETED
+  PROJECT_PUBLISHED
+  PROJECT_SYNCED
+  PROJECT_UNPUBLISHED
+  PROJECT_UPDATED
+  RATE_LIMIT_HIT
+  SECURITY_EVENT
+  SIGNUP
+  SYSTEM_ERROR
+}
+
+type AuditLogConnection {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  nodes: [AuditLogEntity!]!
+  totalCount: Float!
+}
+
+type AuditLogEntity {
+  action: AuditAction!
+  actionDescription: String!
+  details: String
+  detailsFormatted: String
+  detailsJson: String
+  error: String
+  id: ID!
+  ipAddress: String
+  resource: AuditResource
+  resourceDescription: String
+  resourceId: String
+  resourceName: String
+  success: Boolean!
+  timestamp: DateTime!
+  userAgent: String
+  userId: String
+  userName: String
+}
+
+"""Types of resources that can be audited"""
+enum AuditResource {
+  API_KEY
+  PLATFORM_CONNECTION
+  PROFILE
+  PROJECT
+  SYNC_OPERATION
+  SYSTEM
+  USER
+}
+
+type AuditSummaryEntity {
+  failedActions: Float!
+  mostCommonAction: String!
+  successfulActions: Float!
+  successfulEvents: Float!
+  timeRange: String!
+  totalEvents: Float!
+  totalLogs: Float!
+  uniqueUsers: Float!
+}
+
+type AuditTrailIntegrity {
+  anomaliesDetected: Float!
+  integrityChecks: Float!
+  totalRecords: Float!
+}
+
+input BulkEnrichmentInput {
+  analysisTypes: [String!]
+  forceReanalysis: Boolean! = false
+  projectIds: [String!]!
+}
+
+type BulkEnrichmentResult {
+  failedJobs: Int!
+  jobs: [EnrichmentJob!]!
+  successfulJobs: Int!
+  totalJobs: Int!
+}
+
+type CategoryStats {
+  category: String!
+  count: Int!
+  percentage: Float!
+}
+
+type ChangeRecordEntity {
+  changeType: String!
+  field: String!
+  newValue: String
+  oldValue: String
+}
+
+input CompleteSyncOperationInput {
+  changes: String
+  metadata: String
+  operationId: String!
+  syncId: String!
+}
+
+type ComplianceReportEntity {
+  auditTrailIntegrity: AuditTrailIntegrity!
+  dataAccess: DataAccess!
+  endDate: DateTime!
+  generatedAt: DateTime!
+  reportId: String!
+  startDate: DateTime!
+  summary: ReportSummary!
+  systemChanges: SystemChanges!
+  userActions: UserActions!
+}
+
+input CreateProfileInput {
+  avatar: String
+  bio: String
+  displayName: String
+  isPublic: Boolean! = false
+  location: String
+  username: String!
+  website: String
+}
+
+type CustomSection {
+  content: String!
+  order: Int
+  title: String!
+  visible: Boolean
+}
+
+input CustomSectionInput {
+  content: String!
+  order: Int
+  title: String!
+  visible: Boolean! = true
+}
+
+type DataAccess {
+  adminDataAccesses: Float!
+  dataExports: Float!
+  exportOperations: Float!
+  sensitiveDataAccess: Float!
+  totalAccesses: Float!
+  unauthorizedAttempts: Float!
+  userDataAccesses: Float!
+}
+
+input DateRangeInput {
+  from: DateTime
+  to: DateTime
 }
 
 """
@@ -12,23 +224,275 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input EnhancedProjectFilterInput {
+  activityLevels: [String!]
+  categories: [String!]
+  complexityLevels: [String!]
+  createdAt: DateRangeInput
+  featured: Boolean
+  forkCount: NumberRangeInput
+  hasIssues: Boolean
+  hasPages: Boolean
+  hasWiki: Boolean
+  includeCollaborations: Boolean
+  isArchived: Boolean
+  isPrivate: Boolean
+  languages: [String!]
+  lastCommitAt: DateRangeInput
+  minConfidence: Float
+  minPopularityScore: Float
+  ownerId: String
+  platforms: [String!]
+  published: Boolean
+  search: String
+  size: NumberRangeInput
+  starCount: NumberRangeInput
+  tags: [String!]
+  updatedAt: DateRangeInput
+}
+
+type EnrichmentJob {
+  completedAt: DateTime
+  createdAt: DateTime!
+  error: String
+  id: String!
+  progress: Int
+  projectId: String!
+  status: String!
+}
+
+type EnrichmentStatusUpdate {
+  currentStep: String
+  error: String
+  jobId: String!
+  progress: Int
+  projectId: String!
+  status: String!
+  timestamp: DateTime!
+}
+
+type ErrorStats {
+  count: Float!
+  error: String!
+  percentage: Float!
+}
+
+"""The format for exporting audit data"""
+enum ExportFormat {
+  CSV
+  JSON
+  XLSX
+}
+
+input FailSyncOperationInput {
+  error: String!
+  metadata: String
+  operationId: String!
+  syncId: String!
+}
+
+type FailedLoginAttempts {
+  topFailedUsers: [TopFailedUser!]!
+  total: Float!
+  uniqueUsers: Float!
+}
+
+type FailureAnalysis {
+  commonErrors: [ErrorStats!]!
+  failureTrends: [TrendData!]!
+  failuresByOperation: [OperationStats!]!
+  failuresByPlatform: [SyncPlatformStats!]!
+  totalFailures: Float!
+}
+
+type FrameworkInfo {
+  category: String!
+  confidence: Float!
+  name: String!
+  version: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON
 
+type LanguageInfo {
+  bytes: Int!
+  confidence: Float!
+  name: String!
+  percentage: Float!
+}
+
+type LanguageStats {
+  count: Int!
+  language: String!
+  percentage: Float!
+  totalBytes: Int!
+}
+
+input MigrateSandboxDataInput {
+  includeProfile: Boolean!
+  includeProjects: Boolean!
+  includeSettings: Boolean!
+  overwriteExisting: Boolean!
+}
+
 type Mutation {
+  bulkTriggerEnrichment(input: BulkEnrichmentInput!): BulkEnrichmentResult!
+  completeSyncOperation(input: CompleteSyncOperationInput!): Boolean!
   connectGitHub(githubId: String!, githubToken: String!, userId: String!): User!
+  createProfile(input: CreateProfileInput!): PublicProfileGraphQL!
+  createProfileGraphQL(input: CreateProfileInput!): PublicProfileGraphQL!
+  deleteProfile: Boolean!
+  endSandboxSession: Boolean!
+  failSyncOperation(input: FailSyncOperationInput!): Boolean!
   githubOAuth(code: String!, userId: String!): User!
+  migrateSandboxToProduction(input: MigrateSandboxDataInput!): String!
   regenerateApiKey(userId: String!): ApiKeyPayload!
+  resetSandboxData(input: ResetSandboxInput!): Boolean!
   revokeApiKey(userId: String!): User!
   signup(email: String!): ApiKeyPayload!
+  startSandboxSession(input: StartSandboxSessionInput!): SandboxSession!
+  startSyncOperation(input: StartSyncOperationInput!): String!
   syncAllProjects: String!
   syncProject(input: SyncProjectInput!): Project!
+  triggerEnrichment(input: TriggerEnrichmentInput!): EnrichmentJob!
+  updateCustomSectionsGraphQL(customSections: [CustomSectionInput!]!): PublicProfileGraphQL!
+  updateProfile(input: UpdateProfileInput!): PublicProfileGraphQL!
+  updateProfileGraphQL(input: UpdateProfileInput!): PublicProfileGraphQL!
+  updateProfileSettings(input: ProfileSettingsInput!): Boolean!
+  updateProfileSettingsGraphQL(input: ProfileSettingsInput!): Boolean!
+  updateProfileThemeGraphQL(input: ProfileThemeInput!): PublicProfileGraphQL!
+  updateSocialLinksGraphQL(socialLinks: [SocialLinkInput!]!): PublicProfileGraphQL!
+}
+
+input NumberRangeInput {
+  max: Int
+  min: Int
+}
+
+type OperationStats {
+  count: Float!
+  operation: String!
+  successRate: Float!
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+input PaginationInput {
+  limit: Int! = 20
+  offset: Int! = 0
+}
+
+type PerformanceReportEntity {
+  apiPerformance: ApiPerformanceStats!
+  endDate: DateTime!
+  generatedAt: DateTime!
+  reportId: String!
+  startDate: DateTime!
+  summary: ReportSummary!
+  syncPerformance: SyncPerformanceStats!
+  systemHealth: SystemHealthStats!
+}
+
+type PlatformActivityStats {
+  newConnections: Float!
+  totalConnections: Float!
+  uniquePlatforms: Float!
+}
+
+type PlatformStats {
+  count: Int!
+  percentage: Float!
+  platform: String!
+}
+
+type ProfileConnection {
+  edges: [ProfileEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ProfileEdge {
+  cursor: String!
+  node: PublicProfileGraphQL!
+}
+
+input ProfileSearchInput {
+  isPublic: Boolean
+  limit: Int! = 20
+  location: String
+  offset: Int! = 0
+  query: String
+  skills: [String!]
+}
+
+type ProfileSettings {
+  customSections: [CustomSection!]
+  featuredProjects: [String!]
+  isPublic: Boolean
+  layout: String
+  showActivity: Boolean
+  showContributions: Boolean
+  showEmail: Boolean
+  showPrivateRepos: Boolean
+  showStats: Boolean
+}
+
+input ProfileSettingsInput {
+  featuredProjects: [String!]
+  isPublic: Boolean
+  layout: String
+  showActivity: Boolean
+  showContributions: Boolean
+  showEmail: Boolean
+  showPrivateRepos: Boolean
+  showStats: Boolean
+}
+
+type ProfileStats {
+  joinedAt: DateTime!
+  languages: JSON!
+  lastActivityAt: DateTime
+  publicProjects: Int!
+  totalForks: Int!
+  totalProjects: Int!
+  totalStars: Int!
+}
+
+type ProfileTheme {
+  backgroundStyle: String
+  fontFamily: String
+  primaryColor: String
+  secondaryColor: String
+}
+
+input ProfileThemeInput {
+  backgroundStyle: String
+  fontFamily: String
+  primaryColor: String
+  secondaryColor: String
+}
+
+type ProfileViewEvent {
+  profileId: String!
+  referrer: String
+  timestamp: DateTime!
+  viewerId: String!
+  viewerLocation: String
 }
 
 type Project {
+  activityLevel: String
+  aiAnalysis: AIAnalysisResult
   allGitHubKeys: [String!]!
+  archived: Boolean
   blacklisted: Boolean
   category: String
   collaborators: [String!]!
@@ -36,29 +500,85 @@ type Project {
 
   """User-defined custom metadata parsed from Portfolio.md"""
   customMetadata: JSON
+  defaultBranch: String
   demoUrl: String
   description: String!
+  disabled: Boolean
   featured: Boolean
   firstCommitAt: DateTime
+  forkCount: Int
   github(key: String!): String
 
   """GitHub metadata"""
   githubMetadata: JSON
   githubSync: Boolean
+  hasPages: Boolean
+  hasWiki: Boolean
   icon: String
   id: ID!
   image: String
+  isPrivate: Boolean
+  language: String
+  languages: JSON
   lastCommitAt: DateTime
+  license: String
   markdown: String
+  openIssues: Int
   order: Float
+  ownerId: String!
+  platform: String
+  platformId: String
+  popularityScore: Float
   published: Boolean
+  pushedAt: DateTime
   repoUrl: String
+  repositoryInfo: UnifiedRepositoryEntity
+  size: Int
+  starCount: Int
   syncedAt: DateTime
   tags: [String!]!
   title: String!
+  topics: [String!]
   updatedAt: DateTime!
   valid: Boolean!
   validationErrors: [String!]!
+}
+
+type ProjectActivityStats {
+  activeProjects: Float!
+  newProjects: Float!
+  syncedProjects: Float!
+  totalProjects: Float!
+}
+
+type ProjectAggregation {
+  categoryStats: [CategoryStats!]!
+  featuredProjects: Int!
+  languageStats: [LanguageStats!]!
+  platformStats: [PlatformStats!]!
+  privateProjects: Int!
+  publicProjects: Int!
+  totalForks: Int!
+  totalProjects: Int!
+  totalStars: Int!
+}
+
+type ProjectCategory {
+  confidence: Float!
+  primary: String!
+  secondary: [String!]
+  tags: [String!]!
+}
+
+type ProjectConnection {
+  edges: [ProjectEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ProjectEdge {
+  cursor: String!
+  node: Project!
 }
 
 input ProjectFilterInput {
@@ -67,16 +587,465 @@ input ProjectFilterInput {
   tag: String
 }
 
+enum ProjectSortField {
+  CREATED_AT
+  FORKS
+  LAST_COMMIT
+  POPULARITY
+  STARS
+  TITLE
+  UPDATED_AT
+}
+
+input ProjectSortInput {
+  field: ProjectSortField!
+  order: SortOrder! = DESC
+}
+
+type PublicProfileGraphQL {
+  avatar: String
+  bio: String
+  createdAt: DateTime!
+  customDomain: String
+  displayName: String
+  id: ID!
+  isPublic: Boolean!
+  location: String
+  settings: ProfileSettings!
+  socialLinks: [SocialLink!]!
+  stats: ProfileStats
+  theme: ProfileTheme!
+  updatedAt: DateTime!
+  userId: String!
+  username: String!
+  viewCount: Int!
+  website: String
+}
+
 type Query {
+  activityReport(endDate: String!, reportType: ReportType!, startDate: String!, userId: String): ActivityReportEntity!
+  auditLogs(actions: [AuditAction!], endDate: String, ipAddress: String, limit: Float! = 50, offset: Float! = 0, orderBy: String! = "timestamp", orderDirection: String! = "desc", resourceId: String, resources: [AuditResource!], startDate: String, success: Boolean, userId: String): AuditLogConnection!
+  auditSummary(endDate: String, startDate: String, topLimit: Float! = 10, userId: String): AuditSummaryEntity!
+  complianceReport(endDate: String!, reportType: ReportType!, startDate: String!, userId: String): ComplianceReportEntity!
+  currentSandboxSession: SandboxSession
+  enhancedProjects(filter: EnhancedProjectFilterInput, pagination: PaginationInput, sort: ProjectSortInput): ProjectConnection!
+  enrichmentJobs(limit: Float! = 20, offset: Float! = 0, status: String): [EnrichmentJob!]!
+  exportAuditDataUrl(actions: [String!], endDate: String, format: ExportFormat! = JSON, includeMetadata: Boolean! = true, resources: [String!], startDate: String, userId: String): String!
+  featuredProfiles(limit: Float! = 10): [PublicProfileGraphQL!]!
+  featuredProjects(limit: Float! = 10): [Project!]!
   filteredProjects(filter: ProjectFilterInput): [Project!]!
+  generateProfileUrl(customDomain: String, username: String!): String!
+  getSupportedPlatforms: [String!]!
+  isDomainAvailable(domain: String!): Boolean!
+  isUsernameAvailable(username: String!): Boolean!
+  myProfile: PublicProfileGraphQL
+  myProfileGraphQL: PublicProfileGraphQL
+  performanceReport(endDate: String!, reportType: ReportType!, startDate: String!, userId: String): PerformanceReportEntity!
   ping: String!
+  profileByDomain(domain: String!): PublicProfileGraphQL
   project(repoUrl: String!): Project
+  projectAnalysis(projectId: String!): AIAnalysisResult
+  projectStatistics(filter: EnhancedProjectFilterInput): ProjectAggregation!
+  projectSyncHistory(limit: Float! = 50, offset: Float! = 0, projectId: String!): [SyncOperationEntity!]!
   projects: [Project!]!
+  publicProfile(username: String!): PublicProfileGraphQL
+  publicProfileGraphQL(username: String!): PublicProfileGraphQL
+  recentAnalyses(limit: Float! = 10): [AIAnalysisResult!]!
+  resourceAuditLogs(limit: Float! = 50, offset: Float! = 0, resource: AuditResource!, resourceId: String!): [AuditLogEntity!]!
+  sandboxConfig: String!
+  sandboxRepositories: [SandboxRepository!]!
+  sandboxStatus: String!
+  sandboxUsage: SandboxUsage
+  searchAuditLogs(endDate: String, limit: Float = 50, offset: Float = 0, query: String!, searchQuery: String!, startDate: String, userId: String): SearchResult!
+  searchProfiles(limit: Float! = 20, offset: Float! = 0, query: String!): [PublicProfileGraphQL!]!
+  searchProfilesGraphQL(input: ProfileSearchInput!): ProfileConnection!
+  searchProjects(filter: EnhancedProjectFilterInput, pagination: PaginationInput, query: String!): [Project!]!
+  securityReport(endDate: String!, reportType: ReportType!, startDate: String!, userId: String): SecurityReportEntity!
+  serviceHealth: ServiceHealthStatus!
+  syncFailureAnalysis(endDate: String, startDate: String, userId: String): FailureAnalysis!
+  syncHistory(endDate: DateTime, limit: Float = 50, offset: Float = 0, operations: [SyncOperationType!], orderBy: String = "startedAt", orderDirection: String = "desc", platforms: [String!], projectId: String, startDate: DateTime, statuses: [SyncStatus!], userId: String): SyncHistoryConnection!
+  syncHistoryStats(endDate: DateTime, startDate: DateTime, userId: String): SyncHistoryStatsEntity!
+  systemHealth: SystemHealthStatus!
+  trendingProjects(limit: Float! = 10, timeframe: String! = "7d"): [Project!]!
+  userAuditLogs(limit: Float! = 50, offset: Float! = 0, userId: String): [AuditLogEntity!]!
+  userProjectAnalyses(limit: Float! = 20, offset: Float! = 0): [AIAnalysisResult!]!
+}
+
+type RateLimitViolations {
+  topViolators: [TopViolator!]!
+  total: Float!
+  uniqueUsers: Float!
+}
+
+type RecentFailure {
+  error: String!
+  id: String!
+  operation: String!
+  platform: String!
+  startedAt: DateTime!
+}
+
+type ReportSummary {
+  criticalEvents: Float!
+  highSeverityEvents: Float!
+  lowSeverityEvents: Float!
+  mediumSeverityEvents: Float!
+  reportGeneratedAt: DateTime!
+  reportPeriod: String!
+  totalComplianceViolations: Float!
+  totalSecurityEvents: Float!
+  totalUserActions: Float!
+}
+
+"""The type of audit report to generate"""
+enum ReportType {
+  ACTIVITY
+  COMPLIANCE
+  PERFORMANCE
+  SECURITY
+}
+
+type RepositoryOwner {
+  avatar: String
+  id: String!
+  type: String!
+  username: String!
+}
+
+type RepositoryStatistics {
+  forks: Float!
+  language: String
+  openIssues: Float!
+  size: Float!
+  stars: Float!
+  topics: [String!]!
+}
+
+type RepositoryUrls {
+  issues: String
+  releases: String
+  repository: String!
+  wiki: String
+}
+
+input ResetSandboxInput {
+  confirmationToken: String
+  keepSession: Boolean
+}
+
+type SandboxRepository {
+  cloneUrl: String!
+  createdAt: DateTime!
+  defaultBranch: String!
+  description: String!
+  forkCount: Int!
+  fullName: String!
+  htmlUrl: String!
+  id: String!
+  isPrivate: Boolean!
+  language: String!
+  name: String!
+  platform: String!
+  portfolioContent: String
+  pushedAt: DateTime!
+  readmeContent: String
+  starCount: Int!
+  topics: [String!]!
+  updatedAt: DateTime!
+}
+
+type SandboxSession {
+  apiCallCount: Int!
+  expiresAt: DateTime!
+  id: String!
+  isActive: Boolean!
+  metadata: String
+  projectCount: Int!
+  startedAt: DateTime!
+  syncOperationCount: Int!
+  userId: String!
+}
+
+type SandboxUsage {
+  apiCallsUsed: Int!
+  maxApiCalls: Int!
+  maxProjects: Int!
+  maxSyncOperations: Int!
+  projectsUsed: Int!
+  sessionTimeRemaining: Int!
+  syncOperationsUsed: Int!
+}
+
+type SearchResult {
+  error: String
+  matchingLogIds: [String!]!
+  results: [String!]!
+  searchTerms: [String!]!
+  success: Boolean!
+  totalCount: Float!
+}
+
+type SecurityReportEntity {
+  endDate: DateTime!
+  failedLoginAttempts: FailedLoginAttempts!
+  generatedAt: DateTime!
+  rateLimitViolations: RateLimitViolations!
+  recommendations: [String!]!
+  reportId: String!
+  startDate: DateTime!
+  summary: ReportSummary!
+}
+
+type ServiceHealthStatus {
+  details: JSON
+  error: String
+  lastCheck: DateTime!
+  name: String!
+  responseTime: Int!
+  status: String!
+}
+
+type SocialLink {
+  label: String
+  platform: String!
+  url: String!
+}
+
+input SocialLinkInput {
+  label: String
+  platform: String!
+  url: String!
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+input StartSandboxSessionInput {
+  maxApiCalls: Int
+  maxProjects: Int
+  sessionName: String
+}
+
+input StartSyncOperationInput {
+  metadata: String
+  operation: SyncOperationType!
+  platform: String!
+  projectId: String
+  repositoryUrl: String!
+  userId: String!
+}
+
+type Subscription {
+  enrichmentStatus(projectId: String!): EnrichmentStatusUpdate!
+  profileViews(profileId: String!): ProfileViewEvent!
+  sandboxDataReset: Boolean!
+  sandboxMigrated: String!
+  sandboxSessionEnded: Boolean!
+  sandboxSessionStarted: SandboxSession!
+  sandboxUsageUpdated: SandboxUsage!
+  serviceHealthUpdates: ServiceHealthStatus!
+  syncStatusUpdates: SyncStatusUpdate!
+  systemHealthUpdates: SystemHealthStatus!
+  userEnrichmentUpdates: EnrichmentStatusUpdate!
+}
+
+type SyncHistoryConnection {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  nodes: [SyncOperationEntity!]!
+  totalCount: Float!
+}
+
+type SyncHistoryStatsEntity {
+  averageDuration: Float!
+  failedOperations: Float!
+  operationsByPlatform: [SyncPlatformStats!]!
+  operationsByType: [OperationStats!]!
+  recentFailures: [RecentFailure!]!
+  successRate: Float!
+  successfulOperations: Float!
+  totalOperations: Float!
+}
+
+type SyncOperationEntity {
+  changes: [ChangeRecordEntity!]!
+  completedAt: DateTime
+  duration: Float
+  durationFormatted: String
+  error: String
+  id: String!
+  metadata: String
+  operation: SyncOperationType!
+  operationDescription: String!
+  platform: String!
+  projectId: String
+  projectTitle: String
+  repositoryUrl: String!
+  startedAt: DateTime!
+  status: SyncStatus!
+  statusDescription: String!
+  userId: String!
+  userName: String
+}
+
+"""The type of sync operation"""
+enum SyncOperationType {
+  CREATE
+  DELETE
+  SYNC
+  UPDATE
+}
+
+type SyncPerformanceStats {
+  averageDuration: Float!
+  averageResponseTime: Float!
+  successRate: Float!
+  totalOperations: Float!
+}
+
+type SyncPlatformStats {
+  count: Float!
+  platform: String!
+  successRate: Float!
 }
 
 input SyncProjectInput {
   branch: String
   repoUrl: String!
+}
+
+"""The status of a sync operation"""
+enum SyncStatus {
+  COMPLETED
+  FAILED
+  STARTED
+}
+
+type SyncStatusUpdate {
+  message: String
+  metadata: JSON
+  progress: Int
+  projectId: String
+  status: String!
+  timestamp: DateTime!
+  userId: String!
+}
+
+type SystemChanges {
+  configurationChanges: Float!
+  securityPolicyChanges: Float!
+  securityPolicyUpdates: Float!
+  systemUpdates: Float!
+  userPermissionChanges: Float!
+}
+
+type SystemHealthStats {
+  activeConnections: Float!
+  cpuUsage: Float!
+  criticalIssues: Float!
+  diskUsage: Float!
+  errorCount: Float!
+  memoryUsage: Float!
+  uptime: Float!
+  warningCount: Float!
+}
+
+type SystemHealthStatus {
+  metrics: SystemMetrics!
+  services: [ServiceHealthStatus!]!
+  status: String!
+  timestamp: DateTime!
+  uptime: Float!
+  version: String!
+}
+
+type SystemMetrics {
+  activeConnections: Int!
+  averageResponseTime: Float!
+  cpuUsage: Float!
+  diskUsage: Float!
+  errorRate: Float!
+  memoryUsage: Float!
+  queueSize: Int!
+  throughput: Float!
+}
+
+type TechnologyStack {
+  buildTools: [String!]!
+  databases: [String!]!
+  frameworks: [FrameworkInfo!]!
+  languages: [LanguageInfo!]!
+  platforms: [String!]!
+  testingFrameworks: [String!]!
+  tools: [String!]!
+}
+
+type TopActiveUser {
+  actionCount: Float!
+  userId: String!
+  username: String
+}
+
+type TopFailedUser {
+  attempts: Float!
+  userId: String!
+  username: String
+}
+
+type TopViolator {
+  userId: String!
+  username: String
+  violations: Float!
+}
+
+type TrendData {
+  count: Float!
+  date: String!
+}
+
+input TriggerEnrichmentInput {
+  analysisTypes: [String!]
+  forceReanalysis: Boolean! = false
+  projectId: String!
+}
+
+type UnifiedRepositoryEntity {
+  activityLevel: String!
+  cloneUrl: String!
+  createdAt: DateTime!
+  defaultBranch: String!
+  description: String
+  fullName: String!
+  hasIssues: Boolean!
+  hasPages: Boolean!
+  hasWiki: Boolean!
+  htmlUrl: String!
+  id: ID!
+  isArchived: Boolean!
+  isDisabled: Boolean!
+  isFork: Boolean!
+  isPrivate: Boolean!
+  language: String
+  license: String
+  name: String!
+  owner: RepositoryOwner!
+  platform: String!
+  popularityScore: Float!
+  pushedAt: DateTime!
+  sshUrl: String
+  statistics: RepositoryStatistics!
+  updatedAt: DateTime!
+  webUrls: RepositoryUrls!
+}
+
+input UpdateProfileInput {
+  avatar: String
+  bio: String
+  displayName: String
+  location: String
+  website: String
 }
 
 type User {
@@ -86,4 +1055,20 @@ type User {
   email: String!
   githubId: String
   id: ID!
+}
+
+type UserActions {
+  accountCreations: Float!
+  accountDeletions: Float!
+  dataExports: Float!
+  passwordResets: Float!
+  permissionChanges: Float!
+  profileUpdates: Float!
+}
+
+type UserActivityStats {
+  activeUsers: Float!
+  newUsers: Float!
+  topActiveUsers: [TopActiveUser!]!
+  totalUsers: Float!
 }

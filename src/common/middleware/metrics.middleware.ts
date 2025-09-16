@@ -16,17 +16,9 @@ export class MetricsMiddleware implements NestMiddleware {
       const duration = (Date.now() - startTime) / 1000;
       const route = (req.route as { path: string })?.path || req.path;
 
-      this.metricsService.incrementHttpRequests(
-        req.method,
-        route,
-        res.statusCode,
-      );
+      this.metricsService.incrementHttpRequests(req.method, route, res.statusCode);
 
-      this.metricsService.recordHttpRequestDuration(
-        req.method,
-        route,
-        duration,
-      );
+      this.metricsService.recordHttpRequestDuration(req.method, route, duration);
 
       this.metricsService.decrementActiveConnections();
     });

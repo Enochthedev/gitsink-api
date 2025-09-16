@@ -1,0 +1,103 @@
+# Staging Caddyfile Configuration
+{
+    # Global options
+    admin off
+    auto_https on
+    
+    # Security headers (less strict than production)
+    header {
+        Strict-Transport-Security "max-age=86400; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Remove server information
+        -Server
+        -X-Powered-By
+    }
+    
+    # Rate limiting (more lenient than production)
+    rate_limit {
+        zone dynamic {
+            key {remote_host}
+            events 200
+            window 1m
+        }
+    }
+}
+
+# Staging API domain
+{$STAGING_DOMAIN:staging-api.gitsink.com} {
+    # Enable compression
+    encode gzip
+    
+    # Logging
+    log {
+        output file /var/log/caddy/staging-access.log {
+            roll_size 50mb
+            roll_keep 3
+            roll_keep_for 168h
+        }
+        format json
+        level INFO
+    }
+    
+    # Health check endpoint
+    handle /health {
+        reverse_proxy gitsink-api:3000 {
+            health_uri /health
+            health_interval 30s
+            health_timeout 10s
+        }
+    }
+    
+    # API endpoints
+    handle /api/* {
+        reverse_proxy gitsink-api:3000 {
+            health_uri /health
+            health_interval 30s
+            health_timeout 10s
+        }
+    }
+    
+    # GraphQL endpoint
+    handle /graphql {
+        reverse_proxy gitsink-api:3000
+    }
+    
+    # Webhook endpoints
+    handle /webhooks/* {
+        reverse_proxy gitsink-api:3000
+    }
+    
+    # Default API proxy
+    reverse_proxy gitsink-api:3000 {
+        health_uri /health
+        health_interval 30s
+        health_timeout 10s
+    }
+}
+
+# Staging monitoring (if needed)
+staging-monitoring.{$STAGING_DOMAIN:gitsink.com} {
+    # Basic auth for monitoring
+    basicauth {
+        {$MONITORING_USER:admin} {$MONITORING_PASSWORD_HASH}
+    }
+    
+    # Grafana
+    handle /grafana/* {
+        uri strip_prefix /grafana
+        reverse_proxy grafana:3000
+    }
+    
+    # Prometheus
+    handle /prometheus/* {
+        uri strip_prefix /prometheus
+        reverse_proxy prometheus:9090
+    }
+    
+    # Default to Grafana
+    redir / /grafana/
+}

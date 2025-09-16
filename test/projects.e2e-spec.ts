@@ -16,7 +16,7 @@ class MockPrismaService {
   project = {
     upsert: jest.fn(async ({ where, create, update }) => {
       const idx = this.projects.findIndex(
-        (p) =>
+        p =>
           p.ownerId === where.ownerId_repoUrl.ownerId &&
           p.repoUrl === where.ownerId_repoUrl.repoUrl,
       );
@@ -28,13 +28,11 @@ class MockPrismaService {
       this.projects.push(proj);
       return proj;
     }),
-    findMany: jest.fn(async ({ where }) =>
-      this.projects.filter((p) => p.ownerId === where.ownerId),
-    ),
+    findMany: jest.fn(async ({ where }) => this.projects.filter(p => p.ownerId === where.ownerId)),
     findUnique: jest.fn(
       async ({ where }) =>
         this.projects.find(
-          (p) =>
+          p =>
             p.ownerId === where.ownerId_repoUrl.ownerId &&
             p.repoUrl === where.ownerId_repoUrl.repoUrl,
         ) || null,
@@ -50,12 +48,12 @@ class MockPrismaService {
       return null;
     }),
     update: jest.fn(async ({ where, data }) => {
-      const user = this.users.find((u) => u.id === where.id);
+      const user = this.users.find(u => u.id === where.id);
       Object.assign(user, data);
       return user;
     }),
     upsert: jest.fn(async ({ where, create, update }) => {
-      const idx = this.users.findIndex((u) => u.githubId === where.githubId);
+      const idx = this.users.findIndex(u => u.githubId === where.githubId);
       if (idx > -1) {
         this.users[idx] = { ...this.users[idx], ...update };
         return this.users[idx];
@@ -162,10 +160,7 @@ describe('Projects Module (e2e)', () => {
         'mutation($userId:String!,$code:String!){ githubOAuth(userId:$userId, code:$code){ id githubId } }',
       variables: { userId: 'u1', code: 'code123' },
     };
-    const res = await request(app.getHttpServer())
-      .post('/graphql')
-      .send(mutation)
-      .expect(200);
+    const res = await request(app.getHttpServer()).post('/graphql').send(mutation).expect(200);
     expect(res.body.data.githubOAuth.githubId).toBe('123');
   });
 });

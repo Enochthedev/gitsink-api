@@ -9,9 +9,7 @@ export class UserContextGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Determine request object for REST or GraphQL
-    let req: RequestWithUser = context
-      .switchToHttp()
-      .getRequest<RequestWithUser>();
+    let req: RequestWithUser = context.switchToHttp().getRequest<RequestWithUser>();
     let gqlCtx: GqlExecutionContext | null = null;
     if (!req) {
       gqlCtx = GqlExecutionContext.create(context);

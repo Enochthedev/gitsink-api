@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
 @Injectable()

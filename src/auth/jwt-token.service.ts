@@ -159,12 +159,7 @@ export class JwtTokenService {
       });
 
       // Store refresh token in database
-      await this.storeRefreshToken(
-        user.id,
-        refreshToken,
-        refreshJti,
-        deviceInfo,
-      );
+      await this.storeRefreshToken(user.id, refreshToken, refreshJti, deviceInfo);
 
       // Log the operation for audit trail
       await this.logTokenEvent(user.id, 'token_pair_generated', {
@@ -204,7 +199,12 @@ export class JwtTokenService {
       this.tokenOperationDuration.observe({ operation }, operationDuration);
 
       this.logger.error(`Failed to generate token pair for user ${user.id}`, {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
         userId: user.id,
       });
 
@@ -214,6 +214,7 @@ export class JwtTokenService {
 
   /**
    * Refresh access token using refresh token
+   * Fixed: Enhanced validation with better edge case handling
    */
   async refreshAccessToken(
     refreshToken: string,
@@ -223,10 +224,19 @@ export class JwtTokenService {
     const operation = 'refresh_access_token';
 
     try {
+      // Basic format validation
+      if (!refreshToken || typeof refreshToken !== 'string') {
+        this.tokenValidationCounter.inc({
+          result: 'invalid_format',
+          token_type: 'refresh',
+        });
+        throw new UnauthorizedException('Invalid refresh token format');
+      }
+
       // Validate refresh token
       const payload = await this.validateToken(refreshToken);
 
-      if (!payload.isValid || payload.payload.type !== 'refresh') {
+      if (!payload.isValid) {
         this.tokenValidationCounter.inc({
           result: 'invalid',
           token_type: 'refresh',
@@ -234,14 +244,49 @@ export class JwtTokenService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      // Check if refresh token exists in database
+      if (payload.isBlacklisted) {
+        this.tokenValidationCounter.inc({
+          result: 'blacklisted',
+          token_type: 'refresh',
+        });
+        throw new UnauthorizedException('Refresh token has been revoked');
+      }
+
+      if (!payload.payload || payload.payload.type !== 'refresh') {
+        this.tokenValidationCounter.inc({
+          result: 'wrong_type',
+          token_type: 'refresh',
+        });
+        throw new UnauthorizedException('Invalid token type');
+      }
+
+      // Validate payload structure
+      if (!payload.payload.jti || !payload.payload.sub) {
+        this.tokenValidationCounter.inc({
+          result: 'malformed_payload',
+          token_type: 'refresh',
+        });
+        throw new UnauthorizedException('Malformed token payload');
+      }
+
+      // Check if refresh token exists in database with additional validation
       const storedToken = await this.prisma.refreshToken.findFirst({
         where: {
           id: payload.payload.jti,
           userId: payload.user.id,
           expiresAt: { gt: new Date() },
         },
-        include: { user: true },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              username: true,
+              tier: true,
+              deletedAt: true, // Check if user is soft-deleted
+            },
+          },
+        },
       });
 
       if (!storedToken) {
@@ -249,20 +294,70 @@ export class JwtTokenService {
           result: 'not_found',
           token_type: 'refresh',
         });
+        this.logger.warn('Refresh token not found in database', {
+          jti: payload.payload.jti,
+          userId: payload.user.id,
+        });
         throw new UnauthorizedException('Refresh token not found or expired');
       }
 
-      // Validate refresh token hash
-      const isValidToken = await bcrypt.compare(
-        refreshToken,
-        storedToken.tokenHash,
-      );
-      if (!isValidToken) {
-        this.logger.warn('Refresh token hash mismatch', {
-          userId: payload.user.id,
+      // Check if user account is still active
+      if (storedToken.user.deletedAt) {
+        this.tokenValidationCounter.inc({
+          result: 'user_deleted',
+          token_type: 'refresh',
+        });
+        this.logger.warn('Refresh token used for deleted user', {
+          userId: storedToken.user.id,
           jti: payload.payload.jti,
         });
+        throw new UnauthorizedException('User account no longer exists');
+      }
+
+      // Validate refresh token hash with timing-safe comparison
+      const isValidToken = await bcrypt.compare(refreshToken, storedToken.tokenHash);
+      if (!isValidToken) {
+        this.tokenValidationCounter.inc({
+          result: 'hash_mismatch',
+          token_type: 'refresh',
+        });
+        this.logger.warn('Refresh token hash mismatch - possible attack', {
+          userId: payload.user.id,
+          jti: payload.payload.jti,
+          ipAddress: deviceInfo?.ipAddress,
+          deviceId: deviceInfo?.deviceId,
+        });
+
+        // Revoke all tokens for this user as a security measure
+        await this.revokeAllUserTokens(payload.user.id, 'security_hash_mismatch');
+
         throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // Check for suspicious usage patterns
+      const now = new Date();
+      const timeSinceLastUse = storedToken.lastUsedAt
+        ? now.getTime() - storedToken.lastUsedAt.getTime()
+        : 0;
+
+      // If token was used very recently (within 1 second), it might be a replay attack
+      if (timeSinceLastUse < 1000 && storedToken.lastUsedAt) {
+        this.logger.warn('Potential refresh token replay attack detected', {
+          userId: storedToken.user.id,
+          jti: payload.payload.jti,
+          timeSinceLastUse,
+          ipAddress: deviceInfo?.ipAddress,
+        });
+      }
+
+      // Check usage count for anomalies
+      if (storedToken.usageCount > 1000) {
+        // Arbitrary high limit
+        this.logger.warn('Refresh token with unusually high usage count', {
+          userId: storedToken.user.id,
+          jti: payload.payload.jti,
+          usageCount: storedToken.usageCount,
+        });
       }
 
       // Generate new access token
@@ -277,7 +372,7 @@ export class JwtTokenService {
         sessionId: payload.payload.sessionId,
         deviceId: deviceInfo?.deviceId || payload.payload.deviceId,
         ipAddress: deviceInfo?.ipAddress || payload.payload.ipAddress,
-        permissions: this.getUserPermissions(storedToken.user),
+        permissions: this.getUserPermissions(storedToken.user as any),
       } as EnhancedJwtPayload;
 
       const accessToken = this.jwtService.sign(accessPayload, {
@@ -323,7 +418,12 @@ export class JwtTokenService {
       this.tokenOperationDuration.observe({ operation }, operationDuration);
 
       this.logger.error('Failed to refresh access token', {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
       });
 
       throw error;
@@ -471,7 +571,12 @@ export class JwtTokenService {
       this.tokenOperationDuration.observe({ operation }, operationDuration);
 
       this.logger.error('Failed to blacklist token', {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
       });
 
       throw error;
@@ -495,7 +600,7 @@ export class JwtTokenService {
       });
 
       // Blacklist all refresh tokens
-      const blacklistPromises = refreshTokens.map((token) =>
+      const blacklistPromises = refreshTokens.map(token =>
         this.prisma.tokenBlacklist.create({
           data: {
             jti: token.id,
@@ -548,7 +653,12 @@ export class JwtTokenService {
       this.tokenOperationDuration.observe({ operation }, operationDuration);
 
       this.logger.error(`Failed to revoke all tokens for user ${userId}`, {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
         userId,
       });
 
@@ -575,10 +685,9 @@ export class JwtTokenService {
       });
 
       // Clean up expired blacklist entries
-      const expiredBlacklistEntries =
-        await this.prisma.tokenBlacklist.deleteMany({
-          where: { expiresAt: { lt: now } },
-        });
+      const expiredBlacklistEntries = await this.prisma.tokenBlacklist.deleteMany({
+        where: { expiresAt: { lt: now } },
+      });
 
       // Record metrics
       const operationDuration = (Date.now() - operationStart) / 1000;
@@ -608,7 +717,12 @@ export class JwtTokenService {
       this.tokenOperationDuration.observe({ operation }, operationDuration);
 
       this.logger.error('Token cleanup failed', {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
       });
 
       throw new InternalServerErrorException('Token cleanup failed');
@@ -622,39 +736,34 @@ export class JwtTokenService {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const [
-      totalTokensIssued,
-      activeRefreshTokens,
-      blacklistedTokens,
-      expiredTokens,
-      recentTokens,
-    ] = await Promise.all([
-      // Total tokens issued (from audit logs)
-      this.prisma.auditLog.count({
-        where: { action: 'token_pair_generated' },
-      }),
+    const [totalTokensIssued, activeRefreshTokens, blacklistedTokens, expiredTokens, recentTokens] =
+      await Promise.all([
+        // Total tokens issued (from audit logs)
+        this.prisma.auditLog.count({
+          where: { action: 'token_pair_generated' },
+        }),
 
-      // Active refresh tokens
-      this.prisma.refreshToken.count({
-        where: { expiresAt: { gt: now } },
-      }),
+        // Active refresh tokens
+        this.prisma.refreshToken.count({
+          where: { expiresAt: { gt: now } },
+        }),
 
-      // Blacklisted tokens
-      this.prisma.tokenBlacklist.count(),
+        // Blacklisted tokens
+        this.prisma.tokenBlacklist.count(),
 
-      // Expired refresh tokens
-      this.prisma.refreshToken.count({
-        where: { expiresAt: { lte: now } },
-      }),
+        // Expired refresh tokens
+        this.prisma.refreshToken.count({
+          where: { expiresAt: { lte: now } },
+        }),
 
-      // Recent tokens (last 24 hours)
-      this.prisma.refreshToken.count({
-        where: {
-          createdAt: { gte: oneDayAgo },
-          expiresAt: { gt: now },
-        },
-      }),
-    ]);
+        // Recent tokens (last 24 hours)
+        this.prisma.refreshToken.count({
+          where: {
+            createdAt: { gte: oneDayAgo },
+            expiresAt: { gt: now },
+          },
+        }),
+      ]);
 
     return {
       totalTokensIssued,
@@ -691,7 +800,12 @@ export class JwtTokenService {
       this.blacklistedTokensGauge.set(blacklistedCount);
     } catch (error) {
       this.logger.error('Failed to update token metrics', {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
       });
     }
   }
@@ -727,7 +841,12 @@ export class JwtTokenService {
       });
     } catch (error) {
       this.logger.error('Failed to store refresh token', {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
         userId,
       });
       throw new InternalServerErrorException('Failed to create session');
@@ -745,7 +864,7 @@ export class JwtTokenService {
     if (oldTokens.length > 0) {
       await this.prisma.refreshToken.deleteMany({
         where: {
-          id: { in: oldTokens.map((token) => token.id) },
+          id: { in: oldTokens.map(token => token.id) },
         },
       });
     }
@@ -767,12 +886,7 @@ export class JwtTokenService {
       case 'premium':
         return [...basePermissions, 'read:analytics', 'write:projects'];
       case 'enterprise':
-        return [
-          ...basePermissions,
-          'read:analytics',
-          'write:projects',
-          'admin:users',
-        ];
+        return [...basePermissions, 'read:analytics', 'write:projects', 'admin:users'];
       default:
         return basePermissions;
     }
@@ -797,7 +911,12 @@ export class JwtTokenService {
       });
     } catch (error) {
       this.logger.error('Failed to log token event', {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : String(error),
         userId,
         action,
       });

@@ -42,6 +42,7 @@ model User {
   platformConnections PlatformConnection[]
   syncHistory       SyncHistory[]
   auditLogs         AuditLog[]
+  customMetadata    CustomMetadata[]
   
   @@index([tier])
   @@index([lastSyncAt])
@@ -100,6 +101,7 @@ model Project {
   owner            User         @relation(fields: [ownerId], references: [id])
   syncHistory      SyncHistory[]
   aiAnalysis       AIAnalysis[]
+  customMetadataVersions CustomMetadata[]
 
   @@unique([ownerId, repoUrl])
   @@unique([platform, platformId])
@@ -319,4 +321,137 @@ model TokenBlacklist {
   @@index([userId])
   @@index([expiresAt])
   @@index([createdAt])
+}
+
+/// Webhook events for processing repository updates
+model WebhookEvent {
+  id                 String    @id @default(uuid())
+  platform           String    // github, gitlab, bitbucket
+  eventType          String    // push, pull_request, etc.
+  repositoryUrl      String
+  repositoryId       String
+  repositoryName     String
+  repositoryFullName String
+  ownerId            String
+  ownerName          String
+  payload            Json      // complete webhook payload
+  signature          String    // webhook signature for validation
+  timestamp          DateTime  // when the event occurred
+  processed          Boolean   @default(false)
+  retryCount         Int       @default(0)
+  lastRetryAt        DateTime?
+  error              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  @@index([platform, eventType])
+  @@index([repositoryId])
+  @@index([ownerId])
+  @@index([timestamp])
+  @@index([processed])
+  @@index([retryCount])
+  @@index([platform, repositoryId, timestamp])
+}
+
+/// Custom metadata storage with versioning for Portfolio.md enhancements
+model CustomMetadata {
+  id         String   @id @default(uuid())
+  projectId  String
+  userId     String
+  version    Int
+  metadata   Json     // the actual custom metadata
+  hash       String   // SHA-256 hash of metadata for change detection
+  size       Int      // size of metadata in bytes
+  fieldCount Int      // number of fields in metadata
+  createdAt  DateTime @default(now())
+  
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, version])
+  @@index([projectId])
+  @@index([userId])
+  @@index([hash])
+  @@index([createdAt])
+}
+
+/// Email bounce tracking for email delivery monitoring
+model EmailBounce {
+  id             String   @id @default(uuid())
+  messageId      String
+  email          String
+  bounceType     String   // permanent, transient
+  bounceSubType  String
+  diagnosticCode String?
+  feedbackId     String?
+  timestamp      DateTime
+  createdAt      DateTime @default(now())
+  
+  @@index([email])
+  @@index([messageId])
+  @@index([timestamp])
+  @@index([bounceType])
+}
+
+/// Email complaint tracking for spam/abuse monitoring
+model EmailComplaint {
+  id            String   @id @default(uuid())
+  messageId     String
+  email         String
+  complaintType String   // abuse, fraud, virus, other
+  feedbackId    String?
+  userAgent     String?
+  timestamp     DateTime
+  createdAt     DateTime @default(now())
+  
+  @@index([email])
+  @@index([messageId])
+  @@index([timestamp])
+  @@index([complaintType])
+}
+
+/// Email delivery tracking for successful deliveries
+model EmailDelivery {
+  id                   String   @id @default(uuid())
+  messageId            String
+  email                String
+  timestamp            DateTime
+  processingTimeMillis Int?
+  smtpResponse         String?
+  createdAt            DateTime @default(now())
+  
+  @@index([email])
+  @@index([messageId])
+  @@index([timestamp])
+}
+
+/// Email suppression list for bounced/complained emails
+model EmailSuppression {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  reason    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([isActive])
+}
+
+/// Failed email jobs for retry processing
+model FailedEmailJob {
+  id          String    @id @default(uuid())
+  email       String
+  subject     String
+  type        String
+  data        String?   // JSON string
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  lastError   String?
+  nextRetryAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([nextRetryAt, attempts])
+  @@index([email])
+  @@index([type])
 }

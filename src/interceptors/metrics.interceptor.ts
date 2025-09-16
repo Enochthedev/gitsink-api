@@ -1,16 +1,8 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, tap } from 'rxjs';
 import { MetricsService } from '../metrics/metrics.service';
-import {
-  METRICS_KEY,
-  MetricsOptions,
-} from '../metrics/decorators/metrics.decorator';
+import { METRICS_KEY, MetricsOptions } from '../metrics/decorators/metrics.decorator';
 
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {
@@ -20,10 +12,7 @@ export class MetricsInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const metricsOptions = this.reflector.get<MetricsOptions>(
-      METRICS_KEY,
-      context.getHandler(),
-    );
+    const metricsOptions = this.reflector.get<MetricsOptions>(METRICS_KEY, context.getHandler());
 
     if (!metricsOptions?.track) {
       return next.handle();
@@ -43,22 +32,14 @@ export class MetricsInterceptor implements NestInterceptor {
           const statusCode = response.statusCode;
 
           this.metricsService.incrementHttpRequests(method, route, statusCode);
-          this.metricsService.recordHttpRequestDuration(
-            method,
-            route,
-            duration,
-          );
+          this.metricsService.recordHttpRequestDuration(method, route, duration);
         },
-        error: (error) => {
+        error: error => {
           const duration = (Date.now() - startTime) / 1000;
           const statusCode = error.status || 500;
 
           this.metricsService.incrementHttpRequests(method, route, statusCode);
-          this.metricsService.recordHttpRequestDuration(
-            method,
-            route,
-            duration,
-          );
+          this.metricsService.recordHttpRequestDuration(method, route, duration);
         },
       }),
     );

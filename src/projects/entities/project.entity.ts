@@ -1,10 +1,15 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Int, Float } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-type-json';
+import { AIAnalysisResult } from '../../ai-enrichment/entities/ai-analysis.entity';
+import { UnifiedRepositoryEntity } from '../../platforms/entities/platform-connection.entity';
 
 @ObjectType()
 export class Project {
   @Field(() => ID)
   id!: string;
+
+  @Field(() => String)
+  ownerId!: string;
 
   @Field(() => String)
   title!: string;
@@ -33,7 +38,7 @@ export class Project {
   @Field(() => Boolean, { nullable: true })
   published!: boolean | null;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Float, { nullable: true })
   order!: number | null;
 
   @Field(() => String, { nullable: true })
@@ -80,4 +85,84 @@ export class Project {
 
   @Field(() => Date)
   updatedAt!: Date;
+
+  // Enhanced multi-platform fields
+  @Field(() => String, { defaultValue: 'github', nullable: true })
+  platform?: string | null;
+
+  @Field(() => String, { nullable: true })
+  platformId?: string | null;
+
+  @Field(() => String, { nullable: true })
+  defaultBranch?: string | null;
+
+  @Field(() => String, { nullable: true })
+  language?: string | null;
+
+  @Field(() => GraphQLJSON, { nullable: true })
+  languages?: any;
+
+  @Field(() => Int, { defaultValue: 0, nullable: true })
+  starCount?: number | null;
+
+  @Field(() => Int, { defaultValue: 0, nullable: true })
+  forkCount?: number | null;
+
+  @Field(() => Boolean, { defaultValue: false, nullable: true })
+  isPrivate?: boolean | null;
+
+  @Field(() => String, { nullable: true })
+  license?: string | null;
+
+  @Field(() => [String], { nullable: true })
+  topics?: string[] | null;
+
+  @Field(() => Int, { defaultValue: 0, nullable: true })
+  size?: number | null;
+
+  @Field(() => Int, { defaultValue: 0, nullable: true })
+  openIssues?: number | null;
+
+  @Field(() => Boolean, { defaultValue: false, nullable: true })
+  hasWiki?: boolean | null;
+
+  @Field(() => Boolean, { defaultValue: false, nullable: true })
+  hasPages?: boolean | null;
+
+  @Field(() => Boolean, { defaultValue: false, nullable: true })
+  archived?: boolean | null;
+
+  @Field(() => Boolean, { defaultValue: false, nullable: true })
+  disabled?: boolean | null;
+
+  @Field(() => Date, { nullable: true })
+  pushedAt?: Date | null;
+
+  // AI Analysis relationship
+  @Field(() => AIAnalysisResult, { nullable: true })
+  aiAnalysis?: AIAnalysisResult;
+
+  // Repository information
+  @Field(() => UnifiedRepositoryEntity, { nullable: true })
+  repositoryInfo?: UnifiedRepositoryEntity;
+
+  // Computed fields
+  @Field(() => String, { nullable: true })
+  activityLevel?: 'high' | 'medium' | 'low' | 'inactive';
+
+  @Field(() => Float, { nullable: true })
+  popularityScore?: number;
+
+  // Helper method to get all GitHub keys (keeping backward compatibility)
+  @Field(() => [String])
+  allGitHubKeys?: string[];
+
+  // Helper method to get GitHub metadata by key (keeping backward compatibility)
+  // Note: This is not a GraphQL field, just a helper method
+  github?(key: string): string | null {
+    if (this.githubMetadata && typeof this.githubMetadata === 'object') {
+      return this.githubMetadata[key] || null;
+    }
+    return null;
+  }
 }

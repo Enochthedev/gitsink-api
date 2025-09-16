@@ -48,7 +48,7 @@ export class AuthController {
     private readonly magicLinkService: MagicLinkService,
     private readonly apiKeyService: ApiKeyService,
     private readonly jwtTokenService: JwtTokenService,
-  ) {}
+  ) { }
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
@@ -82,11 +82,7 @@ export class AuthController {
     };
     this.logger.log(`Signup attempt for email: ${body.email}`, { clientInfo });
 
-    const result = await this.authService.signup(
-      body.email,
-      body.password,
-      body.username,
-    );
+    const result = await this.authService.signup(body.email, body.password, body.username);
     this.logger.log(`Signup successful for email: ${body.email}`, {
       userId: result.user.id,
       hasApiKey: !!result.apiKey,
@@ -139,7 +135,7 @@ export class AuthController {
         throw new UnauthorizedException('Invalid credentials');
       }
     }
-    const result = await this.authService.signin(body.email, body.password, {
+    const result = await this.authService.signin(body.email, body.password || '', {
       ipAddress: clientInfo.ip,
     });
     // return { token: this.authService.generateJwt(user) };
@@ -173,10 +169,7 @@ export class AuthController {
     description: 'Password reset email sent if user exists',
   })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async requestPasswordReset(
-    @Body() body: ForgotPasswordDto,
-    @Req() req: Request,
-  ) {
+  async requestPasswordReset(@Body() body: ForgotPasswordDto, @Req() req: Request) {
     const { email } = body;
 
     if (!email) {
@@ -195,8 +188,7 @@ export class AuthController {
     await this.authService.requestPasswordReset(email, clientInfo);
 
     return {
-      message:
-        'If an account with this email exists, a password reset link has been sent',
+      message: 'If an account with this email exists, a password reset link has been sent',
     };
   }
 
@@ -212,10 +204,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password successfully reset' })
   @ApiResponse({ status: 400, description: 'Invalid token or weak password' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async confirmPasswordReset(
-    @Body() body: ResetPasswordDto,
-    @Req() req: Request,
-  ) {
+  async confirmPasswordReset(@Body() body: ResetPasswordDto, @Req() req: Request) {
     const { token, newPassword } = body;
 
     if (!token || !newPassword) {
@@ -238,8 +227,13 @@ export class AuthController {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
+    this.logger.log('Password reset successful', {
+      tokenPrefix: token.substring(0, 8) + '...',
+      clientInfo,
+    });
+
     return {
-      message: 'Password successfully reset',
+      message: 'Password successfully reset. A confirmation email has been sent.',
     };
   }
 
@@ -276,10 +270,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'New API key generated' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async regenerateApiKey(
-    @Req() req: RequestWithUser,
-    @Body() body?: { reason?: string },
-  ) {
+  async regenerateApiKey(@Req() req: RequestWithUser, @Body() body?: { reason?: string }) {
     const user = req.user;
     const reason = body?.reason || 'user_requested';
 
@@ -294,11 +285,7 @@ export class AuthController {
       clientInfo,
     });
 
-    const result = await this.apiKeyService.generateApiKey(
-      user.id,
-      reason,
-      clientInfo,
-    );
+    const result = await this.apiKeyService.generateApiKey(user.id, reason, clientInfo);
 
     return {
       message: 'API key regenerated successfully',
@@ -321,10 +308,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'API key revoked' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async revokeApiKey(
-    @Req() req: RequestWithUser,
-    @Body() body?: { reason?: string },
-  ) {
+  async revokeApiKey(@Req() req: RequestWithUser, @Body() body?: { reason?: string }) {
     const user = req.user;
     const reason = body?.reason || 'user_requested';
 
@@ -339,11 +323,7 @@ export class AuthController {
       clientInfo,
     });
 
-    const result = await this.apiKeyService.revokeApiKey(
-      user.id,
-      reason,
-      clientInfo,
-    );
+    const result = await this.apiKeyService.revokeApiKey(user.id, reason, clientInfo);
 
     return {
       message: 'API key revoked successfully',
@@ -365,10 +345,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'GitHub account connected' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async connectGitHub(
-    @Req() req: RequestWithUser,
-    @Body() body: { code: string },
-  ) {
+  async connectGitHub(@Req() req: RequestWithUser, @Body() body: { code: string }) {
     const user = req.user;
     const { code } = body;
 
@@ -401,8 +378,7 @@ export class AuthController {
     description: 'Magic link sent if user exists',
     schema: {
       example: {
-        message:
-          'If an account with this email exists, a magic link has been sent',
+        message: 'If an account with this email exists, a magic link has been sent',
       },
     },
   })
@@ -429,8 +405,7 @@ export class AuthController {
     await this.magicLinkService.sendMagicLink(email, clientInfo);
 
     return {
-      message:
-        'If an account with this email exists, a magic link has been sent',
+      message: 'If an account with this email exists, a magic link has been sent',
     };
   }
 
@@ -461,10 +436,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid token format' })
   @ApiResponse({ status: 401, description: 'Invalid or expired magic link' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async validateMagicLink(
-    @Body() body: { token: string },
-    @Req() req: Request,
-  ) {
+  async validateMagicLink(@Body() body: { token: string }, @Req() req: Request) {
     const { token } = body;
 
     if (!token) {
@@ -483,10 +455,7 @@ export class AuthController {
       clientInfo,
     });
 
-    const result = await this.magicLinkService.validateMagicLink(
-      token,
-      clientInfo,
-    );
+    const result = await this.magicLinkService.validateMagicLink(token, clientInfo);
 
     return {
       accessToken: result.accessToken,
@@ -574,9 +543,7 @@ export class AuthController {
         revokedKeys: 30,
         totalUsage: 50000,
         recentUsage: 1200,
-        topUsers: [
-          { userId: 'user-1', email: 'user@example.com', usageCount: 500 },
-        ],
+        topUsers: [{ userId: 'user-1', email: 'user@example.com', usageCount: 500 }],
       },
     },
   })
@@ -590,9 +557,9 @@ export class AuthController {
 
     const timeRange = body?.timeRange
       ? {
-          from: new Date(body.timeRange.from),
-          to: new Date(body.timeRange.to),
-        }
+        from: new Date(body.timeRange.from),
+        to: new Date(body.timeRange.to),
+      }
       : undefined;
 
     const stats = await this.apiKeyService.getApiKeyStats(timeRange);
@@ -648,10 +615,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async refreshToken(
-    @Body() body: { refreshToken: string },
-    @Req() req: Request,
-  ) {
+  async refreshToken(@Body() body: { refreshToken: string }, @Req() req: Request) {
     const { refreshToken } = body;
 
     if (!refreshToken) {
@@ -667,10 +631,7 @@ export class AuthController {
       deviceInfo,
     });
 
-    const result = await this.jwtTokenService.refreshAccessToken(
-      refreshToken,
-      deviceInfo,
-    );
+    const result = await this.jwtTokenService.refreshAccessToken(refreshToken, deviceInfo);
 
     return {
       accessToken: result.accessToken,
@@ -686,10 +647,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Token revoked successfully' })
   @ApiResponse({ status: 400, description: 'Invalid token' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async revokeToken(
-    @Body() body: { token: string; reason?: string },
-    @Req() req: Request,
-  ) {
+  async revokeToken(@Body() body: { token: string; reason?: string }, @Req() req: Request) {
     const { token, reason } = body;
 
     if (!token) {
@@ -718,10 +676,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'All tokens revoked successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async revokeAllTokens(
-    @Req() req: RequestWithUser,
-    @Body() body?: { reason?: string },
-  ) {
+  async revokeAllTokens(@Req() req: RequestWithUser, @Body() body?: { reason?: string }) {
     const user = req.user;
     const reason = body?.reason || 'logout_all_devices';
 
@@ -730,10 +685,7 @@ export class AuthController {
       reason,
     });
 
-    const count = await this.jwtTokenService.revokeAllUserTokens(
-      user.id,
-      reason,
-    );
+    const count = await this.jwtTokenService.revokeAllUserTokens(user.id, reason);
 
     return {
       message: 'All tokens revoked successfully',

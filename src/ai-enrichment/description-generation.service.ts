@@ -2,10 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import {
-  RepositoryContent,
-  AIServiceResponse,
-} from './interfaces/ai-enrichment.interface';
+import { RepositoryContent, AIServiceResponse } from './interfaces/ai-enrichment.interface';
 
 @Injectable()
 export class DescriptionGenerationService {
@@ -18,10 +15,7 @@ export class DescriptionGenerationService {
     private readonly httpService: HttpService,
   ) {
     this.aiServiceUrl = this.configService.get<string>('AI_SERVICE_URL', '');
-    this.aiServiceApiKey = this.configService.get<string>(
-      'AI_SERVICE_API_KEY',
-      '',
-    );
+    this.aiServiceApiKey = this.configService.get<string>('AI_SERVICE_API_KEY', '');
   }
 
   /**
@@ -37,10 +31,7 @@ export class DescriptionGenerationService {
       if (this.aiServiceUrl && this.aiServiceApiKey) {
         const aiResult = await this.generateWithAIService(content);
         if (aiResult.description) {
-          const validatedResult = this.validateAndImproveDescription(
-            aiResult.description,
-            content,
-          );
+          const validatedResult = this.validateAndImproveDescription(aiResult.description, content);
           return {
             description: validatedResult.description,
             confidence: validatedResult.confidence * aiResult.confidence,
@@ -97,10 +88,7 @@ export class DescriptionGenerationService {
   /**
    * Calculate description quality score
    */
-  private calculateDescriptionQuality(
-    description: string,
-    content: RepositoryContent,
-  ): number {
+  private calculateDescriptionQuality(description: string, content: RepositoryContent): number {
     let score = 1.0;
     const lowerDesc = description.toLowerCase();
 
@@ -169,9 +157,7 @@ export class DescriptionGenerationService {
   /**
    * Generate description using external AI service
    */
-  private async generateWithAIService(
-    content: RepositoryContent,
-  ): Promise<AIServiceResponse> {
+  private async generateWithAIService(content: RepositoryContent): Promise<AIServiceResponse> {
     const maxRetries = 3;
     let lastError: Error | null = null;
 
@@ -210,9 +196,8 @@ export class DescriptionGenerationService {
         );
 
         // Handle different response formats
-        const description = response.data.description ||
-          response.data.text ||
-          response.data.content;
+        const description =
+          response.data.description || response.data.text || response.data.content;
 
         if (!description) {
           throw new Error('No description in AI service response');
@@ -226,13 +211,15 @@ export class DescriptionGenerationService {
           description,
           confidence: response.data.confidence || 0.8,
         };
-
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < maxRetries) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff, max 5s
-          this.logger.warn(`AI service attempt ${attempt} failed, retrying in ${delay}ms:`, lastError.message);
+          this.logger.warn(
+            `AI service attempt ${attempt} failed, retrying in ${delay}ms:`,
+            lastError.message,
+          );
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
@@ -282,14 +269,21 @@ Description:`;
    */
   private getPromptTemplate(projectType: string): string {
     const templates = {
-      'web-app': 'Analyze this web application repository and generate a description that explains its purpose, key features, and target users.',
-      'web-api': 'Analyze this API service repository and generate a description that explains the API\'s functionality, endpoints, and use cases.',
-      'mobile-app': 'Analyze this mobile application repository and generate a description that explains the app\'s purpose, platform support, and key features.',
-      'data-science': 'Analyze this data science project repository and generate a description that explains the analysis goals, methodologies, and insights.',
-      'cli-tool': 'Analyze this command-line tool repository and generate a description that explains the tool\'s purpose, functionality, and usage scenarios.',
-      'library': 'Analyze this library/package repository and generate a description that explains its functionality, use cases, and integration benefits.',
-      'game': 'Analyze this game project repository and generate a description that explains the game concept, mechanics, and technical implementation.',
-      'general': 'Analyze this software repository and generate a description that explains its purpose, functionality, and key features.',
+      'web-app':
+        'Analyze this web application repository and generate a description that explains its purpose, key features, and target users.',
+      'web-api':
+        "Analyze this API service repository and generate a description that explains the API's functionality, endpoints, and use cases.",
+      'mobile-app':
+        "Analyze this mobile application repository and generate a description that explains the app's purpose, platform support, and key features.",
+      'data-science':
+        'Analyze this data science project repository and generate a description that explains the analysis goals, methodologies, and insights.',
+      'cli-tool':
+        "Analyze this command-line tool repository and generate a description that explains the tool's purpose, functionality, and usage scenarios.",
+      library:
+        'Analyze this library/package repository and generate a description that explains its functionality, use cases, and integration benefits.',
+      game: 'Analyze this game project repository and generate a description that explains the game concept, mechanics, and technical implementation.',
+      general:
+        'Analyze this software repository and generate a description that explains its purpose, functionality, and key features.',
     };
 
     return templates[projectType] || templates.general;
@@ -337,37 +331,27 @@ Description:`;
   private extractProjectInfo(content: RepositoryContent) {
     const languages = Object.keys(content.languages || {}).slice(0, 3);
     const keyFiles = content.files
-      .filter((f) => this.isKeyFile(f.name))
-      .map((f) => f.name)
+      .filter(f => this.isKeyFile(f.name))
+      .map(f => f.name)
       .slice(0, 5);
 
     const directories = [
       ...new Set(
-        content.files
-          .map((f) => f.path.split('/')[0])
-          .filter((dir) => dir && !dir.startsWith('.')),
+        content.files.map(f => f.path.split('/')[0]).filter(dir => dir && !dir.startsWith('.')),
       ),
     ].slice(0, 5);
 
     const hasTests = content.files.some(
-      (f) =>
-        f.path.includes('test') ||
-        f.path.includes('spec') ||
-        f.name.includes('test'),
+      f => f.path.includes('test') || f.path.includes('spec') || f.name.includes('test'),
     );
 
-    const hasDocker = content.files.some((f) =>
-      f.name.toLowerCase().includes('dockerfile'),
-    );
+    const hasDocker = content.files.some(f => f.name.toLowerCase().includes('dockerfile'));
     const hasAPI = content.files.some(
-      (f) =>
-        f.path.includes('api') ||
-        f.path.includes('routes') ||
-        f.content?.includes('express'),
+      f => f.path.includes('api') || f.path.includes('routes') || f.content?.includes('express'),
     );
 
     const hasDatabase = content.files.some(
-      (f) =>
+      f =>
         f.content?.includes('database') ||
         f.content?.includes('mongodb') ||
         f.content?.includes('postgresql') ||
@@ -408,24 +392,19 @@ Description:`;
       'webpack.config.js',
     ];
 
-    return keyFiles.some((key) =>
-      filename.toLowerCase().includes(key.toLowerCase()),
-    );
+    return keyFiles.some(key => filename.toLowerCase().includes(key.toLowerCase()));
   }
 
   /**
    * Determine project type based on analysis
    */
-  private determineProjectType(
-    projectInfo: any,
-    content: RepositoryContent,
-  ): string {
+  private determineProjectType(projectInfo: any, content: RepositoryContent): string {
     // Web application
     if (
       projectInfo.languages.includes('JavaScript') ||
       projectInfo.languages.includes('TypeScript')
     ) {
-      if (projectInfo.keyFiles.some((f) => f.includes('package.json'))) {
+      if (projectInfo.keyFiles.some(f => f.includes('package.json'))) {
         if (projectInfo.hasAPI) return 'web-api';
         return 'web-app';
       }
@@ -434,7 +413,7 @@ Description:`;
     // Mobile app
     if (
       content.files.some(
-        (f) =>
+        f =>
           f.path.includes('android') ||
           f.path.includes('ios') ||
           f.name.includes('pubspec.yaml') ||
@@ -448,7 +427,7 @@ Description:`;
     if (
       projectInfo.languages.includes('Python') &&
       content.files.some(
-        (f) =>
+        f =>
           f.content?.includes('pandas') ||
           f.content?.includes('numpy') ||
           f.content?.includes('tensorflow') ||
@@ -459,21 +438,14 @@ Description:`;
     }
 
     // CLI tool
-    if (
-      content.files.some(
-        (f) => f.name.includes('cli') || f.path.includes('bin/'),
-      )
-    ) {
+    if (content.files.some(f => f.name.includes('cli') || f.path.includes('bin/'))) {
       return 'cli-tool';
     }
 
     // Library
     if (
       projectInfo.keyFiles.some(
-        (f) =>
-          f.includes('setup.py') ||
-          f.includes('package.json') ||
-          f.includes('Cargo.toml'),
+        f => f.includes('setup.py') || f.includes('package.json') || f.includes('Cargo.toml'),
       ) &&
       !projectInfo.hasAPI
     ) {
@@ -483,10 +455,8 @@ Description:`;
     // Game
     if (
       content.files.some(
-        (f) =>
-          f.path.includes('game') ||
-          f.content?.includes('unity') ||
-          f.content?.includes('pygame'),
+        f =>
+          f.path.includes('game') || f.content?.includes('unity') || f.content?.includes('pygame'),
       )
     ) {
       return 'game';
@@ -528,11 +498,7 @@ Description:`;
   /**
    * Fill template with project-specific information
    */
-  private fillTemplate(
-    template: string,
-    projectInfo: any,
-    content: RepositoryContent,
-  ): string {
+  private fillTemplate(template: string, projectInfo: any, content: RepositoryContent): string {
     const replacements: Record<string, string> = {
       '{languages}': this.formatLanguages(projectInfo.languages),
       '{functionality}': this.generateFunctionality(projectInfo, content),
@@ -579,16 +545,12 @@ Description:`;
   /**
    * Generate functionality description
    */
-  private generateFunctionality(
-    projectInfo: any,
-    content: RepositoryContent,
-  ): string {
+  private generateFunctionality(projectInfo: any, content: RepositoryContent): string {
     if (projectInfo.hasAPI) return 'handles API requests and data processing';
     if (projectInfo.hasDatabase) return 'manages data storage and retrieval';
     if (content.readme) {
       const readmeWords = content.readme.toLowerCase();
-      if (readmeWords.includes('dashboard'))
-        return 'provides a dashboard interface';
+      if (readmeWords.includes('dashboard')) return 'provides a dashboard interface';
       if (readmeWords.includes('automation')) return 'automates various tasks';
       if (readmeWords.includes('analysis')) return 'performs data analysis';
     }
@@ -614,8 +576,7 @@ Description:`;
   private generateAdditionalFeatures(projectInfo: any): string {
     const features: string[] = [];
     if (projectInfo.fileCount > 50) features.push('modular architecture');
-    if (projectInfo.directories.includes('docs'))
-      features.push('comprehensive documentation');
+    if (projectInfo.directories.includes('docs')) features.push('comprehensive documentation');
     if (projectInfo.keyFiles.some((f: string) => f.includes('eslint')))
       features.push('code quality tools');
 
@@ -653,10 +614,8 @@ Description:`;
   }
 
   private generateToolPurpose(content: RepositoryContent): string {
-    if (content.readme?.toLowerCase().includes('build'))
-      return 'streamline build processes';
-    if (content.readme?.toLowerCase().includes('deploy'))
-      return 'simplify deployment workflows';
+    if (content.readme?.toLowerCase().includes('build')) return 'streamline build processes';
+    if (content.readme?.toLowerCase().includes('deploy')) return 'simplify deployment workflows';
     return 'enhance development productivity';
   }
 
@@ -692,17 +651,14 @@ Description:`;
     const features: string[] = [];
     if (projectInfo.hasTests) features.push('automated testing');
     if (projectInfo.hasDocker) features.push('containerized deployment');
-    return features.length > 0
-      ? features.join(' and ')
-      : 'robust technical implementation';
+    return features.length > 0 ? features.join(' and ') : 'robust technical implementation';
   }
 
   private generateGeneralPurpose(content: RepositoryContent): string {
     if (content.readme) {
       const readme = content.readme.toLowerCase();
       if (readme.includes('tool')) return 'serves as a development tool';
-      if (readme.includes('framework'))
-        return 'provides a framework for development';
+      if (readme.includes('framework')) return 'provides a framework for development';
       if (readme.includes('utility')) return 'offers utility functions';
     }
     return 'addresses specific development needs';
@@ -711,10 +667,8 @@ Description:`;
   private generateComponents(projectInfo: any): string {
     const components: string[] = [];
     if (projectInfo.directories.includes('src')) components.push('source code');
-    if (projectInfo.directories.includes('test'))
-      components.push('test suites');
-    if (projectInfo.directories.includes('docs'))
-      components.push('documentation');
+    if (projectInfo.directories.includes('test')) components.push('test suites');
+    if (projectInfo.directories.includes('docs')) components.push('documentation');
 
     return components.length > 0 ? components.join(', ') : 'various components';
   }

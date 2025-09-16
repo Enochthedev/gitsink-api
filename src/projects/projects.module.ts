@@ -13,13 +13,12 @@ import { ParserModule } from '../parser/parser.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from '../auth/auth.module';
 import { PlatformsModule } from '../platforms/platforms.module';
+import { ErrorHandlingModule } from '../common/error-handling.module';
+import { PubSubProvider } from '../common/providers/pubsub.provider';
 
 @Module({
-  imports: [PrismaModule, ParserModule, ConfigModule, AuthModule, PlatformsModule],
-  controllers: [
-    ProjectsController,
-    GitHubWebhookController,
-  ],
+  imports: [PrismaModule, ParserModule, ConfigModule, AuthModule, PlatformsModule, ErrorHandlingModule],
+  controllers: [ProjectsController, GitHubWebhookController],
   providers: [
     ProjectsService,
     EnhancedProjectsService,
@@ -27,11 +26,8 @@ import { PlatformsModule } from '../platforms/platforms.module';
     ProjectFieldsResolver,
     ProjectsScheduler,
     SyncQueueService,
+    PubSubProvider,
   ],
-  exports: [
-    ProjectsService,
-    EnhancedProjectsService,
-    SyncQueueService,
-  ],
+  exports: [ProjectsService, EnhancedProjectsService, SyncQueueService],
 })
 export class ProjectsModule { }

@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, Global } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
@@ -8,6 +8,7 @@ import { MetricsInterceptor } from '../interceptors/metrics.interceptor';
 import { MetricsMiddleware } from '@common/middleware/metrics.middleware';
 import { metricsProviders } from '../common/providers/metrics.providers';
 
+@Global()
 @Module({
   imports: [
     PrometheusModule.register({

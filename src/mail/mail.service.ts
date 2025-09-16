@@ -4,6 +4,8 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import { EmailTemplateService, EmailTemplateData } from './templates/email-template.service';
+import { EmailBounceService } from './bounce/email-bounce.service';
 
 interface MailPayload {
   to: string;
@@ -17,14 +19,17 @@ export class MailService implements OnModuleInit {
   private transporter!: Transporter;
   private readonly logger = new Logger(MailService.name);
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly emailTemplateService: EmailTemplateService,
+    private readonly emailBounceService: EmailBounceService,
+  ) {}
 
   async onModuleInit() {
     const env = this.config.get<string>('NODE_ENV');
 
     if (env === 'development') {
-      const testAccount: nodemailer.TestAccount =
-        await nodemailer.createTestAccount();
+      const testAccount: nodemailer.TestAccount = await nodemailer.createTestAccount();
       this.transporter = nodemailer.createTransport({
         host: testAccount.smtp.host,
         port: testAccount.smtp.port,
@@ -49,14 +54,35 @@ export class MailService implements OnModuleInit {
     }
   }
 
-  async sendMail({ to, subject, text, html }: MailPayload) {
+  async sendMail({
+    to,
+    subject,
+    text,
+    html,
+  }: MailPayload): Promise<{ messageId?: string; success: boolean }> {
     try {
+      // Check if email is suppressed
+      let isSuppressed = false;
+      try {
+        isSuppressed = await this.emailBounceService.isEmailSuppressed(to);
+      } catch (bounceError) {
+        this.logger.warn(
+          `Failed to check email suppression for ${to}, proceeding with send:`,
+          bounceError,
+        );
+        // Continue with sending if bounce check fails
+      }
+
+      if (isSuppressed) {
+        this.logger.warn(`Email to ${to} is suppressed, skipping send`);
+        return { success: false };
+      }
+
       if (!this.transporter) {
         throw new Error('Email transporter not initialized');
       }
 
-      const from =
-        this.config.get<string>('EMAIL_FROM') || 'noreply@example.com';
+      const from = this.config.get<string>('EMAIL_FROM') || 'noreply@example.com';
 
       const info = await this.transporter.sendMail({
         from,
@@ -64,177 +90,145 @@ export class MailService implements OnModuleInit {
         subject,
         text,
         html,
+        // Add message ID for tracking
+        messageId: this.generateMessageId(),
       });
 
-      this.logger.log(`📨 Email sent to ${to} | Subject: ${subject}`);
+      this.logger.log(
+        `📨 Email sent to ${to} | Subject: ${subject} | MessageId: ${info.messageId}`,
+      );
 
       // Dev only preview link
       if (this.config.get('NODE_ENV') === 'development') {
         const previewUrl = nodemailer.getTestMessageUrl(info);
         if (previewUrl) this.logger.log(`🔍 Preview: ${previewUrl}`);
       }
+
+      return { messageId: info.messageId, success: true };
     } catch (err) {
-      if (err instanceof Error) {
-        this.logger.error(`❌ Failed to send email to ${to}:`, err.stack);
-      } else {
-        this.logger.error(`❌ Failed to send email to ${to}:`, String(err));
-      }
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error(`❌ Failed to send email to ${to}:`, {
+        error: error.message,
+        stack: error.stack,
+        subject,
+      });
+
+      // Re-throw error so queue can handle retries
+      throw error;
     }
   }
 
+  private generateMessageId(): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2);
+    const domain = this.config.get<string>('EMAIL_DOMAIN') || 'gitsink.com';
+    return `${timestamp}.${random}@${domain}`;
+  }
+
   // Helper methods
-  sendWaitlistWelcome(email: string) {
+  async sendWaitlistWelcome(email: string, data: EmailTemplateData = {}) {
+    const template = this.emailTemplateService.generateWaitlistWelcome(data);
     return this.sendMail({
       to: email,
-      subject: 'Welcome to the waitlist',
-      text: 'Thanks for joining!',
-      html: `<p>Thanks for joining the <strong>GitSink</strong> waitlist!</p>`,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
     });
   }
 
-  sendSignupEmail(email: string) {
+  async sendSignupEmail(email: string, data: EmailTemplateData = {}) {
+    const template = this.emailTemplateService.generateSignupConfirmation(data);
     return this.sendMail({
       to: email,
-      subject: 'Welcome to GitSink',
-      text: 'Your account was created.',
-      html: `<p>Your GitSink account has been created!</p>`,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
     });
   }
 
-  sendForgotPassword(email: string, token: string) {
-    const resetUrl = this.createPasswordResetUrl(token);
-    const appName = this.config.get<string>('APP_NAME') || 'GitSink';
-
+  async sendForgotPassword(email: string, token: string, data: EmailTemplateData = {}) {
+    const template = this.emailTemplateService.generatePasswordReset({
+      ...data,
+      token,
+    });
     return this.sendMail({
       to: email,
-      subject: 'Password Reset Request',
-      text: `Reset your password by clicking this link: ${resetUrl}`,
-      html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Password Reset Request</h2>
-        <p>You requested a password reset for your ${appName} account.</p>
-        <p style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" 
-             style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">
-            Reset Password
-          </a>
-        </p>
-        <p>Or copy and paste this link: <br>
-           <code style="background-color: #f5f5f5; padding: 5px;">${resetUrl}</code>
-        </p>
-        <p><small>This link expires in 1 hour. If you didn't request this, please ignore this email.</small></p>
-      </div>
-    `,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
     });
   }
 
-  sendSigninEmail(email: string) {
+  async sendSigninEmail(email: string, data: EmailTemplateData = {}) {
+    const template = this.emailTemplateService.generateSignInNotification(data);
     return this.sendMail({
       to: email,
-      subject: 'Sign In Notification',
-      text: 'You have signed in successfully.',
-      html: `<p>You have signed in successfully to your GitSink account.</p>`,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
     });
   }
 
-  sendMagicLinkSignInEmail(email: string, token: string) {
-    const magicLink = this.createMagicLink(token);
-    const appName = this.config.get<string>('APP_NAME') || 'GitSink';
-
+  async sendMagicLinkSignInEmail(email: string, token: string, data: EmailTemplateData = {}) {
+    const template = this.emailTemplateService.generateMagicLinkSignIn({
+      ...data,
+      token,
+    });
     return this.sendMail({
       to: email,
-      subject: `Sign in to ${appName}`,
-      text: this.createMagicLinkTextTemplate(magicLink, appName),
-      html: this.createMagicLinkHtmlTemplate(magicLink, appName),
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
     });
   }
 
-  private createMagicLink(token: string): string {
-    const baseUrl =
-      this.config.get<string>('MAGIC_LINK_BASE_URL') || 'http://localhost:3000';
-    return `${baseUrl}/auth/magic-link?token=${token}`;
-  }
-
-  private createMagicLinkTextTemplate(
-    magicLink: string,
-    appName: string,
-  ): string {
-    return `
-Sign in to ${appName}
-
-Click the link below to sign in to your account:
-${magicLink}
-
-This link will expire in 15 minutes for security reasons.
-
-If you didn't request this sign-in link, you can safely ignore this email.
-
----
-${appName} Team
-    `.trim();
-  }
-
-  private createMagicLinkHtmlTemplate(
-    magicLink: string,
-    appName: string,
-  ): string {
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign in to ${appName}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .button { display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; }
-    .button:hover { background-color: #0056b3; }
-    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #666; }
-    .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 12px; margin: 20px 0; color: #856404; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Sign in to ${appName}</h1>
-  </div>
-  
-  <p>Hello,</p>
-  
-  <p>Click the button below to sign in to your ${appName} account:</p>
-  
-  <p style="text-align: center; margin: 30px 0;">
-    <a href="${magicLink}" class="button">Sign In</a>
-  </p>
-  
-  <p>Or copy and paste this link into your browser:</p>
-  <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace;">
-    ${magicLink}
-  </p>
-  
-  <div class="warning">
-    <strong>Security Notice:</strong> This link will expire in 15 minutes for your security. If you didn't request this sign-in link, you can safely ignore this email.
-  </div>
-  
-  <div class="footer">
-    <p>Best regards,<br>The ${appName} Team</p>
-  </div>
-</body>
-</html>
-    `.trim();
-  }
-
-  sendPasswordResetConfirmation(email: string) {
+  async sendPasswordResetConfirmation(email: string, data: EmailTemplateData = {}) {
+    const template = this.emailTemplateService.generatePasswordResetConfirmation(data);
     return this.sendMail({
       to: email,
-      subject: 'Password Reset Confirmation',
-      text: 'Your password has been reset successfully.',
-      html: `<p>Your password has been reset successfully.</p>`,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
     });
   }
-  private createPasswordResetUrl(token: string): string {
-    const baseUrl =
-      this.config.get<string>('FRONTEND_URL') || 'http://localhost:3001';
-    return `${baseUrl}/auth/reset-password?token=${token}`;
+
+  async sendApiKeyRegeneration(email: string, data: EmailTemplateData) {
+    const template = this.emailTemplateService.generateApiKeyRegeneration(data);
+    return this.sendMail({
+      to: email,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+  }
+
+  async sendAccountSuspension(email: string, data: EmailTemplateData) {
+    const template = this.emailTemplateService.generateAccountSuspension(data);
+    return this.sendMail({
+      to: email,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+  }
+
+  async sendSyncFailureNotification(email: string, data: EmailTemplateData) {
+    const template = this.emailTemplateService.generateSyncFailureNotification(data);
+    return this.sendMail({
+      to: email,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+  }
+
+  async sendWeeklyDigest(email: string, data: EmailTemplateData) {
+    const template = this.emailTemplateService.generateWeeklyDigest(data);
+    return this.sendMail({
+      to: email,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
   }
 }

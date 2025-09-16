@@ -5,10 +5,7 @@ import { Project } from './entities/project.entity';
 export class ProjectFieldsResolver {
   @ResolveField(() => String, { nullable: true })
   github(@Parent() project: Project, @Args('key') key: string): string | null {
-    const metadata = project.githubMetadata as
-      | Record<string, unknown>
-      | null
-      | undefined;
+    const metadata = project.githubMetadata as Record<string, unknown> | null | undefined;
     const value = metadata ? metadata[key] : undefined;
 
     if (value === undefined || value === null) return null;
@@ -23,8 +20,7 @@ export class ProjectFieldsResolver {
 
   @ResolveField(() => [String])
   allGitHubKeys(@Parent() project: Project): string[] {
-    return typeof project.githubMetadata === 'object' &&
-      project.githubMetadata !== null
+    return typeof project.githubMetadata === 'object' && project.githubMetadata !== null
       ? Object.keys(project.githubMetadata as Record<string, unknown>)
       : [];
   }

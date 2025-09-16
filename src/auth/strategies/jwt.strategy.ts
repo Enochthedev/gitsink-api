@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     // Use enhanced token validation
     const validationResult = await this.jwtTokenService.validateToken(
-      this.extractTokenFromPayload(payload)
+      this.extractTokenFromPayload(payload),
     );
 
     if (!validationResult.isValid) {

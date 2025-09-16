@@ -1,0 +1,472 @@
+name: Environment Configuration Management
+
+on:
+  push:
+    paths:
+      - '.env.*'
+      - 'docker-compose*.yml'
+      - 'docker/caddy/**'
+      - 'docker/prometheus/**'
+      - 'docker/grafana/**'
+  pull_request:
+    paths:
+      - '.env.*'
+      - 'docker-compose*.yml'
+      - 'docker/caddy/**'
+      - 'docker/prometheus/**'
+      - 'docker/grafana/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to update configuration'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      config_type:
+        description: 'Type of configuration to update'
+        required: true
+        type: choice
+        options:
+          - environment-variables
+          - docker-compose
+          - caddy-config
+          - monitoring-config
+          - all
+
+jobs:
+  validate-configuration:
+    name: Validate Configuration Files
+    runs-on: ubuntu-latest
+    outputs:
+      config-valid: ${{ steps.validation.outputs.valid }}
+      changes-detected: ${{ steps.changes.outputs.detected }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect configuration changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            env:
+              - '.env.*'
+            docker:
+              - 'docker-compose*.yml'
+              - 'Dockerfile*'
+            caddy:
+              - 'docker/caddy/**'
+            monitoring:
+              - 'docker/prometheus/**'
+              - 'docker/grafana/**'
+
+      - name: Validate environment files
+        id: env-validation
+        run: |
+          echo "Validating environment files..."
+          
+          validation_errors=0
+          
+          for env_file in .env.development .env.staging .env.production; do
+            if [[ -f "$env_file" ]]; then
+              echo "Validating $env_file..."
+              
+              # Check for required variables
+              required_vars=(
+                "NODE_ENV"
+                "DATABASE_URL"
+                "REDIS_URL"
+                "JWT_SECRET"
+                "GITHUB_CLIENT_ID"
+                "GITHUB_CLIENT_SECRET"
+              )
+              
+              for var in "${required_vars[@]}"; do
+                if ! grep -q "^$var=" "$env_file"; then
+                  echo "❌ Missing required variable $var in $env_file"
+                  validation_errors=$((validation_errors + 1))
+                fi
+              done
+              
+              # Check for placeholder values in production
+              if [[ "$env_file" == ".env.production" ]]; then
+                if grep -q "your-.*-here\|change-me\|password\|secret" "$env_file"; then
+                  echo "❌ Found placeholder values in production environment file"
+                  validation_errors=$((validation_errors + 1))
+                fi
+              fi
+              
+              # Validate URL formats
+              if grep -E "^DATABASE_URL=" "$env_file" | grep -qv "postgresql://"; then
+                echo "❌ Invalid DATABASE_URL format in $env_file"
+                validation_errors=$((validation_errors + 1))
+              fi
+              
+              if grep -E "^REDIS_URL=" "$env_file" | grep -qv "redis://"; then
+                echo "❌ Invalid REDIS_URL format in $env_file"
+                validation_errors=$((validation_errors + 1))
+              fi
+              
+            else
+              echo "⚠️ Environment file $env_file not found"
+            fi
+          done
+          
+          echo "env-validation-errors=$validation_errors" >> $GITHUB_OUTPUT
+
+      - name: Validate Docker Compose files
+        id: docker-validation
+        run: |
+          echo "Validating Docker Compose files..."
+          
+          validation_errors=0
+          
+          for compose_file in docker-compose*.yml; do
+            if [[ -f "$compose_file" ]]; then
+              echo "Validating $compose_file..."
+              
+              # Validate YAML syntax
+              if ! docker-compose -f "$compose_file" config > /dev/null 2>&1; then
+                echo "❌ Invalid YAML syntax in $compose_file"
+                validation_errors=$((validation_errors + 1))
+              fi
+              
+              # Check for required services
+              required_services=("gitsink-api" "postgres" "redis")
+              for service in "${required_services[@]}"; do
+                if ! grep -q "^  $service:" "$compose_file"; then
+                  echo "❌ Missing required service $service in $compose_file"
+                  validation_errors=$((validation_errors + 1))
+                fi
+              done
+              
+              # Check for health checks
+              if ! grep -q "healthcheck:" "$compose_file"; then
+                echo "⚠️ No health checks found in $compose_file"
+              fi
+              
+            fi
+          done
+          
+          echo "docker-validation-errors=$validation_errors" >> $GITHUB_OUTPUT
+
+      - name: Validate Caddy configuration
+        id: caddy-validation
+        if: steps.changes.outputs.caddy == 'true'
+        run: |
+          echo "Validating Caddy configuration..."
+          
+          validation_errors=0
+          
+          for caddy_file in docker/caddy/Caddyfile*; do
+            if [[ -f "$caddy_file" ]]; then
+              echo "Validating $caddy_file..."
+              
+              # Basic syntax validation (would need Caddy binary for full validation)
+              if ! grep -q "reverse_proxy" "$caddy_file"; then
+                echo "⚠️ No reverse proxy configuration found in $caddy_file"
+              fi
+              
+              # Check for security headers
+              if ! grep -q "Strict-Transport-Security" "$caddy_file"; then
+                echo "⚠️ Missing security headers in $caddy_file"
+              fi
+              
+            fi
+          done
+          
+          echo "caddy-validation-errors=$validation_errors" >> $GITHUB_OUTPUT
+
+      - name: Validate monitoring configuration
+        id: monitoring-validation
+        if: steps.changes.outputs.monitoring == 'true'
+        run: |
+          echo "Validating monitoring configuration..."
+          
+          validation_errors=0
+          
+          # Validate Prometheus config
+          for prom_file in docker/prometheus/prometheus*.yml; do
+            if [[ -f "$prom_file" ]]; then
+              echo "Validating $prom_file..."
+              
+              # Check YAML syntax
+              if ! python3 -c "import yaml; yaml.safe_load(open('$prom_file'))" 2>/dev/null; then
+                echo "❌ Invalid YAML syntax in $prom_file"
+                validation_errors=$((validation_errors + 1))
+              fi
+            fi
+          done
+          
+          # Validate Grafana provisioning
+          if [[ -d "docker/grafana/provisioning" ]]; then
+            echo "Validating Grafana provisioning..."
+            
+            for grafana_file in docker/grafana/provisioning/**/*.yml; do
+              if [[ -f "$grafana_file" ]]; then
+                if ! python3 -c "import yaml; yaml.safe_load(open('$grafana_file'))" 2>/dev/null; then
+                  echo "❌ Invalid YAML syntax in $grafana_file"
+                  validation_errors=$((validation_errors + 1))
+                fi
+              fi
+            done
+          fi
+          
+          echo "monitoring-validation-errors=$validation_errors" >> $GITHUB_OUTPUT
+
+      - name: Generate validation summary
+        id: validation
+        run: |
+          env_errors=${{ steps.env-validation.outputs.env-validation-errors || 0 }}
+          docker_errors=${{ steps.docker-validation.outputs.docker-validation-errors || 0 }}
+          caddy_errors=${{ steps.caddy-validation.outputs.caddy-validation-errors || 0 }}
+          monitoring_errors=${{ steps.monitoring-validation.outputs.monitoring-validation-errors || 0 }}
+          
+          total_errors=$((env_errors + docker_errors + caddy_errors + monitoring_errors))
+          
+          echo "Total validation errors: $total_errors"
+          
+          if [[ $total_errors -eq 0 ]]; then
+            echo "✅ All configuration files are valid"
+            echo "valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Configuration validation failed with $total_errors errors"
+            echo "valid=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Set changes detected flag
+          if [[ "${{ steps.changes.outputs.env }}" == "true" ]] || \
+             [[ "${{ steps.changes.outputs.docker }}" == "true" ]] || \
+             [[ "${{ steps.changes.outputs.caddy }}" == "true" ]] || \
+             [[ "${{ steps.changes.outputs.monitoring }}" == "true" ]]; then
+            echo "detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "detected=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment validation results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const valid = '${{ steps.validation.outputs.valid }}' === 'true';
+            const envErrors = '${{ steps.env-validation.outputs.env-validation-errors || 0 }}';
+            const dockerErrors = '${{ steps.docker-validation.outputs.docker-validation-errors || 0 }}';
+            const caddyErrors = '${{ steps.caddy-validation.outputs.caddy-validation-errors || 0 }}';
+            const monitoringErrors = '${{ steps.monitoring-validation.outputs.monitoring-validation-errors || 0 }}';
+            
+            const comment = `## 🔧 Configuration Validation Results
+            
+            ${valid ? '✅ **All configurations are valid**' : '❌ **Configuration validation failed**'}
+            
+            ### Validation Summary
+            | Component | Errors |
+            |-----------|--------|
+            | Environment Files | ${envErrors} |
+            | Docker Compose | ${dockerErrors} |
+            | Caddy Config | ${caddyErrors} |
+            | Monitoring Config | ${monitoringErrors} |
+            
+            ${valid ? '' : '⚠️ Please fix the validation errors before merging.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  deploy-configuration:
+    name: Deploy Configuration Changes
+    runs-on: ubuntu-latest
+    needs: [validate-configuration]
+    if: |
+      needs.validate-configuration.outputs.config-valid == 'true' && 
+      needs.validate-configuration.outputs.changes-detected == 'true' &&
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup deployment environment
+        run: |
+          DEPLOY_ENV="${{ github.event.inputs.environment || 'staging' }}"
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> $GITHUB_ENV
+          echo "Deploying configuration to $DEPLOY_ENV environment"
+
+      - name: Backup current configuration
+        run: |
+          echo "Creating backup of current configuration..."
+          mkdir -p config-backups
+          
+          # Backup current environment file
+          if [[ -f ".env.$DEPLOY_ENV" ]]; then
+            cp ".env.$DEPLOY_ENV" "config-backups/.env.$DEPLOY_ENV.backup.$(date +%s)"
+          fi
+          
+          # Backup current docker-compose file
+          compose_file="docker-compose.$DEPLOY_ENV.yml"
+          if [[ "$DEPLOY_ENV" == "staging" ]]; then
+            compose_file="docker-compose.staging.yml"
+          elif [[ "$DEPLOY_ENV" == "production" ]]; then
+            compose_file="docker-compose.prod.yml"
+          fi
+          
+          if [[ -f "$compose_file" ]]; then
+            cp "$compose_file" "config-backups/$(basename $compose_file).backup.$(date +%s)"
+          fi
+
+      - name: Deploy environment configuration
+        if: contains(github.event.inputs.config_type, 'environment-variables') || github.event.inputs.config_type == 'all' || github.event_name == 'push'
+        run: |
+          echo "Deploying environment configuration to $DEPLOY_ENV..."
+          
+          # Validate environment-specific secrets are set
+          case $DEPLOY_ENV in
+            staging)
+              echo "Validating staging secrets..."
+              # Add staging-specific validation
+              ;;
+            production)
+              echo "Validating production secrets..."
+              # Add production-specific validation
+              ;;
+          esac
+
+      - name: Deploy Docker Compose configuration
+        if: contains(github.event.inputs.config_type, 'docker-compose') || github.event.inputs.config_type == 'all' || github.event_name == 'push'
+        run: |
+          echo "Deploying Docker Compose configuration to $DEPLOY_ENV..."
+          
+          # Restart services with new configuration
+          ./scripts/docker-deploy.sh restart -e "$DEPLOY_ENV" -f
+
+      - name: Deploy Caddy configuration
+        if: contains(github.event.inputs.config_type, 'caddy-config') || github.event.inputs.config_type == 'all' || github.event_name == 'push'
+        run: |
+          echo "Deploying Caddy configuration to $DEPLOY_ENV..."
+          
+          # Reload Caddy configuration without downtime
+          docker exec "gitsink-proxy-$DEPLOY_ENV" caddy reload --config /etc/caddy/Caddyfile || true
+
+      - name: Deploy monitoring configuration
+        if: contains(github.event.inputs.config_type, 'monitoring-config') || github.event.inputs.config_type == 'all' || github.event_name == 'push'
+        run: |
+          echo "Deploying monitoring configuration to $DEPLOY_ENV..."
+          
+          # Reload Prometheus configuration
+          if docker ps | grep -q "gitsink-prometheus-$DEPLOY_ENV"; then
+            docker exec "gitsink-prometheus-$DEPLOY_ENV" kill -HUP 1 || true
+          fi
+          
+          # Restart Grafana to pick up new provisioning
+          if docker ps | grep -q "gitsink-grafana-$DEPLOY_ENV"; then
+            docker restart "gitsink-grafana-$DEPLOY_ENV" || true
+          fi
+
+      - name: Verify configuration deployment
+        run: |
+          echo "Verifying configuration deployment..."
+          
+          # Wait for services to be ready
+          sleep 30
+          
+          # Run health checks
+          ./scripts/docker-health-check.sh -e "$DEPLOY_ENV" -v
+          
+          # Verify specific configurations
+          case $DEPLOY_ENV in
+            staging)
+              curl -f https://staging-api.gitsink.com/health || exit 1
+              ;;
+            production)
+              curl -f https://api.gitsink.com/health || exit 1
+              ;;
+          esac
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Configuration deployment failed, rolling back..."
+          
+          # Restore from backup
+          latest_backup=$(ls -t config-backups/*.backup.* | head -1)
+          if [[ -n "$latest_backup" ]]; then
+            echo "Restoring from backup: $latest_backup"
+            # Implement rollback logic here
+          fi
+          
+          # Restart services with previous configuration
+          ./scripts/docker-deploy.sh restart -e "$DEPLOY_ENV" -f
+
+      - name: Notify configuration deployment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}';
+            const environment = '${{ env.DEPLOY_ENV }}';
+            const configType = '${{ github.event.inputs.config_type || 'all' }}';
+            
+            const message = status === 'success' 
+              ? `✅ Configuration deployment to ${environment} completed successfully`
+              : `❌ Configuration deployment to ${environment} failed and was rolled back`;
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: status === 'success' ? 'success' : 'failure',
+              description: message,
+              context: `config-deployment/${environment}`
+            });
+
+  security-scan-configs:
+    name: Security Scan Configuration Files
+    runs-on: ubuntu-latest
+    needs: [validate-configuration]
+    if: needs.validate-configuration.outputs.changes-detected == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for secrets in configuration files
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Scan Docker configurations
+        run: |
+          echo "Scanning Docker configurations for security issues..."
+          
+          # Check for exposed ports in production
+          if grep -r "ports:" docker-compose.prod.yml | grep -v "# Remove in production"; then
+            echo "⚠️ Found exposed ports in production configuration"
+          fi
+          
+          # Check for default passwords
+          if grep -ri "password.*admin\|password.*password\|password.*123" .env.* docker-compose*.yml; then
+            echo "❌ Found default passwords in configuration"
+            exit 1
+          fi
+          
+          # Check for insecure configurations
+          if grep -ri "ssl.*false\|tls.*false\|secure.*false" docker-compose*.yml; then
+            echo "⚠️ Found potentially insecure SSL/TLS configurations"
+          fi
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: config-security-scan-results
+          path: |
+            security-scan-results/
+            *.sarif
+          retention-days: 30

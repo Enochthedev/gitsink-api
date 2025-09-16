@@ -223,6 +223,375 @@ interface AIAnalysisResult {
 
 ---
 
+## 👤 Public Developer Profiles
+
+### REST API (`/profiles`)
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `POST` | `/profiles` | Create a new public profile | ✅ JWT |
+| `GET` | `/profiles/me` | Get current user profile | ✅ JWT |
+| `PUT` | `/profiles/me` | Update current user profile | ✅ JWT |
+| `PUT` | `/profiles/me/settings` | Update profile settings | ✅ JWT |
+| `DELETE` | `/profiles/me` | Delete current user profile | ✅ JWT |
+| `GET` | `/profiles/check-username/:username` | Check username availability | ❌ |
+| `GET` | `/profiles/check-domain/:domain` | Check custom domain availability | ❌ |
+| `GET` | `/profiles/search` | Search public profiles | ❌ |
+| `GET` | `/profiles/featured` | Get featured public profiles | ❌ |
+| `GET` | `/profiles/:username` | Get public profile by username | ❌ |
+| `GET` | `/profiles/domain/:domain` | Get public profile by custom domain | ❌ |
+
+#### Theme Customization
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/profiles/themes/presets` | Get available theme presets | ❌ |
+| `PUT` | `/profiles/me/theme` | Update profile theme | ✅ JWT |
+| `POST` | `/profiles/me/theme/preset` | Apply a theme preset | ✅ JWT |
+
+#### Social Links Management
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/profiles/platforms` | Get supported social platforms | ❌ |
+| `PUT` | `/profiles/me/social-links` | Update all social links | ✅ JWT |
+| `POST` | `/profiles/me/social-links` | Add a social link | ✅ JWT |
+| `DELETE` | `/profiles/me/social-links/:platform` | Remove a social link | ✅ JWT |
+
+#### Custom Sections & Statistics
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `PUT` | `/profiles/me/custom-sections` | Update custom profile sections | ✅ JWT |
+| `GET` | `/profiles/me/statistics` | Get comprehensive profile statistics | ✅ JWT |
+
+### GraphQL Queries & Mutations
+
+```graphql
+# Profile Management
+mutation CreateProfile($input: CreateProfileInput!) {
+  createProfile(input: $input) {
+    id username displayName bio
+    avatar location website
+    socialLinks theme settings
+    isPublic customDomain
+  }
+}
+
+query MyProfile {
+  myProfile {
+    id username displayName bio
+    avatar location website
+    socialLinks theme settings
+    isPublic customDomain viewCount
+    stats {
+      totalProjects publicProjects
+      totalStars totalForks
+      languageBreakdown
+      topRepositories {
+        id name stars forks language
+      }
+      activityData {
+        date commits repositories
+      }
+    }
+  }
+}
+
+query PublicProfile($username: String!) {
+  publicProfile(username: $username) {
+    id username displayName bio
+    avatar location website
+    socialLinks theme
+    stats {
+      totalProjects publicProjects
+      totalStars totalForks
+      languageBreakdown
+    }
+  }
+}
+
+query SearchProfiles($query: String!, $limit: Int, $offset: Int) {
+  searchProfiles(query: $query, limit: $limit, offset: $offset) {
+    id username displayName bio
+    avatar viewCount
+  }
+}
+
+query FeaturedProfiles($limit: Int) {
+  featuredProfiles(limit: $limit) {
+    id username displayName bio
+    avatar viewCount
+  }
+}
+
+mutation UpdateProfile($input: UpdateProfileInput!) {
+  updateProfile(input: $input) {
+    id username displayName bio
+    avatar location website
+  }
+}
+
+mutation UpdateProfileSettings($input: ProfileSettingsInput!) {
+  updateProfileSettings(input: $input)
+}
+
+mutation DeleteProfile {
+  deleteProfile
+}
+
+# Theme Customization
+query GetThemePresets {
+  getThemePresets {
+    name displayName
+    primaryColor secondaryColor
+    backgroundStyle fontFamily
+  }
+}
+
+mutation UpdateProfileTheme($input: UpdateThemeInput!) {
+  updateProfileTheme(input: $input) {
+    theme
+    success
+  }
+}
+
+mutation ApplyThemePreset($presetName: String!) {
+  applyThemePreset(presetName: $presetName) {
+    theme
+    success
+  }
+}
+
+# Social Links Management
+query GetSupportedPlatforms {
+  getSupportedPlatforms
+}
+
+mutation UpdateSocialLinks($socialLinks: [SocialLinkInput!]!) {
+  updateSocialLinks(socialLinks: $socialLinks) {
+    socialLinks
+    success
+  }
+}
+
+mutation AddSocialLink($socialLink: SocialLinkInput!) {
+  addSocialLink(socialLink: $socialLink) {
+    socialLinks
+    success
+  }
+}
+
+mutation RemoveSocialLink($platform: String!) {
+  removeSocialLink(platform: $platform) {
+    socialLinks
+    success
+  }
+}
+
+# Custom Sections & Statistics
+mutation UpdateCustomSections($customSections: [CustomSectionInput!]!) {
+  updateCustomSections(customSections: $customSections)
+}
+
+query ProfileStatistics {
+  profileStatistics {
+    totalProjects publicProjects privateProjects
+    totalStars totalForks
+    languageBreakdown
+    topRepositories {
+      id name stars forks language
+    }
+    activityData {
+      date commits repositories
+    }
+    joinedDate lastActiveDate
+  }
+}
+
+# Utility Queries
+query IsUsernameAvailable($username: String!) {
+  isUsernameAvailable(username: $username)
+}
+
+query IsDomainAvailable($domain: String!) {
+  isDomainAvailable(domain: $domain)
+}
+
+query GenerateProfileUrl($username: String!, $customDomain: String) {
+  generateProfileUrl(username: $username, customDomain: $customDomain)
+}
+```
+
+### Profile Data Structure
+
+```typescript
+interface PublicProfile {
+  id: string;
+  userId: string;
+  username: string;
+  displayName?: string;
+  bio?: string;
+  avatar?: string;
+  location?: string;
+  website?: string;
+  socialLinks: SocialLink[];
+  theme: ProfileTheme;
+  settings: ProfileSettings;
+  isPublic: boolean;
+  customDomain?: string;
+  viewCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  stats?: ProfileStats;
+}
+
+interface SocialLink {
+  platform: string;
+  url: string;
+  label?: string;
+}
+
+interface ProfileTheme {
+  primaryColor?: string;
+  secondaryColor?: string;
+  backgroundStyle?: string;
+  fontFamily?: string;
+}
+
+interface ProfileSettings {
+  isPublic?: boolean;
+  showEmail?: boolean;
+  showStats?: boolean;
+  showPrivateRepos?: boolean;
+  featuredProjects?: string[];
+  customSections?: CustomSection[];
+  layout?: string;
+  showActivity?: boolean;
+  showContributions?: boolean;
+}
+
+interface CustomSection {
+  title: string;
+  content: string;
+  order?: number;
+  visible?: boolean;
+}
+
+interface ProfileStats {
+  totalProjects: number;
+  publicProjects: number;
+  privateProjects: number;
+  totalStars: number;
+  totalForks: number;
+  languageBreakdown: { [language: string]: number };
+  topRepositories: Array<{
+    id: string;
+    name: string;
+    stars: number;
+    forks: number;
+    language?: string;
+  }>;
+  activityData: Array<{
+    date: string;
+    commits: number;
+    repositories: number;
+  }>;
+  joinedDate: Date;
+  lastActiveDate?: Date;
+}
+```
+
+### Supported Social Platforms
+
+The profiles system supports 19+ social media platforms:
+
+- **Code Platforms**: GitHub, GitLab, Bitbucket
+- **Professional**: LinkedIn, Stack Overflow
+- **Social Media**: Twitter, Instagram, Facebook
+- **Content**: YouTube, Twitch, Medium, Dev.to, Hashnode
+- **Communication**: Discord, Telegram, Reddit
+- **Personal**: Personal Website, Blog, Portfolio
+
+### Theme Presets
+
+6 built-in theme presets are available:
+
+1. **Default**: Clean blue theme with solid background
+2. **Dark**: Dark mode with teal accents and gradient background
+3. **Minimal**: Green theme with minimal styling
+4. **Vibrant**: Pink and orange gradient theme
+5. **Professional**: Dark gray professional theme
+6. **Creative**: Purple and pink creative gradient theme
+
+### Profile URL Generation
+
+Profiles can be accessed via:
+- **Standard URL**: `https://gitsink.dev/profile/{username}`
+- **Custom Domain**: `https://{customDomain}` (if configured)
+
+### Usage Examples
+
+#### Create a Profile
+```bash
+curl -X POST https://api.gitsink.com/profiles \
+  -H "Authorization: Bearer <jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "bio": "Full-stack developer passionate about open source",
+    "location": "San Francisco, CA",
+    "website": "https://johndoe.dev",
+    "socialLinks": [
+      {
+        "platform": "github",
+        "url": "https://github.com/johndoe",
+        "label": "My GitHub"
+      }
+    ],
+    "isPublic": true
+  }'
+```
+
+#### Search Profiles
+```bash
+curl -X GET "https://api.gitsink.com/profiles/search?q=developer&limit=10&offset=0"
+```
+
+#### Apply Theme Preset
+```bash
+curl -X POST https://api.gitsink.com/profiles/me/theme/preset \
+  -H "Authorization: Bearer <jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"presetName": "dark"}'
+```
+
+#### Update Custom Sections
+```bash
+curl -X PUT https://api.gitsink.com/profiles/me/custom-sections \
+  -H "Authorization: Bearer <jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customSections": [
+      {
+        "title": "About Me",
+        "content": "I am a passionate developer with 5+ years of experience...",
+        "order": 1,
+        "visible": true
+      },
+      {
+        "title": "Skills",
+        "content": "TypeScript, React, Node.js, Python, Docker, AWS",
+        "order": 2,
+        "visible": true
+      }
+    ]
+  }'
+```
+
+---
+
 ## 🔗 Webhook Endpoints
 
 ### GitHub Webhooks (`/webhook/github`)
@@ -323,7 +692,7 @@ Specific endpoints have custom limits:
 - **RefreshToken**: JWT refresh token management
 - **MagicLinkToken**: Magic link authentication
 - **AIAnalysis**: AI enrichment analysis results
-- **PublicProfile**: Public developer profiles
+- **PublicProfile**: Public developer profiles with themes, social links, and custom sections
 - **PlatformConnection**: Multi-platform integrations
 - **SyncHistory**: Repository sync audit trail
 - **AuditLog**: Comprehensive audit logging
@@ -500,13 +869,16 @@ AI_CONFIDENCE_THRESHOLD=0.7
 
 ## 🚧 Roadmap & Future Enhancements
 
+### Recently Implemented
+1. **Public Profile API**: ✅ Complete developer portfolio management system with themes, social links, custom sections, and statistics
+
 ### Planned Features
 1. **AI Enrichment API Endpoints**: Direct access to AI analysis services
-2. **Public Profile API**: Developer portfolio management
-3. **Team Collaboration**: Multi-user project management
-4. **Advanced Analytics**: Repository insights and trends
-5. **Webhook Management**: User-configurable webhooks
-6. **Plugin System**: Extensible integrations
+2. **Team Collaboration**: Multi-user project management
+3. **Advanced Analytics**: Repository insights and trends
+4. **Webhook Management**: User-configurable webhooks
+5. **Plugin System**: Extensible integrations
+6. **Profile Analytics**: Detailed profile view analytics and insights
 
 ### Current Limitations
 - AI enrichment services are internal-only (no direct API access)
@@ -525,6 +897,20 @@ For API support, documentation updates, or feature requests:
 
 ---
 
-*Last Updated: 2024-01-15*
-*API Version: v1.0*
-*Documentation Version: 1.0*
+## 🆕 Recent Updates
+
+### v1.1.0 - Public Developer Profiles (2025-08-15)
+- **New Feature**: Complete Public Developer Profiles system
+- **25 New Endpoints**: Profile management, themes, social links, custom sections
+- **6 Theme Presets**: Built-in themes with custom theme support
+- **19+ Social Platforms**: Comprehensive social media integration
+- **Profile Statistics**: Rich analytics including language breakdown and activity data
+- **Custom Sections**: User-defined content areas with markdown support
+- **Search & Discovery**: Profile search with pagination and featured profiles
+- **Custom Domains**: Support for custom domain mapping
+
+---
+
+*Last Updated: 2025-08-15*
+*API Version: v1.1*
+*Documentation Version: 1.1*

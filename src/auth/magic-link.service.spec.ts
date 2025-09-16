@@ -5,11 +5,7 @@ describe('MagicLinkService Unit Tests', () => {
   describe('Email validation', () => {
     it('should validate email format correctly', () => {
       // Test email validation logic
-      const validEmails = [
-        'test@example.com',
-        'user.name@domain.co.uk',
-        'user+tag@example.org',
-      ];
+      const validEmails = ['test@example.com', 'user.name@domain.co.uk', 'user+tag@example.org'];
 
       const invalidEmails = [
         '',
@@ -40,11 +36,9 @@ describe('MagicLinkService Unit Tests', () => {
 
       // Test token format validation
       expect(validToken.length).toBe(64);
-      expect(
-        invalidTokens.every(
-          (token) => token.length !== 64 || !/^[a-f0-9]+$/i.test(token),
-        ),
-      ).toBe(true);
+      expect(invalidTokens.every(token => token.length !== 64 || !/^[a-f0-9]+$/i.test(token))).toBe(
+        true,
+      );
     });
   });
 

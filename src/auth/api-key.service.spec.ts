@@ -28,12 +28,8 @@ describe('ApiKeyService Unit Tests', () => {
         enterprise: { windowMs: 60 * 1000, maxRequests: 10000 },
       };
 
-      expect(rateLimits.free.maxRequests).toBeLessThan(
-        rateLimits.premium.maxRequests,
-      );
-      expect(rateLimits.premium.maxRequests).toBeLessThan(
-        rateLimits.enterprise.maxRequests,
-      );
+      expect(rateLimits.free.maxRequests).toBeLessThan(rateLimits.premium.maxRequests);
+      expect(rateLimits.premium.maxRequests).toBeLessThan(rateLimits.enterprise.maxRequests);
     });
   });
 

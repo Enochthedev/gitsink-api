@@ -17,32 +17,32 @@ import { GitLabWebhookController } from './controllers/gitlab-webhook.controller
 import { BitbucketWebhookController } from './controllers/bitbucket-webhook.controller';
 
 @Module({
-    imports: [ConfigModule],
-    controllers: [
-        GitLabOAuthController,
-        BitbucketOAuthController,
-        GitLabWebhookController,
-        BitbucketWebhookController,
-    ],
-    providers: [
-        // Core services
-        PlatformDetectorService,
-        PlatformRegistryService,
+  imports: [ConfigModule],
+  controllers: [
+    GitLabOAuthController,
+    BitbucketOAuthController,
+    GitLabWebhookController,
+    BitbucketWebhookController,
+  ],
+  providers: [
+    // Core services
+    PlatformDetectorService,
+    PlatformRegistryService,
 
-        // Platform providers
-        GitHubProvider,
-        GitLabProvider,
-        BitbucketProvider,
-    ],
-    exports: [
-        // Export services for use in other modules
-        PlatformDetectorService,
-        PlatformRegistryService,
+    // Platform providers
+    GitHubProvider,
+    GitLabProvider,
+    BitbucketProvider,
+  ],
+  exports: [
+    // Export services for use in other modules
+    PlatformDetectorService,
+    PlatformRegistryService,
 
-        // Export providers for direct access if needed
-        GitHubProvider,
-        GitLabProvider,
-        BitbucketProvider,
-    ],
+    // Export providers for direct access if needed
+    GitHubProvider,
+    GitLabProvider,
+    BitbucketProvider,
+  ],
 })
-export class PlatformsModule { }
+export class PlatformsModule {}

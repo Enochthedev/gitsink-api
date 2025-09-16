@@ -1,0 +1,372 @@
+name: Deployment Monitoring & Alerting
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to monitor'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - staging
+          - production
+          - all
+      alert_threshold:
+        description: 'Alert threshold (seconds)'
+        required: false
+        default: '30'
+        type: string
+
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  PAGERDUTY_INTEGRATION_KEY: ${{ secrets.PAGERDUTY_INTEGRATION_KEY }}
+
+jobs:
+  monitor-production:
+    name: Monitor Production Environment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.environment == 'production' || github.event.inputs.environment == 'all'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup monitoring environment
+        run: |
+          echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "BASE_URL=https://api.gitsink.com" >> $GITHUB_ENV
+          echo "ALERT_THRESHOLD=${{ github.event.inputs.alert_threshold || '30' }}" >> $GITHUB_ENV
+
+      - name: Health Check Monitoring
+        id: health-check
+        run: |
+          echo "Running health checks for production..."
+          
+          # API Health Check
+          start_time=$(date +%s)
+          if curl -f --max-time 30 "$BASE_URL/health" > /dev/null 2>&1; then
+            end_time=$(date +%s)
+            response_time=$((end_time - start_time))
+            echo "api-health=healthy" >> $GITHUB_OUTPUT
+            echo "api-response-time=$response_time" >> $GITHUB_OUTPUT
+          else
+            echo "api-health=unhealthy" >> $GITHUB_OUTPUT
+            echo "api-response-time=timeout" >> $GITHUB_OUTPUT
+          fi
+          
+          # Database Health Check
+          if curl -f --max-time 30 "$BASE_URL/api/health/database" > /dev/null 2>&1; then
+            echo "database-health=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "database-health=unhealthy" >> $GITHUB_OUTPUT
+          fi
+          
+          # Redis Health Check
+          if curl -f --max-time 30 "$BASE_URL/api/health/redis" > /dev/null 2>&1; then
+            echo "redis-health=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "redis-health=unhealthy" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Performance Monitoring
+        id: performance
+        run: |
+          echo "Running performance checks..."
+          
+          # API Response Time Test
+          response_time=$(curl -o /dev/null -s -w '%{time_total}' "$BASE_URL/api/projects" || echo "timeout")
+          echo "api-performance=$response_time" >> $GITHUB_OUTPUT
+          
+          # GraphQL Response Time Test
+          graphql_time=$(curl -o /dev/null -s -w '%{time_total}' \
+            -X POST "$BASE_URL/graphql" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"query { health }"}' || echo "timeout")
+          echo "graphql-performance=$graphql_time" >> $GITHUB_OUTPUT
+
+      - name: SSL Certificate Check
+        id: ssl-check
+        run: |
+          echo "Checking SSL certificate..."
+          
+          # Check SSL certificate expiration
+          cert_info=$(echo | openssl s_client -servername api.gitsink.com -connect api.gitsink.com:443 2>/dev/null | openssl x509 -noout -dates)
+          expiry_date=$(echo "$cert_info" | grep "notAfter" | cut -d= -f2)
+          expiry_timestamp=$(date -d "$expiry_date" +%s)
+          current_timestamp=$(date +%s)
+          days_until_expiry=$(( (expiry_timestamp - current_timestamp) / 86400 ))
+          
+          echo "ssl-days-until-expiry=$days_until_expiry" >> $GITHUB_OUTPUT
+          
+          if [ $days_until_expiry -lt 30 ]; then
+            echo "ssl-status=warning" >> $GITHUB_OUTPUT
+          elif [ $days_until_expiry -lt 7 ]; then
+            echo "ssl-status=critical" >> $GITHUB_OUTPUT
+          else
+            echo "ssl-status=healthy" >> $GITHUB_OUTPUT
+          fi
+
+      - name: External Dependencies Check
+        id: dependencies
+        run: |
+          echo "Checking external dependencies..."
+          
+          # GitHub API Check
+          if curl -f --max-time 10 "https://api.github.com" > /dev/null 2>&1; then
+            echo "github-api=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "github-api=unhealthy" >> $GITHUB_OUTPUT
+          fi
+          
+          # DNS Resolution Check
+          if nslookup api.gitsink.com > /dev/null 2>&1; then
+            echo "dns-resolution=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "dns-resolution=unhealthy" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate Monitoring Report
+        id: report
+        run: |
+          echo "Generating monitoring report..."
+          
+          # Create report
+          cat > monitoring-report.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "environment": "$ENVIRONMENT",
+            "health": {
+              "api": "${{ steps.health-check.outputs.api-health }}",
+              "database": "${{ steps.health-check.outputs.database-health }}",
+              "redis": "${{ steps.health-check.outputs.redis-health }}"
+            },
+            "performance": {
+              "api_response_time": "${{ steps.performance.outputs.api-performance }}",
+              "graphql_response_time": "${{ steps.performance.outputs.graphql-performance }}"
+            },
+            "ssl": {
+              "status": "${{ steps.ssl-check.outputs.ssl-status }}",
+              "days_until_expiry": "${{ steps.ssl-check.outputs.ssl-days-until-expiry }}"
+            },
+            "dependencies": {
+              "github_api": "${{ steps.dependencies.outputs.github-api }}",
+              "dns_resolution": "${{ steps.dependencies.outputs.dns-resolution }}"
+            }
+          }
+          EOF
+          
+          # Check if any critical issues
+          if [[ "${{ steps.health-check.outputs.api-health }}" == "unhealthy" ]] || \
+             [[ "${{ steps.health-check.outputs.database-health }}" == "unhealthy" ]] || \
+             [[ "${{ steps.health-check.outputs.redis-health }}" == "unhealthy" ]] || \
+             [[ "${{ steps.ssl-check.outputs.ssl-status }}" == "critical" ]]; then
+            echo "alert-level=critical" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.ssl-check.outputs.ssl-status }}" == "warning" ]] || \
+               [[ "${{ steps.dependencies.outputs.github-api }}" == "unhealthy" ]]; then
+            echo "alert-level=warning" >> $GITHUB_OUTPUT
+          else
+            echo "alert-level=healthy" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack Alert (Critical)
+        if: steps.report.outputs.alert-level == 'critical'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#alerts'
+          webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "🚨 CRITICAL: Production System Alert",
+              "attachments": [
+                {
+                  "color": "danger",
+                  "fields": [
+                    {
+                      "title": "Environment",
+                      "value": "${{ env.ENVIRONMENT }}",
+                      "short": true
+                    },
+                    {
+                      "title": "API Health",
+                      "value": "${{ steps.health-check.outputs.api-health }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Database Health",
+                      "value": "${{ steps.health-check.outputs.database-health }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Redis Health",
+                      "value": "${{ steps.health-check.outputs.redis-health }}",
+                      "short": true
+                    },
+                    {
+                      "title": "SSL Status",
+                      "value": "${{ steps.ssl-check.outputs.ssl-status }} (expires in ${{ steps.ssl-check.outputs.ssl-days-until-expiry }} days)",
+                      "short": false
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Send PagerDuty Alert (Critical)
+        if: steps.report.outputs.alert-level == 'critical'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const https = require('https');
+            
+            const payload = {
+              routing_key: '${{ env.PAGERDUTY_INTEGRATION_KEY }}',
+              event_action: 'trigger',
+              dedup_key: 'gitsink-production-health-check',
+              payload: {
+                summary: 'GitSink Production System Critical Alert',
+                source: 'GitHub Actions Monitoring',
+                severity: 'critical',
+                component: 'production-api',
+                group: 'infrastructure',
+                class: 'health-check',
+                custom_details: {
+                  api_health: '${{ steps.health-check.outputs.api-health }}',
+                  database_health: '${{ steps.health-check.outputs.database-health }}',
+                  redis_health: '${{ steps.health-check.outputs.redis-health }}',
+                  ssl_status: '${{ steps.ssl-check.outputs.ssl-status }}',
+                  environment: '${{ env.ENVIRONMENT }}'
+                }
+              }
+            };
+            
+            const data = JSON.stringify(payload);
+            
+            const options = {
+              hostname: 'events.pagerduty.com',
+              port: 443,
+              path: '/v2/enqueue',
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': data.length
+              }
+            };
+            
+            const req = https.request(options, (res) => {
+              console.log(`PagerDuty response status: ${res.statusCode}`);
+            });
+            
+            req.on('error', (error) => {
+              console.error('PagerDuty alert failed:', error);
+            });
+            
+            req.write(data);
+            req.end();
+
+      - name: Upload Monitoring Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitoring-report-production-${{ github.run_number }}
+          path: monitoring-report.json
+          retention-days: 30
+
+  monitor-staging:
+    name: Monitor Staging Environment
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'staging' || github.event.inputs.environment == 'all'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup monitoring environment
+        run: |
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          echo "BASE_URL=https://staging-api.gitsink.com" >> $GITHUB_ENV
+
+      - name: Staging Health Check
+        id: staging-health
+        run: |
+          echo "Running health checks for staging..."
+          
+          # Similar health checks as production but with different thresholds
+          if curl -f --max-time 30 "$BASE_URL/health" > /dev/null 2>&1; then
+            echo "api-health=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "api-health=unhealthy" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Staging Alert
+        if: steps.staging-health.outputs.api-health == 'unhealthy'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: warning
+          channel: '#dev-alerts'
+          webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "⚠️ Staging Environment Alert",
+              "attachments": [
+                {
+                  "color": "warning",
+                  "fields": [
+                    {
+                      "title": "Environment",
+                      "value": "staging",
+                      "short": true
+                    },
+                    {
+                      "title": "API Health",
+                      "value": "${{ steps.staging-health.outputs.api-health }}",
+                      "short": true
+                    }
+                  ]
+                }
+              ]
+            }
+
+  generate-monitoring-summary:
+    name: Generate Monitoring Summary
+    runs-on: ubuntu-latest
+    needs: [monitor-production, monitor-staging]
+    if: always()
+    steps:
+      - name: Create monitoring summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `
+            ## 📊 System Monitoring Report
+            
+            **Timestamp**: ${new Date().toISOString()}
+            
+            ### Production Environment
+            - **Status**: ${{ needs.monitor-production.result || 'skipped' }}
+            - **API Health**: Available in artifacts
+            
+            ### Staging Environment  
+            - **Status**: ${{ needs.monitor-staging.result || 'skipped' }}
+            
+            ### Actions Taken
+            ${needs.monitor-production.result === 'failure' ? '- 🚨 Critical alerts sent to PagerDuty and Slack' : ''}
+            ${needs.monitor-staging.result === 'failure' ? '- ⚠️ Staging alerts sent to Slack' : ''}
+            
+            ---
+            *This report is generated automatically every 5 minutes*
+            `;
+            
+            console.log(summary);
+            
+            // Create an issue if there are critical problems
+            if ('${{ needs.monitor-production.result }}' === 'failure') {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🚨 Production System Alert - ${new Date().toISOString()}`,
+                body: summary + '\n\n**This is an automated alert. Please investigate immediately.**',
+                labels: ['alert', 'production', 'critical']
+              });
+            }
