@@ -28,6 +28,11 @@ const collection = {
             key: 'apiKey',
             value: '',
             type: 'string'
+        },
+        {
+            key: 'userId',
+            value: '',
+            type: 'string'
         }
     ]
 };
@@ -113,6 +118,8 @@ function generateExample(schema, components, propertyName = '') {
         if (nameLower.includes('status')) return 'active';
         if (nameLower.includes('language')) return 'TypeScript';
         if (nameLower.includes('platform')) return 'github';
+        if (nameLower.includes('branch')) return 'main';
+        if (nameLower.includes('repo')) return 'https://github.com/user/repo';
 
         // Default string with enum support
         if (schema.enum && schema.enum.length > 0) return schema.enum[0];
@@ -324,13 +331,16 @@ Object.keys(folders).forEach(key => {
     }
 });
 
-// Add GraphQL Folder manually
-collection.item.push({
+// ============================================
+// ADD COMPREHENSIVE GRAPHQL FOLDER
+// ============================================
+const graphqlFolder = {
     name: 'GraphQL',
-    description: 'GraphQL Endpoint',
+    description: 'GraphQL API Endpoint - All queries and mutations',
     item: [
+        // ---- INTROSPECTION ----
         {
-            name: 'Introspection Query',
+            name: 'Schema Introspection',
             request: {
                 method: 'POST',
                 header: [
@@ -345,33 +355,60 @@ collection.item.push({
                 body: {
                     mode: 'graphql',
                     graphql: {
-                        query: 'query {\n  __schema {\n    types {\n      name\n      kind\n    }\n  }\n}',
+                        query: `query IntrospectionQuery {
+  __schema {
+    queryType { name }
+    mutationType { name }
+    types {
+      name
+      kind
+      fields {
+        name
+        type { name kind }
+      }
+    }
+  }
+}`,
                         variables: '{}'
                     }
                 }
             },
-            response: [
-                {
-                    name: '200 OK - Introspection Result',
-                    originalRequest: {
-                        method: 'POST',
-                        url: {
-                            raw: '{{baseUrl}}/graphql',
-                            host: ['{{baseUrl}}'],
-                            path: ['graphql']
-                        }
-                    },
-                    status: 'OK',
-                    code: 200,
-                    _postman_previewlanguage: 'json',
-                    header: [{ key: 'Content-Type', value: 'application/json' }],
-                    cookie: [],
-                    body: JSON.stringify({ data: { __schema: { types: [{ name: 'Query', kind: 'OBJECT' }] } } }, null, 2)
+            response: []
+        },
+        // ---- AUTH MUTATIONS ----
+        {
+            name: 'Mutation: Signup',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation Signup($email: String!) {
+  signup(email: $email) {
+    user {
+      id
+      email
+      username
+    }
+    apiKey
+  }
+}`,
+                        variables: JSON.stringify({ email: 'newuser@example.com' }, null, 2)
+                    }
                 }
-            ]
+            },
+            response: []
         },
         {
-            name: 'Sample Query - Get Projects',
+            name: 'Mutation: Connect GitHub',
             request: {
                 method: 'POST',
                 header: [
@@ -386,7 +423,762 @@ collection.item.push({
                 body: {
                     mode: 'graphql',
                     graphql: {
-                        query: 'query GetProjects {\n  projects {\n    id\n    name\n    description\n    language\n    stars\n    forks\n  }\n}',
+                        query: `mutation ConnectGitHub($userId: String!, $githubId: String!, $githubToken: String!) {
+  connectGitHub(userId: $userId, githubId: $githubId, githubToken: $githubToken) {
+    id
+    email
+    githubId
+  }
+}`,
+                        variables: JSON.stringify({
+                            userId: '{{userId}}',
+                            githubId: 'github_user_12345',
+                            githubToken: 'gho_xxxxxxxxxxxx'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Regenerate API Key',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation RegenerateApiKey($userId: String!) {
+  regenerateApiKey(userId: $userId) {
+    user {
+      id
+      email
+    }
+    apiKey
+  }
+}`,
+                        variables: JSON.stringify({ userId: '{{userId}}' }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Revoke API Key',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation RevokeApiKey($userId: String!) {
+  revokeApiKey(userId: $userId) {
+    id
+    email
+  }
+}`,
+                        variables: JSON.stringify({ userId: '{{userId}}' }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: GitHub OAuth',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation GitHubOAuth($userId: String!, $code: String!) {
+  githubOAuth(userId: $userId, code: $code) {
+    id
+    email
+    githubId
+  }
+}`,
+                        variables: JSON.stringify({
+                            userId: '{{userId}}',
+                            code: 'github_oauth_code_from_callback'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        // ---- PROJECT QUERIES ----
+        {
+            name: 'Query: Ping',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query Ping {
+  ping
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Get All Projects',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query GetProjects {
+  projects {
+    id
+    name
+    description
+    repoUrl
+    language
+    stars
+    forks
+    isPrivate
+    lastSyncedAt
+    createdAt
+    updatedAt
+  }
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Get Single Project',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query GetProject($repoUrl: String!) {
+  project(repoUrl: $repoUrl) {
+    id
+    name
+    description
+    repoUrl
+    language
+    stars
+    forks
+    topics
+    readme
+    portfolioContent
+  }
+}`,
+                        variables: JSON.stringify({ repoUrl: 'https://github.com/user/repo' }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Filtered Projects',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query FilteredProjects($filter: ProjectFilterInput) {
+  filteredProjects(filter: $filter) {
+    id
+    name
+    language
+    stars
+    isPrivate
+  }
+}`,
+                        variables: JSON.stringify({
+                            filter: {
+                                language: 'TypeScript',
+                                isPrivate: false
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Enhanced Projects (Paginated)',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query EnhancedProjects($filter: EnhancedProjectFilterInput, $sort: ProjectSortInput, $pagination: PaginationInput) {
+  enhancedProjects(filter: $filter, sort: $sort, pagination: $pagination) {
+    edges {
+      node {
+        id
+        name
+        language
+        stars
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    totalCount
+  }
+}`,
+                        variables: JSON.stringify({
+                            filter: { languages: ['TypeScript', 'JavaScript'] },
+                            sort: { field: 'stars', direction: 'DESC' },
+                            pagination: { offset: 0, limit: 10 }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Search Projects',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SearchProjects($query: String!, $filter: EnhancedProjectFilterInput, $pagination: PaginationInput) {
+  searchProjects(query: $query, filter: $filter, pagination: $pagination) {
+    id
+    name
+    description
+    language
+    stars
+  }
+}`,
+                        variables: JSON.stringify({
+                            query: 'api',
+                            pagination: { offset: 0, limit: 20 }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Project Statistics',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query ProjectStatistics($filter: EnhancedProjectFilterInput) {
+  projectStatistics(filter: $filter) {
+    totalProjects
+    totalStars
+    totalForks
+    languageDistribution {
+      language
+      count
+      percentage
+    }
+  }
+}`,
+                        variables: JSON.stringify({ filter: {} }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Trending Projects',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query TrendingProjects($timeframe: String, $limit: Int) {
+  trendingProjects(timeframe: $timeframe, limit: $limit) {
+    id
+    name
+    stars
+    forks
+    language
+  }
+}`,
+                        variables: JSON.stringify({ timeframe: '7d', limit: 10 }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Featured Projects',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query FeaturedProjects($limit: Int) {
+  featuredProjects(limit: $limit) {
+    id
+    name
+    description
+    stars
+    language
+  }
+}`,
+                        variables: JSON.stringify({ limit: 10 }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        // ---- PROJECT MUTATIONS ----
+        {
+            name: 'Mutation: Sync Single Project',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation SyncProject($input: SyncProjectInput!) {
+  syncProject(input: $input) {
+    enqueued
+  }
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                repoUrl: 'https://github.com/user/repo',
+                                branch: 'main'
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Sync All Projects',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation SyncAllProjects {
+  syncAllProjects
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        // ---- PROFILE QUERIES ----
+        {
+            name: 'Query: My Profile',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query MyProfile {
+  myProfile {
+    id
+    username
+    displayName
+    bio
+    avatarUrl
+    isPublic
+    socialLinks {
+      platform
+      url
+    }
+    projects {
+      id
+      name
+    }
+  }
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Public Profile',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query PublicProfile($username: String!) {
+  publicProfile(username: $username) {
+    id
+    username
+    displayName
+    bio
+    avatarUrl
+    socialLinks {
+      platform
+      url
+    }
+    projects {
+      id
+      name
+      stars
+    }
+  }
+}`,
+                        variables: JSON.stringify({ username: 'johndoe' }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Search Profiles',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SearchProfiles($query: String!, $limit: Int, $offset: Int) {
+  searchProfiles(query: $query, limit: $limit, offset: $offset) {
+    id
+    username
+    displayName
+    avatarUrl
+  }
+}`,
+                        variables: JSON.stringify({ query: 'developer', limit: 20, offset: 0 }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Featured Profiles',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query FeaturedProfiles($limit: Int) {
+  featuredProfiles(limit: $limit) {
+    id
+    username
+    displayName
+    avatarUrl
+  }
+}`,
+                        variables: JSON.stringify({ limit: 10 }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        // ---- PROFILE MUTATIONS ----
+        {
+            name: 'Mutation: Create Profile',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation CreateProfile($input: CreateProfileInput!) {
+  createProfile(input: $input) {
+    id
+    username
+    displayName
+    bio
+  }
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                username: 'johndoe',
+                                displayName: 'John Doe',
+                                bio: 'Full-stack developer passionate about open source'
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Update Profile',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation UpdateProfile($input: UpdateProfileInput!) {
+  updateProfile(input: $input) {
+    id
+    username
+    displayName
+    bio
+    avatarUrl
+  }
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                displayName: 'John Updated',
+                                bio: 'Updated bio text'
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Delete Profile',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation DeleteProfile {
+  deleteProfile
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        // ---- UTILITY QUERIES ----
+        {
+            name: 'Query: Is Username Available',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query IsUsernameAvailable($username: String!) {
+  isUsernameAvailable(username: $username)
+}`,
+                        variables: JSON.stringify({ username: 'newusername' }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Supported Platforms',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query GetSupportedPlatforms {
+  getSupportedPlatforms
+}`,
                         variables: '{}'
                     }
                 }
@@ -394,10 +1186,13 @@ collection.item.push({
             response: []
         }
     ]
-});
+};
+
+collection.item.push(graphqlFolder);
 
 fs.writeFileSync(outputPath, JSON.stringify(collection, null, 2));
 console.log('Postman collection generated successfully!');
 console.log('Output: ' + outputPath);
 console.log('Total folders: ' + collection.item.length);
-console.log('Total requests: ' + collection.item.reduce((acc, folder) => acc + (folder.item?.length || 0), 0));
+console.log('Total REST requests: ' + collection.item.filter(f => f.name !== 'GraphQL').reduce((acc, folder) => acc + (folder.item?.length || 0), 0));
+console.log('Total GraphQL requests: ' + graphqlFolder.item.length);

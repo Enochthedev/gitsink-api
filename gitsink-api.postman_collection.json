@@ -4370,7 +4370,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"fullName\": \"John Doe\",\n    \"description\": \"A sample description\",\n    \"htmlUrl\": \"https://example.com\",\n    \"cloneUrl\": \"https://example.com\",\n    \"defaultBranch\": \"string_value\",\n    \"language\": \"TypeScript\",\n    \"topics\": [\n      \"string_value\"\n    ],\n    \"starCount\": 42,\n    \"forkCount\": 42,\n    \"isPrivate\": false,\n    \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n    \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"pushedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"platform\": \"github\",\n    \"portfolioContent\": \"string_value\",\n    \"readmeContent\": \"string_value\"\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"fullName\": \"John Doe\",\n    \"description\": \"A sample description\",\n    \"htmlUrl\": \"https://example.com\",\n    \"cloneUrl\": \"https://example.com\",\n    \"defaultBranch\": \"main\",\n    \"language\": \"TypeScript\",\n    \"topics\": [\n      \"string_value\"\n    ],\n    \"starCount\": 42,\n    \"forkCount\": 42,\n    \"isPrivate\": false,\n    \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n    \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"pushedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"platform\": \"github\",\n    \"portfolioContent\": \"string_value\",\n    \"readmeContent\": \"string_value\"\n  }\n]"
             }
           ]
         },
@@ -4794,6 +4794,171 @@
               },
               "status": "OK",
               "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Waitlist",
+      "description": "User waitlist management",
+      "item": [
+        {
+          "name": "Join the waitlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/waitlist",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "waitlist"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created - Successfully joined the waitlist",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/waitlist",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "waitlist"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"You have been added to the waitlist\",\n  \"email\": \"user@example.com\",\n  \"position\": 42\n}"
+            },
+            {
+              "name": "400 Bad Request - Invalid email format",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/waitlist",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "waitlist"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "429 Too Many Requests - Too many requests - rate limited",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/waitlist",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "waitlist"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -5986,86 +6151,6 @@
               },
               "status": "OK",
               "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json; charset=utf-8"
-                }
-              ],
-              "cookie": [],
-              "body": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "waitlist",
-      "item": [
-        {
-          "name": "join",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/waitlist",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "waitlist"
-              ],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
-            {
-              "name": "201 Created - Created",
-              "originalRequest": {
-                "method": "POST",
-                "url": {
-                  "raw": "{{baseUrl}}/waitlist",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "waitlist"
-                  ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"email\": \"user@example.com\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              },
-              "status": "Created",
-              "code": 201,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -12593,10 +12678,10 @@
     },
     {
       "name": "GraphQL",
-      "description": "GraphQL Endpoint",
+      "description": "GraphQL API Endpoint - All queries and mutations",
       "item": [
         {
-          "name": "Introspection Query",
+          "name": "Schema Introspection",
           "request": {
             "method": "POST",
             "header": [
@@ -12621,42 +12706,44 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "query {\n  __schema {\n    types {\n      name\n      kind\n    }\n  }\n}",
+                "query": "query IntrospectionQuery {\n  __schema {\n    queryType { name }\n    mutationType { name }\n    types {\n      name\n      kind\n      fields {\n        name\n        type { name kind }\n      }\n    }\n  }\n}",
                 "variables": "{}"
               }
             }
           },
-          "response": [
-            {
-              "name": "200 OK - Introspection Result",
-              "originalRequest": {
-                "method": "POST",
-                "url": {
-                  "raw": "{{baseUrl}}/graphql",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "graphql"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"data\": {\n    \"__schema\": {\n      \"types\": [\n        {\n          \"name\": \"Query\",\n          \"kind\": \"OBJECT\"\n        }\n      ]\n    }\n  }\n}"
-            }
-          ]
+          "response": []
         },
         {
-          "name": "Sample Query - Get Projects",
+          "name": "Mutation: Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Signup($email: String!) {\n  signup(email: $email) {\n    user {\n      id\n      email\n      username\n    }\n    apiKey\n  }\n}",
+                "variables": "{\n  \"email\": \"newuser@example.com\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Connect GitHub",
           "request": {
             "method": "POST",
             "header": [
@@ -12681,7 +12768,746 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "query GetProjects {\n  projects {\n    id\n    name\n    description\n    language\n    stars\n    forks\n  }\n}",
+                "query": "mutation ConnectGitHub($userId: String!, $githubId: String!, $githubToken: String!) {\n  connectGitHub(userId: $userId, githubId: $githubId, githubToken: $githubToken) {\n    id\n    email\n    githubId\n  }\n}",
+                "variables": "{\n  \"userId\": \"{{userId}}\",\n  \"githubId\": \"github_user_12345\",\n  \"githubToken\": \"gho_xxxxxxxxxxxx\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Regenerate API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation RegenerateApiKey($userId: String!) {\n  regenerateApiKey(userId: $userId) {\n    user {\n      id\n      email\n    }\n    apiKey\n  }\n}",
+                "variables": "{\n  \"userId\": \"{{userId}}\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Revoke API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation RevokeApiKey($userId: String!) {\n  revokeApiKey(userId: $userId) {\n    id\n    email\n  }\n}",
+                "variables": "{\n  \"userId\": \"{{userId}}\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: GitHub OAuth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation GitHubOAuth($userId: String!, $code: String!) {\n  githubOAuth(userId: $userId, code: $code) {\n    id\n    email\n    githubId\n  }\n}",
+                "variables": "{\n  \"userId\": \"{{userId}}\",\n  \"code\": \"github_oauth_code_from_callback\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Ping",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Ping {\n  ping\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Get All Projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetProjects {\n  projects {\n    id\n    name\n    description\n    repoUrl\n    language\n    stars\n    forks\n    isPrivate\n    lastSyncedAt\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Get Single Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetProject($repoUrl: String!) {\n  project(repoUrl: $repoUrl) {\n    id\n    name\n    description\n    repoUrl\n    language\n    stars\n    forks\n    topics\n    readme\n    portfolioContent\n  }\n}",
+                "variables": "{\n  \"repoUrl\": \"https://github.com/user/repo\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Filtered Projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query FilteredProjects($filter: ProjectFilterInput) {\n  filteredProjects(filter: $filter) {\n    id\n    name\n    language\n    stars\n    isPrivate\n  }\n}",
+                "variables": "{\n  \"filter\": {\n    \"language\": \"TypeScript\",\n    \"isPrivate\": false\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Enhanced Projects (Paginated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query EnhancedProjects($filter: EnhancedProjectFilterInput, $sort: ProjectSortInput, $pagination: PaginationInput) {\n  enhancedProjects(filter: $filter, sort: $sort, pagination: $pagination) {\n    edges {\n      node {\n        id\n        name\n        language\n        stars\n      }\n      cursor\n    }\n    pageInfo {\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n    totalCount\n  }\n}",
+                "variables": "{\n  \"filter\": {\n    \"languages\": [\n      \"TypeScript\",\n      \"JavaScript\"\n    ]\n  },\n  \"sort\": {\n    \"field\": \"stars\",\n    \"direction\": \"DESC\"\n  },\n  \"pagination\": {\n    \"offset\": 0,\n    \"limit\": 10\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Search Projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SearchProjects($query: String!, $filter: EnhancedProjectFilterInput, $pagination: PaginationInput) {\n  searchProjects(query: $query, filter: $filter, pagination: $pagination) {\n    id\n    name\n    description\n    language\n    stars\n  }\n}",
+                "variables": "{\n  \"query\": \"api\",\n  \"pagination\": {\n    \"offset\": 0,\n    \"limit\": 20\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Project Statistics",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ProjectStatistics($filter: EnhancedProjectFilterInput) {\n  projectStatistics(filter: $filter) {\n    totalProjects\n    totalStars\n    totalForks\n    languageDistribution {\n      language\n      count\n      percentage\n    }\n  }\n}",
+                "variables": "{\n  \"filter\": {}\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Trending Projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query TrendingProjects($timeframe: String, $limit: Int) {\n  trendingProjects(timeframe: $timeframe, limit: $limit) {\n    id\n    name\n    stars\n    forks\n    language\n  }\n}",
+                "variables": "{\n  \"timeframe\": \"7d\",\n  \"limit\": 10\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Featured Projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query FeaturedProjects($limit: Int) {\n  featuredProjects(limit: $limit) {\n    id\n    name\n    description\n    stars\n    language\n  }\n}",
+                "variables": "{\n  \"limit\": 10\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Sync Single Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation SyncProject($input: SyncProjectInput!) {\n  syncProject(input: $input) {\n    enqueued\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"repoUrl\": \"https://github.com/user/repo\",\n    \"branch\": \"main\"\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Sync All Projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation SyncAllProjects {\n  syncAllProjects\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: My Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query MyProfile {\n  myProfile {\n    id\n    username\n    displayName\n    bio\n    avatarUrl\n    isPublic\n    socialLinks {\n      platform\n      url\n    }\n    projects {\n      id\n      name\n    }\n  }\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Public Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query PublicProfile($username: String!) {\n  publicProfile(username: $username) {\n    id\n    username\n    displayName\n    bio\n    avatarUrl\n    socialLinks {\n      platform\n      url\n    }\n    projects {\n      id\n      name\n      stars\n    }\n  }\n}",
+                "variables": "{\n  \"username\": \"johndoe\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Search Profiles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SearchProfiles($query: String!, $limit: Int, $offset: Int) {\n  searchProfiles(query: $query, limit: $limit, offset: $offset) {\n    id\n    username\n    displayName\n    avatarUrl\n  }\n}",
+                "variables": "{\n  \"query\": \"developer\",\n  \"limit\": 20,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Featured Profiles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query FeaturedProfiles($limit: Int) {\n  featuredProfiles(limit: $limit) {\n    id\n    username\n    displayName\n    avatarUrl\n  }\n}",
+                "variables": "{\n  \"limit\": 10\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Create Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateProfile($input: CreateProfileInput!) {\n  createProfile(input: $input) {\n    id\n    username\n    displayName\n    bio\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"username\": \"johndoe\",\n    \"displayName\": \"John Doe\",\n    \"bio\": \"Full-stack developer passionate about open source\"\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Update Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation UpdateProfile($input: UpdateProfileInput!) {\n  updateProfile(input: $input) {\n    id\n    username\n    displayName\n    bio\n    avatarUrl\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"displayName\": \"John Updated\",\n    \"bio\": \"Updated bio text\"\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Delete Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation DeleteProfile {\n  deleteProfile\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Is Username Available",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query IsUsernameAvailable($username: String!) {\n  isUsernameAvailable(username: $username)\n}",
+                "variables": "{\n  \"username\": \"newusername\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Supported Platforms",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetSupportedPlatforms {\n  getSupportedPlatforms\n}",
                 "variables": "{}"
               }
             }
@@ -12704,6 +13530,11 @@
     },
     {
       "key": "apiKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
       "value": "",
       "type": "string"
     }
