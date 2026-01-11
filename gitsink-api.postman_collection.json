@@ -13513,6 +13513,918 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Mutation: Start Sandbox Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation StartSandboxSession($input: StartSandboxSessionInput!) {\n  startSandboxSession(input: $input) {\n    id\n    userId\n    isActive\n    startedAt\n    expiresAt\n    projectLimit\n    apiCallLimit\n    syncLimit\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"durationMinutes\": 60,\n    \"projectLimit\": 5,\n    \"apiCallLimit\": 100,\n    \"syncLimit\": 10\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Current Sandbox Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query CurrentSandboxSession {\n  currentSandboxSession {\n    id\n    isActive\n    startedAt\n    expiresAt\n    projectLimit\n    apiCallLimit\n    syncLimit\n  }\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Sandbox Usage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SandboxUsage {\n  sandboxUsage {\n    projectsUsed\n    projectsRemaining\n    apiCallsUsed\n    apiCallsRemaining\n    syncOperationsUsed\n    syncOperationsRemaining\n    timeRemaining\n  }\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Sandbox Repositories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SandboxRepositories {\n  sandboxRepositories {\n    id\n    name\n    url\n    description\n    language\n    stars\n    isSample\n  }\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Reset Sandbox Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation ResetSandboxData($input: ResetSandboxInput!) {\n  resetSandboxData(input: $input)\n}",
+                "variables": "{\n  \"input\": {\n    \"preserveProjects\": false,\n    \"resetApiUsage\": true\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Migrate Sandbox to Production",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation MigrateSandboxToProduction($input: MigrateSandboxDataInput!) {\n  migrateSandboxToProduction(input: $input)\n}",
+                "variables": "{\n  \"input\": {\n    \"projectIds\": [\n      \"project-id-1\",\n      \"project-id-2\"\n    ],\n    \"includeAnalyses\": true\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: End Sandbox Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation EndSandboxSession {\n  endSandboxSession\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Sandbox Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SandboxStatus {\n  sandboxStatus\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Audit Logs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query AuditLogs($limit: Int, $offset: Int, $actions: [AuditAction!], $resources: [AuditResource!]) {\n  auditLogs(limit: $limit, offset: $offset, actions: $actions, resources: $resources) {\n    edges {\n      node {\n        id\n        action\n        resource\n        resourceId\n        userId\n        details\n        ipAddress\n        userAgent\n        createdAt\n      }\n    }\n    totalCount\n    pageInfo {\n      hasNextPage\n      hasPreviousPage\n    }\n  }\n}",
+                "variables": "{\n  \"limit\": 20,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: User Audit Logs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query UserAuditLogs($userId: String, $limit: Int, $offset: Int) {\n  userAuditLogs(userId: $userId, limit: $limit, offset: $offset) {\n    id\n    action\n    resource\n    resourceId\n    details\n    createdAt\n  }\n}",
+                "variables": "{\n  \"limit\": 50,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Audit Summary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query AuditSummary($startDate: DateTime, $endDate: DateTime) {\n  auditSummary(startDate: $startDate, endDate: $endDate) {\n    totalActions\n    actionBreakdown {\n      action\n      count\n    }\n    resourceBreakdown {\n      resource\n      count\n    }\n    topUsers {\n      userId\n      actionCount\n    }\n  }\n}",
+                "variables": "{\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Project Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ProjectAnalysis($projectId: String!) {\n  projectAnalysis(projectId: $projectId) {\n    id\n    projectId\n    summary\n    technologies\n    complexity\n    codeQuality\n    highlights\n    suggestions\n    analyzedAt\n  }\n}",
+                "variables": "{\n  \"projectId\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: User Project Analyses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query UserProjectAnalyses($limit: Int, $offset: Int) {\n  userProjectAnalyses(limit: $limit, offset: $offset) {\n    id\n    projectId\n    summary\n    technologies\n    analyzedAt\n  }\n}",
+                "variables": "{\n  \"limit\": 20,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Recent Analyses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query RecentAnalyses($limit: Int) {\n  recentAnalyses(limit: $limit) {\n    id\n    projectId\n    summary\n    technologies\n    analyzedAt\n  }\n}",
+                "variables": "{\n  \"limit\": 10\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Trigger Enrichment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation TriggerEnrichment($input: TriggerEnrichmentInput!) {\n  triggerEnrichment(input: $input) {\n    id\n    projectId\n    status\n    createdAt\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"projectId\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"forceReanalysis\": false,\n    \"analysisTypes\": [\n      \"summary\",\n      \"technologies\",\n      \"complexity\"\n    ]\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation: Bulk Trigger Enrichment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation BulkTriggerEnrichment($input: BulkEnrichmentInput!) {\n  bulkTriggerEnrichment(input: $input) {\n    jobsCreated\n    jobsFailed\n    errors\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"projectIds\": [\n      \"project-1\",\n      \"project-2\",\n      \"project-3\"\n    ],\n    \"forceReanalysis\": false\n  }\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Enrichment Jobs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query EnrichmentJobs($status: String, $limit: Int, $offset: Int) {\n  enrichmentJobs(status: $status, limit: $limit, offset: $offset) {\n    id\n    projectId\n    status\n    createdAt\n    completedAt\n    error\n  }\n}",
+                "variables": "{\n  \"status\": \"completed\",\n  \"limit\": 20,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Sync History",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SyncHistory($limit: Int, $offset: Int, $status: SyncStatus, $operationType: SyncOperationType) {\n  syncHistory(limit: $limit, offset: $offset, status: $status, operationType: $operationType) {\n    edges {\n      node {\n        id\n        projectId\n        operationType\n        status\n        startedAt\n        completedAt\n        duration\n        error\n      }\n    }\n    totalCount\n  }\n}",
+                "variables": "{\n  \"limit\": 20,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Project Sync History",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ProjectSyncHistory($projectId: String!, $limit: Int, $offset: Int) {\n  projectSyncHistory(projectId: $projectId, limit: $limit, offset: $offset) {\n    id\n    operationType\n    status\n    startedAt\n    completedAt\n    duration\n  }\n}",
+                "variables": "{\n  \"projectId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"limit\": 50,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Sync History Stats",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SyncHistoryStats($startDate: DateTime, $endDate: DateTime) {\n  syncHistoryStats(startDate: $startDate, endDate: $endDate) {\n    totalSyncs\n    successfulSyncs\n    failedSyncs\n    averageDuration\n    syncsByType {\n      type\n      count\n    }\n  }\n}",
+                "variables": "{\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Sync Failure Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SyncFailureAnalysis($startDate: String, $endDate: String) {\n  syncFailureAnalysis(startDate: $startDate, endDate: $endDate) {\n    totalFailures\n    failuresByReason {\n      reason\n      count\n    }\n    topFailingProjects {\n      projectId\n      failureCount\n    }\n  }\n}",
+                "variables": "{\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-12-31\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Security Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SecurityReport($startDate: DateTime!, $endDate: DateTime!) {\n  securityReport(startDate: $startDate, endDate: $endDate) {\n    loginAttempts\n    failedLogins\n    suspiciousActivities\n    apiKeyOperations\n    tokenOperations\n  }\n}",
+                "variables": "{\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Compliance Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ComplianceReport($startDate: DateTime!, $endDate: DateTime!) {\n  complianceReport(startDate: $startDate, endDate: $endDate) {\n    dataAccessEvents\n    dataModifications\n    userAccountChanges\n    privacyRelatedEvents\n  }\n}",
+                "variables": "{\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Activity Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ActivityReport($startDate: DateTime!, $endDate: DateTime!) {\n  activityReport(startDate: $startDate, endDate: $endDate) {\n    totalActions\n    uniqueUsers\n    topActions {\n      action\n      count\n    }\n    activityByHour {\n      hour\n      count\n    }\n  }\n}",
+                "variables": "{\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Performance Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query PerformanceReport($startDate: DateTime!, $endDate: DateTime!) {\n  performanceReport(startDate: $startDate, endDate: $endDate) {\n    averageResponseTime\n    slowestEndpoints {\n      endpoint\n      avgTime\n    }\n    errorRate\n    throughput\n  }\n}",
+                "variables": "{\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\"\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Search Audit Logs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SearchAuditLogs($query: String!, $limit: Int, $offset: Int) {\n  searchAuditLogs(query: $query, limit: $limit, offset: $offset) {\n    results {\n      id\n      action\n      resource\n      details\n      createdAt\n    }\n    totalCount\n  }\n}",
+                "variables": "{\n  \"query\": \"login\",\n  \"limit\": 20,\n  \"offset\": 0\n}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: System Health (GraphQL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query SystemHealth {\n  systemHealth {\n    status\n    services {\n      name\n      status\n      responseTime\n      lastCheck\n      error\n    }\n    metrics {\n      cpuUsage\n      memoryUsage\n      diskUsage\n      activeConnections\n      queueSize\n      averageResponseTime\n      errorRate\n      throughput\n    }\n    timestamp\n    uptime\n    version\n  }\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query: Service Health",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ServiceHealth($name: String!) {\n  serviceHealth(name: $name) {\n    name\n    status\n    responseTime\n    lastCheck\n    error\n    details\n  }\n}",
+                "variables": "{\n  \"name\": \"database\"\n}"
+              }
+            }
+          },
+          "response": []
         }
       ]
     }

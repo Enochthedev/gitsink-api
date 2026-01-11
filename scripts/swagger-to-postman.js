@@ -1184,6 +1184,1015 @@ const graphqlFolder = {
                 }
             },
             response: []
+        },
+        // ============================================
+        // SANDBOX RESOLVER
+        // ============================================
+        {
+            name: 'Mutation: Start Sandbox Session',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation StartSandboxSession($input: StartSandboxSessionInput!) {
+  startSandboxSession(input: $input) {
+    id
+    userId
+    isActive
+    startedAt
+    expiresAt
+    projectLimit
+    apiCallLimit
+    syncLimit
+  }
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                durationMinutes: 60,
+                                projectLimit: 5,
+                                apiCallLimit: 100,
+                                syncLimit: 10
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Current Sandbox Session',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query CurrentSandboxSession {
+  currentSandboxSession {
+    id
+    isActive
+    startedAt
+    expiresAt
+    projectLimit
+    apiCallLimit
+    syncLimit
+  }
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Sandbox Usage',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SandboxUsage {
+  sandboxUsage {
+    projectsUsed
+    projectsRemaining
+    apiCallsUsed
+    apiCallsRemaining
+    syncOperationsUsed
+    syncOperationsRemaining
+    timeRemaining
+  }
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Sandbox Repositories',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SandboxRepositories {
+  sandboxRepositories {
+    id
+    name
+    url
+    description
+    language
+    stars
+    isSample
+  }
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Reset Sandbox Data',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation ResetSandboxData($input: ResetSandboxInput!) {
+  resetSandboxData(input: $input)
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                preserveProjects: false,
+                                resetApiUsage: true
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Migrate Sandbox to Production',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation MigrateSandboxToProduction($input: MigrateSandboxDataInput!) {
+  migrateSandboxToProduction(input: $input)
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                projectIds: ['project-id-1', 'project-id-2'],
+                                includeAnalyses: true
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: End Sandbox Session',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation EndSandboxSession {
+  endSandboxSession
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Sandbox Status',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'x-api-key', value: '{{apiKey}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SandboxStatus {
+  sandboxStatus
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        // ============================================
+        // AUDIT RESOLVER
+        // ============================================
+        {
+            name: 'Query: Audit Logs',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query AuditLogs($limit: Int, $offset: Int, $actions: [AuditAction!], $resources: [AuditResource!]) {
+  auditLogs(limit: $limit, offset: $offset, actions: $actions, resources: $resources) {
+    edges {
+      node {
+        id
+        action
+        resource
+        resourceId
+        userId
+        details
+        ipAddress
+        userAgent
+        createdAt
+      }
+    }
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}`,
+                        variables: JSON.stringify({
+                            limit: 20,
+                            offset: 0
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: User Audit Logs',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query UserAuditLogs($userId: String, $limit: Int, $offset: Int) {
+  userAuditLogs(userId: $userId, limit: $limit, offset: $offset) {
+    id
+    action
+    resource
+    resourceId
+    details
+    createdAt
+  }
+}`,
+                        variables: JSON.stringify({
+                            limit: 50,
+                            offset: 0
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Audit Summary',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query AuditSummary($startDate: DateTime, $endDate: DateTime) {
+  auditSummary(startDate: $startDate, endDate: $endDate) {
+    totalActions
+    actionBreakdown {
+      action
+      count
+    }
+    resourceBreakdown {
+      resource
+      count
+    }
+    topUsers {
+      userId
+      actionCount
+    }
+  }
+}`,
+                        variables: JSON.stringify({
+                            startDate: '2024-01-01T00:00:00Z',
+                            endDate: '2024-12-31T23:59:59Z'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        // ============================================
+        // AI ENRICHMENT RESOLVER
+        // ============================================
+        {
+            name: 'Query: Project Analysis',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query ProjectAnalysis($projectId: String!) {
+  projectAnalysis(projectId: $projectId) {
+    id
+    projectId
+    summary
+    technologies
+    complexity
+    codeQuality
+    highlights
+    suggestions
+    analyzedAt
+  }
+}`,
+                        variables: JSON.stringify({
+                            projectId: '123e4567-e89b-12d3-a456-426614174000'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: User Project Analyses',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query UserProjectAnalyses($limit: Int, $offset: Int) {
+  userProjectAnalyses(limit: $limit, offset: $offset) {
+    id
+    projectId
+    summary
+    technologies
+    analyzedAt
+  }
+}`,
+                        variables: JSON.stringify({
+                            limit: 20,
+                            offset: 0
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Recent Analyses',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query RecentAnalyses($limit: Int) {
+  recentAnalyses(limit: $limit) {
+    id
+    projectId
+    summary
+    technologies
+    analyzedAt
+  }
+}`,
+                        variables: JSON.stringify({ limit: 10 }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Trigger Enrichment',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation TriggerEnrichment($input: TriggerEnrichmentInput!) {
+  triggerEnrichment(input: $input) {
+    id
+    projectId
+    status
+    createdAt
+  }
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                projectId: '123e4567-e89b-12d3-a456-426614174000',
+                                forceReanalysis: false,
+                                analysisTypes: ['summary', 'technologies', 'complexity']
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Mutation: Bulk Trigger Enrichment',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `mutation BulkTriggerEnrichment($input: BulkEnrichmentInput!) {
+  bulkTriggerEnrichment(input: $input) {
+    jobsCreated
+    jobsFailed
+    errors
+  }
+}`,
+                        variables: JSON.stringify({
+                            input: {
+                                projectIds: ['project-1', 'project-2', 'project-3'],
+                                forceReanalysis: false
+                            }
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Enrichment Jobs',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query EnrichmentJobs($status: String, $limit: Int, $offset: Int) {
+  enrichmentJobs(status: $status, limit: $limit, offset: $offset) {
+    id
+    projectId
+    status
+    createdAt
+    completedAt
+    error
+  }
+}`,
+                        variables: JSON.stringify({
+                            status: 'completed',
+                            limit: 20,
+                            offset: 0
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        // ============================================
+        // SYNC HISTORY RESOLVER
+        // ============================================
+        {
+            name: 'Query: Sync History',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SyncHistory($limit: Int, $offset: Int, $status: SyncStatus, $operationType: SyncOperationType) {
+  syncHistory(limit: $limit, offset: $offset, status: $status, operationType: $operationType) {
+    edges {
+      node {
+        id
+        projectId
+        operationType
+        status
+        startedAt
+        completedAt
+        duration
+        error
+      }
+    }
+    totalCount
+  }
+}`,
+                        variables: JSON.stringify({
+                            limit: 20,
+                            offset: 0
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Project Sync History',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query ProjectSyncHistory($projectId: String!, $limit: Int, $offset: Int) {
+  projectSyncHistory(projectId: $projectId, limit: $limit, offset: $offset) {
+    id
+    operationType
+    status
+    startedAt
+    completedAt
+    duration
+  }
+}`,
+                        variables: JSON.stringify({
+                            projectId: '123e4567-e89b-12d3-a456-426614174000',
+                            limit: 50,
+                            offset: 0
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Sync History Stats',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SyncHistoryStats($startDate: DateTime, $endDate: DateTime) {
+  syncHistoryStats(startDate: $startDate, endDate: $endDate) {
+    totalSyncs
+    successfulSyncs
+    failedSyncs
+    averageDuration
+    syncsByType {
+      type
+      count
+    }
+  }
+}`,
+                        variables: JSON.stringify({
+                            startDate: '2024-01-01T00:00:00Z',
+                            endDate: '2024-12-31T23:59:59Z'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Sync Failure Analysis',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SyncFailureAnalysis($startDate: String, $endDate: String) {
+  syncFailureAnalysis(startDate: $startDate, endDate: $endDate) {
+    totalFailures
+    failuresByReason {
+      reason
+      count
+    }
+    topFailingProjects {
+      projectId
+      failureCount
+    }
+  }
+}`,
+                        variables: JSON.stringify({
+                            startDate: '2024-01-01',
+                            endDate: '2024-12-31'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        // ============================================
+        // AUDIT REPORTING RESOLVER
+        // ============================================
+        {
+            name: 'Query: Security Report',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SecurityReport($startDate: DateTime!, $endDate: DateTime!) {
+  securityReport(startDate: $startDate, endDate: $endDate) {
+    loginAttempts
+    failedLogins
+    suspiciousActivities
+    apiKeyOperations
+    tokenOperations
+  }
+}`,
+                        variables: JSON.stringify({
+                            startDate: '2024-01-01T00:00:00Z',
+                            endDate: '2024-12-31T23:59:59Z'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Compliance Report',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query ComplianceReport($startDate: DateTime!, $endDate: DateTime!) {
+  complianceReport(startDate: $startDate, endDate: $endDate) {
+    dataAccessEvents
+    dataModifications
+    userAccountChanges
+    privacyRelatedEvents
+  }
+}`,
+                        variables: JSON.stringify({
+                            startDate: '2024-01-01T00:00:00Z',
+                            endDate: '2024-12-31T23:59:59Z'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Activity Report',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query ActivityReport($startDate: DateTime!, $endDate: DateTime!) {
+  activityReport(startDate: $startDate, endDate: $endDate) {
+    totalActions
+    uniqueUsers
+    topActions {
+      action
+      count
+    }
+    activityByHour {
+      hour
+      count
+    }
+  }
+}`,
+                        variables: JSON.stringify({
+                            startDate: '2024-01-01T00:00:00Z',
+                            endDate: '2024-12-31T23:59:59Z'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Performance Report',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query PerformanceReport($startDate: DateTime!, $endDate: DateTime!) {
+  performanceReport(startDate: $startDate, endDate: $endDate) {
+    averageResponseTime
+    slowestEndpoints {
+      endpoint
+      avgTime
+    }
+    errorRate
+    throughput
+  }
+}`,
+                        variables: JSON.stringify({
+                            startDate: '2024-01-01T00:00:00Z',
+                            endDate: '2024-12-31T23:59:59Z'
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Search Audit Logs',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SearchAuditLogs($query: String!, $limit: Int, $offset: Int) {
+  searchAuditLogs(query: $query, limit: $limit, offset: $offset) {
+    results {
+      id
+      action
+      resource
+      details
+      createdAt
+    }
+    totalCount
+  }
+}`,
+                        variables: JSON.stringify({
+                            query: 'login',
+                            limit: 20,
+                            offset: 0
+                        }, null, 2)
+                    }
+                }
+            },
+            response: []
+        },
+        // ============================================
+        // HEALTH RESOLVER
+        // ============================================
+        {
+            name: 'Query: System Health (GraphQL)',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query SystemHealth {
+  systemHealth {
+    status
+    services {
+      name
+      status
+      responseTime
+      lastCheck
+      error
+    }
+    metrics {
+      cpuUsage
+      memoryUsage
+      diskUsage
+      activeConnections
+      queueSize
+      averageResponseTime
+      errorRate
+      throughput
+    }
+    timestamp
+    uptime
+    version
+  }
+}`,
+                        variables: '{}'
+                    }
+                }
+            },
+            response: []
+        },
+        {
+            name: 'Query: Service Health',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: `query ServiceHealth($name: String!) {
+  serviceHealth(name: $name) {
+    name
+    status
+    responseTime
+    lastCheck
+    error
+    details
+  }
+}`,
+                        variables: JSON.stringify({ name: 'database' }, null, 2)
+                    }
+                }
+            },
+            response: []
         }
     ]
 };
