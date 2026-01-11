@@ -24,15 +24,13 @@ WORKDIR /app
 COPY package*.json ./
 COPY pnpm-lock.yaml* ./
 
-# Install all dependencies (including dev dependencies)
-RUN npm ci --include=dev && \
-    npm cache clean --force
-
-# Copy Prisma schema
+# Copy Prisma schema before npm ci (needed for postinstall prisma generate)
 COPY prisma ./prisma
 
-# Generate Prisma client
-RUN npx prisma generate
+# Install all dependencies (including dev dependencies)
+# This will also run prisma generate via postinstall hook
+RUN npm ci --include=dev && \
+    npm cache clean --force
 
 # Change ownership of the app directory
 RUN chown -R nodejs:nodejs /app

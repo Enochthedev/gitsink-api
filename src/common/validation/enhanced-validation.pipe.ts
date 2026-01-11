@@ -21,7 +21,6 @@ export class EnhancedValidationPipe implements PipeTransform<any> {
         // Transform plain object to class instance
         const object = plainToClass(metatype, value, {
             enableImplicitConversion: true,
-            excludeExtraneousValues: true,
         });
 
         // Validate the object
@@ -98,7 +97,6 @@ export class QueryValidationPipe implements PipeTransform<any> {
         // Transform and validate query parameters
         const object = plainToClass(metatype, value, {
             enableImplicitConversion: true,
-            excludeExtraneousValues: true,
         });
 
         const errors = await validate(object, {

@@ -47,9 +47,9 @@ All API responses follow consistent error formats with appropriate HTTP status c
       .setVersion('1.0.0')
       .setContact('GitSink Support', 'https://gitsink.com/support', 'support@gitsink.com')
       .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+      .addServer('http://localhost:3000', 'Development')
       .addServer('https://api.gitsink.com', 'Production')
       .addServer('https://staging-api.gitsink.com', 'Staging')
-      .addServer('http://localhost:3000', 'Development')
 
       // Authentication schemes
       .addApiKey(

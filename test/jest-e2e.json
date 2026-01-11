@@ -1,9 +1,28 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": "..",
+  "modulePaths": [
+    "<rootDir>"
+  ],
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@mail/(.*)$": "<rootDir>/src/mail/$1",
+    "^@type/(.*)$": "<rootDir>/src/types/$1",
+    "^@queues/(.*)$": "<rootDir>/src/queues/$1",
+    "^@auth/(.*)$": "<rootDir>/src/auth/$1",
+    "^@prisma/(?!client)(.*)$": "<rootDir>/src/prisma/$1",
+    "^@common/(.*)$": "<rootDir>/src/common/$1",
+    "^@waitlist/(.*)$": "<rootDir>/src/waitlist/$1",
+    "^@interceptors/(.*)$": "<rootDir>/src/interceptors/$1",
+    "^@metrics/(.*)$": "<rootDir>/src/metrics/$1",
+    "^@middleware/(.*)$": "<rootDir>/src/common/middleware/$1"
   }
 }

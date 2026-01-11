@@ -34,6 +34,7 @@ import { RequestWithUser } from '@auth/request-with-user';
 // import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcryptjs';
 import { UserContextGuard } from './user-context.guard';
+import { EnhancedJwtGuard } from './enhanced-jwt.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 // import { access } from 'fs';
@@ -238,7 +239,7 @@ export class AuthController {
   }
 
   @Get('profile')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Metrics({ route: '/auth/profile', operation: 'get_profile' })
   @ApiOperation({ summary: 'Get user profile' })
@@ -259,7 +260,7 @@ export class AuthController {
   }
 
   @Post('api-key/regenerate')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Throttle({ default: { limit: 3, ttl: 300000 } }) // 3 requests per 5 minutes
   @Metrics({
@@ -300,7 +301,7 @@ export class AuthController {
   }
 
   @Post('api-key/revoke')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Throttle({ default: { limit: 2, ttl: 300000 } }) // 2 requests per 5 minutes
   @Metrics({ route: '/auth/api-key/revoke', operation: 'revoke_api_key' })
@@ -337,7 +338,7 @@ export class AuthController {
   }
 
   @Post('github/connect')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Throttle({ default: { limit: 5, ttl: 300000 } }) // 5 requests per 5 minutes
   @Metrics({ route: '/auth/github/connect', operation: 'connect_github' })
@@ -345,9 +346,10 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'GitHub account connected' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
+  @ApiBody({ schema: { type: 'object', properties: { code: { type: 'string', example: 'gh_oauth_code_123' } } } })
   async connectGitHub(@Req() req: RequestWithUser, @Body() body: { code: string }) {
     const user = req.user;
-    const { code } = body;
+    const { code } = body || {};
 
     if (!code) {
       throw new BadRequestException('GitHub authorization code is required');
@@ -385,7 +387,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid email format' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async sendMagicLink(@Body() body: { email: string }, @Req() req: Request) {
-    const { email } = body;
+    const { email } = body || {};
 
     if (!email) {
       throw new BadRequestException('Email is required');
@@ -437,7 +439,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid or expired magic link' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async validateMagicLink(@Body() body: { token: string }, @Req() req: Request) {
-    const { token } = body;
+    const { token } = body || {};
 
     if (!token) {
       throw new BadRequestException('Token is required');
@@ -470,7 +472,7 @@ export class AuthController {
   }
 
   @Get('magic-link/stats')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Metrics({ route: '/auth/magic-link/stats', operation: 'magic_link_stats' })
   @ApiOperation({ summary: 'Get magic link statistics (admin only)' })
@@ -493,7 +495,7 @@ export class AuthController {
   }
 
   @Post('magic-link/cleanup')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Throttle({ default: { limit: 2, ttl: 300000 } }) // 2 requests per 5 minutes
   @Metrics({
@@ -529,7 +531,7 @@ export class AuthController {
   }
 
   @Get('api-key/stats')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Metrics({ route: '/auth/api-key/stats', operation: 'api_key_stats' })
   @ApiOperation({ summary: 'Get API key usage statistics (admin only)' })
@@ -573,7 +575,7 @@ export class AuthController {
   }
 
   @Post('api-key/update-metrics')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Throttle({ default: { limit: 5, ttl: 300000 } }) // 5 requests per 5 minutes
   @Metrics({
@@ -616,7 +618,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async refreshToken(@Body() body: { refreshToken: string }, @Req() req: Request) {
-    const { refreshToken } = body;
+    const { refreshToken } = body || {};
 
     if (!refreshToken) {
       throw new BadRequestException('Refresh token is required');
@@ -648,7 +650,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid token' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async revokeToken(@Body() body: { token: string; reason?: string }, @Req() req: Request) {
-    const { token, reason } = body;
+    const { token, reason } = body || {};
 
     if (!token) {
       throw new BadRequestException('Token is required');
@@ -666,7 +668,7 @@ export class AuthController {
   }
 
   @Post('token/revoke-all')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Throttle({ default: { limit: 3, ttl: 300000 } }) // 3 requests per 5 minutes
   @Metrics({ route: '/auth/token/revoke-all', operation: 'revoke_all_tokens' })
@@ -694,7 +696,7 @@ export class AuthController {
   }
 
   @Get('token/stats')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Metrics({ route: '/auth/token/stats', operation: 'token_stats' })
   @ApiOperation({ summary: 'Get JWT token statistics (admin only)' })
@@ -724,7 +726,7 @@ export class AuthController {
   }
 
   @Post('token/cleanup')
-  @UseGuards(UserContextGuard)
+  @UseGuards(EnhancedJwtGuard)
   @ApiBearerAuth()
   @Throttle({ default: { limit: 2, ttl: 300000 } }) // 2 requests per 5 minutes
   @Metrics({ route: '/auth/token/cleanup', operation: 'cleanup_tokens' })

@@ -362,7 +362,7 @@ describe('System Security Tests (e2e)', () => {
     describe('Rate Limiting Security', () => {
         it('should enforce rate limits on authentication endpoints', async () => {
             const endpoint = '/auth/login';
-            const requests = [];
+            const requests: any[] = [];
 
             // Send many requests quickly
             for (let i = 0; i < 25; i++) {
@@ -379,7 +379,7 @@ describe('System Security Tests (e2e)', () => {
             const responses = await Promise.all(requests);
 
             // Some requests should be rate limited
-            const rateLimitedResponses = responses.filter(r => r.status === 429);
+            const rateLimitedResponses = responses.filter((r: any) => r.status === 429);
             expect(rateLimitedResponses.length).toBeGreaterThan(0);
 
             // Rate limit headers should be present
@@ -403,7 +403,7 @@ describe('System Security Tests (e2e)', () => {
 
             try {
                 const endpoint = '/projects';
-                const requests = [];
+                const requests: any[] = [];
 
                 // Send many requests quickly
                 for (let i = 0; i < 50; i++) {
@@ -417,7 +417,7 @@ describe('System Security Tests (e2e)', () => {
                 const responses = await Promise.all(requests);
 
                 // Some requests should be rate limited
-                const rateLimitedResponses = responses.filter(r => r.status === 429);
+                const rateLimitedResponses = responses.filter((r: any) => r.status === 429);
                 expect(rateLimitedResponses.length).toBeGreaterThan(0);
 
             } finally {
@@ -489,7 +489,7 @@ describe('System Security Tests (e2e)', () => {
                 {
                     endpoint: '/projects/sync',
                     method: 'post',
-                    body: { repositoryUrl: 'invalid-url' },
+                    body: { repoUrl: 'invalid-url' },
                     expectedStatus: 422,
                 },
             ];

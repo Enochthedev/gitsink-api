@@ -443,6 +443,10 @@ export class HealthService implements OnModuleInit {
 
   private startHealthCheckScheduler() {
     // Run health checks periodically
+    if (process.env.NODE_ENV === 'test') {
+      this.logger.log('Health check scheduler disabled in test environment');
+      return;
+    }
     this.healthCheckInterval = setInterval(async () => {
       try {
         await this.getOverallHealth();

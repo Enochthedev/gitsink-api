@@ -66,7 +66,7 @@ export class AuthService {
     );
 
     this.apiKeyUsageCounter = this.metricsService.createCustomCounter(
-      'api_key_usage_total',
+      'api_key_validation_stats_total',
       'API key usage statistics',
       ['operation', 'result'],
     );

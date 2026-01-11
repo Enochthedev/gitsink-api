@@ -253,7 +253,7 @@ describe('System Integration Tests (e2e)', () => {
                 .post('/projects/sync')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({
-                    repositoryUrl: 'https://github.com/test/integration-project',
+                    repoUrl: 'https://github.com/test/integration-project',
                 });
 
             // Should either succeed, fail with auth error, or validation error

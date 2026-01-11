@@ -76,7 +76,7 @@ export class ApiKeyService {
   ) {
     // Initialize metrics
     this.apiKeyOperationsCounter = this.metricsService.createCustomCounter(
-      'api_key_operations_total',
+      'api_key_mgmt_operations_total',
       'Total number of API key operations',
       ['operation', 'status', 'tier'],
     );
@@ -89,7 +89,7 @@ export class ApiKeyService {
     );
 
     this.apiKeyUsageCounter = this.metricsService.createCustomCounter(
-      'api_key_usage_total',
+      'api_key_detailed_usage_total',
       'Total API key usage',
       ['user_tier', 'endpoint', 'method', 'status_code'],
     );

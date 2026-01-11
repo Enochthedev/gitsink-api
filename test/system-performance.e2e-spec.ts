@@ -241,7 +241,7 @@ describe('System Performance Tests (e2e)', () => {
             const projectData = Array.from({ length: batchSize }, (_, i) => ({
                 title: `Bulk Project ${i}`,
                 description: `Description for bulk project ${i}`,
-                repositoryUrl: `https://github.com/bulk/project-${i}`,
+                repoUrl: `https://github.com/bulk/project-${i}`,
                 ownerId: userId,
                 platform: 'github' as const,
                 language: i % 2 === 0 ? 'JavaScript' : 'TypeScript',
@@ -326,7 +326,8 @@ describe('System Performance Tests (e2e)', () => {
                     return prisma.project.create({
                         data: {
                             title: `Concurrent Project ${i}`,
-                            repositoryUrl: `https://github.com/concurrent/project-${i}`,
+                            description: `Description for concurrent project ${i}`,
+                            repoUrl: `https://github.com/concurrent/project-${i}`,
                             ownerId: userId,
                             platform: 'github',
                         },
@@ -465,7 +466,8 @@ describe('System Performance Tests (e2e)', () => {
                     await prisma.project.createMany({
                         data: Array.from({ length: 5 }, (_, j) => ({
                             title: `Memory Test Project ${i}-${j}`,
-                            repositoryUrl: `https://github.com/memory-test-${i}/project-${j}`,
+                            description: `Description for memory test project ${i}-${j}`,
+                            repoUrl: `https://github.com/memory-test-${i}/project-${j}`,
                             ownerId: user.id,
                             platform: 'github' as const,
                         })),
@@ -504,7 +506,7 @@ describe('System Performance Tests (e2e)', () => {
         const projects = Array.from({ length: projectCount }, (_, i) => ({
             title: `Performance Test Project ${i}`,
             description: `Description for performance test project ${i}`,
-            repositoryUrl: `https://github.com/perf-test/project-${i}`,
+            repoUrl: `https://github.com/perf-test/project-${i}`,
             ownerId: userId,
             platform: 'github' as const,
             language: ['JavaScript', 'TypeScript', 'Python', 'Java', 'Go'][i % 5],

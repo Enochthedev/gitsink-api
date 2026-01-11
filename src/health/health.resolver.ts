@@ -124,6 +124,9 @@ export class HealthResolver {
 
   private startHealthUpdates() {
     // Publish health updates every 30 seconds
+    if (process.env.NODE_ENV === 'test') {
+      return;
+    }
     setInterval(async () => {
       try {
         const health = await this.systemHealth();

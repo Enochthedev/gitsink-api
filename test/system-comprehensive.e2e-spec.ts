@@ -62,7 +62,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                     data: {
                         title: 'React Project',
                         description: 'A React application',
-                        repositoryUrl: 'https://github.com/test/react-app',
+                        repoUrl: 'https://github.com/test/react-app',
                         ownerId: userId,
                         platform: 'github',
                         language: 'JavaScript',
@@ -74,7 +74,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                     data: {
                         title: 'Node.js API',
                         description: 'A Node.js REST API',
-                        repositoryUrl: 'https://github.com/test/node-api',
+                        repoUrl: 'https://github.com/test/node-api',
                         ownerId: userId,
                         platform: 'github',
                         language: 'TypeScript',
@@ -141,7 +141,7 @@ describe('Comprehensive System Tests (e2e)', () => {
             id
             title
             description
-            repositoryUrl
+            repoUrl
             platform
             metadata {
               customFields
@@ -154,7 +154,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                 input: {
                     title: 'GraphQL Test Project',
                     description: 'Testing GraphQL mutations',
-                    repositoryUrl: 'https://github.com/test/graphql-project',
+                    repoUrl: 'https://github.com/test/graphql-project',
                     platform: 'github',
                     metadata: {
                         customFields: {
@@ -267,7 +267,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                     .post('/projects/sync')
                     .set('Authorization', `Bearer ${accessToken}`)
                     .send({
-                        repositoryUrl: platform.repoUrl,
+                        repoUrl: platform.repoUrl,
                         platform: platform.name,
                     })
                     .expect(201);
@@ -372,7 +372,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                 .post('/projects/sync')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({
-                    repositoryUrl: 'https://github.com/test/ai-enrichment-test',
+                    repoUrl: 'https://github.com/test/ai-enrichment-test',
                 });
 
             projectId = projectResponse.body.project.id;
@@ -421,7 +421,7 @@ describe('Comprehensive System Tests (e2e)', () => {
             const emptyProject = await prisma.project.create({
                 data: {
                     title: 'Empty Project',
-                    repositoryUrl: 'https://github.com/test/empty-repo',
+                    repoUrl: 'https://github.com/test/empty-repo',
                     ownerId: userId,
                     platform: 'github',
                 },
@@ -466,13 +466,13 @@ describe('Comprehensive System Tests (e2e)', () => {
                     .post('/projects/sync')
                     .set('Authorization', `Bearer ${accessToken}`)
                     .send({
-                        repositoryUrl: 'https://github.com/test/featured-project-1',
+                        repoUrl: 'https://github.com/test/featured-project-1',
                     }),
                 request(app.getHttpServer())
                     .post('/projects/sync')
                     .set('Authorization', `Bearer ${accessToken}`)
                     .send({
-                        repositoryUrl: 'https://github.com/test/featured-project-2',
+                        repoUrl: 'https://github.com/test/featured-project-2',
                     }),
             ]);
 
@@ -590,7 +590,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                     .post('/projects/sync')
                     .set('Authorization', `Bearer ${accessToken}`)
                     .send({
-                        repositoryUrl: 'https://github.com/test/audit-project',
+                        repoUrl: 'https://github.com/test/audit-project',
                     }),
 
                 // Create profile
@@ -699,7 +699,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                 .post('/projects/sync')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({
-                    repositoryUrl: 'https://github.com/non-existent/repo',
+                    repoUrl: 'https://github.com/non-existent/repo',
                 });
 
             // Should handle gracefully with appropriate error message
@@ -713,7 +713,7 @@ describe('Comprehensive System Tests (e2e)', () => {
                 .post('/projects/sync')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({
-                    repositoryUrl: 'https://github.com/test/partial-failure-test',
+                    repoUrl: 'https://github.com/test/partial-failure-test',
                 })
                 .expect(201);
 
