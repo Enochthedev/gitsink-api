@@ -32,28 +32,25 @@ const collection = {
     ]
 };
 
-// Helper to generate dummy data from schema
-function generateExample(schema, components) {
+// Helper to generate realistic dummy data from schema
+function generateExample(schema, components, propertyName = '') {
     if (!schema) return null;
 
-    // Handle Direct Example
-    if (schema.example) return schema.example;
+    // Handle Direct Example first
+    if (schema.example !== undefined) return schema.example;
 
     // Handle Ref
     if (schema.$ref) {
         const refName = schema.$ref.split('/').pop();
-        const def = components.schemas?.[refName];
-        // Prevent infinite recursion if generic recursive logic (basic safecheck)
-        // ideally we pass a 'depth' or 'visited' map, but for now simple recursion is usually fine for DTOs
-        // unless circular. GitSink DTOs seem fine.
-        return generateExample(def, components);
+        const def = components?.schemas?.[refName];
+        return generateExample(def, components, refName);
     }
 
     // Handle AllOf (Merge properties)
     if (schema.allOf) {
         let merged = {};
         schema.allOf.forEach(sub => {
-            const result = generateExample(sub, components);
+            const result = generateExample(sub, components, propertyName);
             if (typeof result === 'object' && result !== null) {
                 Object.assign(merged, result);
             }
@@ -61,33 +58,83 @@ function generateExample(schema, components) {
         return merged;
     }
 
-    // Array
-    if (schema.type === 'array') {
-        const item = generateExample(schema.items, components);
-        return [item];
+    // Handle OneOf/AnyOf (take first)
+    if (schema.oneOf && schema.oneOf.length > 0) {
+        return generateExample(schema.oneOf[0], components, propertyName);
+    }
+    if (schema.anyOf && schema.anyOf.length > 0) {
+        return generateExample(schema.anyOf[0], components, propertyName);
     }
 
-    // Object
-    if (schema.properties) {
+    // Array
+    if (schema.type === 'array') {
+        const item = generateExample(schema.items, components, propertyName);
+        return item ? [item] : [];
+    }
+
+    // Object with properties
+    if (schema.type === 'object' || schema.properties) {
         const obj = {};
-        Object.keys(schema.properties).forEach(key => {
-            const prop = schema.properties[key];
-            obj[key] = generateExample(prop, components);
-        });
+        if (schema.properties) {
+            Object.keys(schema.properties).forEach(key => {
+                const prop = schema.properties[key];
+                obj[key] = generateExample(prop, components, key);
+            });
+        }
         return obj;
     }
 
-    // Primitives with heuristics for "Wow" factor
+    // Primitives with smart heuristics based on property name and format
+    const nameLower = propertyName.toLowerCase();
+
     if (schema.type === 'string') {
-        if (schema.format === 'date-time') return new Date().toISOString();
+        // Check format first
+        if (schema.format === 'date-time') return '2026-01-12T00:00:00.000Z';
+        if (schema.format === 'date') return '2026-01-12';
         if (schema.format === 'email') return 'user@example.com';
         if (schema.format === 'uuid') return '123e4567-e89b-12d3-a456-426614174000';
-        if (schema.format === 'uri') return 'https://example.com/resource';
-        // Heuristic based on key name if available? (Can't see key name here easily without passing it down)
-        return 'string';
+        if (schema.format === 'uri' || schema.format === 'url') return 'https://example.com';
+
+        // Smart heuristics based on property name
+        if (nameLower.includes('email')) return 'user@example.com';
+        if (nameLower.includes('password')) return 'SecurePassword123!';
+        if (nameLower.includes('username')) return 'johndoe';
+        if (nameLower.includes('name') && !nameLower.includes('username')) return 'John Doe';
+        if (nameLower.includes('token')) return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        if (nameLower.includes('apikey') || nameLower === 'api_key') return 'sk_live_abc123xyz789';
+        if (nameLower.includes('id') && !nameLower.includes('valid')) return '123e4567-e89b-12d3-a456-426614174000';
+        if (nameLower.includes('url') || nameLower.includes('link')) return 'https://example.com';
+        if (nameLower.includes('description')) return 'A sample description';
+        if (nameLower.includes('title')) return 'Sample Title';
+        if (nameLower.includes('message')) return 'Operation completed successfully';
+        if (nameLower.includes('code')) return 'github_oauth_code_abc123';
+        if (nameLower.includes('reason')) return 'user_requested';
+        if (nameLower.includes('tier')) return 'free';
+        if (nameLower.includes('status')) return 'active';
+        if (nameLower.includes('language')) return 'TypeScript';
+        if (nameLower.includes('platform')) return 'github';
+
+        // Default string with enum support
+        if (schema.enum && schema.enum.length > 0) return schema.enum[0];
+        return 'string_value';
     }
-    if (schema.type === 'number' || schema.type === 'integer') return 0;
-    if (schema.type === 'boolean') return true;
+
+    if (schema.type === 'number' || schema.type === 'integer') {
+        if (nameLower.includes('count') || nameLower.includes('total')) return 42;
+        if (nameLower.includes('port')) return 3000;
+        if (nameLower.includes('limit')) return 100;
+        if (nameLower.includes('page')) return 1;
+        if (nameLower.includes('size')) return 10;
+        if (nameLower.includes('expires') || nameLower.includes('ttl')) return 900;
+        if (nameLower.includes('star') || nameLower.includes('fork')) return 150;
+        return schema.minimum || 0;
+    }
+
+    if (schema.type === 'boolean') {
+        if (nameLower.includes('success') || nameLower.includes('active') || nameLower.includes('enabled')) return true;
+        if (nameLower.includes('private') || nameLower.includes('hidden')) return false;
+        return true;
+    }
 
     return null;
 }
@@ -142,30 +189,36 @@ Object.keys(swagger.paths).forEach(pathKey => {
                 }
             };
 
-            // Add path variables
+            // Add path variables with example values
             if (op.parameters) {
                 op.parameters.forEach(param => {
                     if (param.in === 'path') {
+                        let exampleValue = param.example || '';
+                        if (!exampleValue) {
+                            if (param.name.toLowerCase().includes('id')) exampleValue = '123e4567-e89b-12d3-a456-426614174000';
+                            else if (param.name.toLowerCase().includes('url')) exampleValue = 'https%3A%2F%2Fgithub.com%2Fuser%2Frepo';
+                            else exampleValue = 'example_value';
+                        }
                         request.url.variable.push({
                             key: param.name,
-                            value: '',
-                            description: param.description
+                            value: exampleValue,
+                            description: param.description || ''
                         });
                     }
                     if (param.in === 'query') {
                         if (!request.url.query) request.url.query = [];
                         request.url.query.push({
                             key: param.name,
-                            value: '',
-                            description: param.description,
+                            value: param.example || '',
+                            description: param.description || '',
                             disabled: !param.required
                         });
                     }
                     if (param.in === 'header') {
                         request.header.push({
                             key: param.name,
-                            value: '',
-                            description: param.description
+                            value: param.example || '',
+                            description: param.description || ''
                         });
                     }
                 });
@@ -192,16 +245,17 @@ Object.keys(swagger.paths).forEach(pathKey => {
                 });
             }
 
-            // Body
+            // Request Body
+            let requestBodyExample = null;
             if (op.requestBody) {
                 const content = op.requestBody.content;
                 if (content && content['application/json']) {
                     const schema = content['application/json'].schema;
-                    const example = generateExample(schema, swagger.components);
+                    requestBodyExample = generateExample(schema, swagger.components, '');
 
                     request.body = {
                         mode: 'raw',
-                        raw: JSON.stringify(example, null, 2),
+                        raw: JSON.stringify(requestBodyExample, null, 2),
                         options: {
                             raw: { language: 'json' }
                         }
@@ -213,7 +267,7 @@ Object.keys(swagger.paths).forEach(pathKey => {
                 }
             }
 
-            // Responses (Examples)
+            // Response Examples
             const responses = [];
             if (op.responses) {
                 Object.keys(op.responses).forEach(status => {
@@ -221,22 +275,32 @@ Object.keys(swagger.paths).forEach(pathKey => {
                     let exampleBody = null;
 
                     if (resDef.content && resDef.content['application/json']) {
-                        exampleBody = generateExample(resDef.content['application/json'].schema, swagger.components);
+                        const resSchema = resDef.content['application/json'].schema;
+                        // Check for explicit example first
+                        if (resDef.content['application/json'].example) {
+                            exampleBody = resDef.content['application/json'].example;
+                        } else if (resSchema) {
+                            exampleBody = generateExample(resSchema, swagger.components, '');
+                        }
                     }
 
+                    const statusCode = parseInt(status);
+                    const statusName = statusText[statusCode] || 'Response';
+                    const description = resDef.description || statusName;
+
                     responses.push({
-                        name: `${status} - ${resDef.description || statusText[status] || 'Response'}`,
+                        name: `${status} ${statusName} - ${description}`,
                         originalRequest: {
                             method: request.method,
-                            url: request.url,
-                            header: request.header,
-                            body: request.body
+                            url: JSON.parse(JSON.stringify(request.url)),
+                            header: JSON.parse(JSON.stringify(request.header)),
+                            body: request.body ? JSON.parse(JSON.stringify(request.body)) : undefined
                         },
-                        status: statusText[status] || 'OK',
-                        code: parseInt(status),
+                        status: statusName,
+                        code: statusCode,
                         _postman_previewlanguage: 'json',
                         header: [
-                            { key: 'Content-Type', value: 'application/json' }
+                            { key: 'Content-Type', value: 'application/json; charset=utf-8' }
                         ],
                         cookie: [],
                         body: exampleBody ? JSON.stringify(exampleBody, null, 2) : ''
@@ -245,7 +309,7 @@ Object.keys(swagger.paths).forEach(pathKey => {
             }
 
             folders[folderName].item.push({
-                name: op.summary || op.operationId || pathKey,
+                name: op.summary || op.operationId || `${method.toUpperCase()} ${pathKey}`,
                 request: request,
                 response: responses
             });
@@ -255,7 +319,9 @@ Object.keys(swagger.paths).forEach(pathKey => {
 
 // Add folders to collection
 Object.keys(folders).forEach(key => {
-    collection.item.push(folders[key]);
+    if (folders[key].item.length > 0) {
+        collection.item.push(folders[key]);
+    }
 });
 
 // Add GraphQL Folder manually
@@ -284,10 +350,54 @@ collection.item.push({
                     }
                 }
             },
+            response: [
+                {
+                    name: '200 OK - Introspection Result',
+                    originalRequest: {
+                        method: 'POST',
+                        url: {
+                            raw: '{{baseUrl}}/graphql',
+                            host: ['{{baseUrl}}'],
+                            path: ['graphql']
+                        }
+                    },
+                    status: 'OK',
+                    code: 200,
+                    _postman_previewlanguage: 'json',
+                    header: [{ key: 'Content-Type', value: 'application/json' }],
+                    cookie: [],
+                    body: JSON.stringify({ data: { __schema: { types: [{ name: 'Query', kind: 'OBJECT' }] } } }, null, 2)
+                }
+            ]
+        },
+        {
+            name: 'Sample Query - Get Projects',
+            request: {
+                method: 'POST',
+                header: [
+                    { key: 'Content-Type', value: 'application/json' },
+                    { key: 'Authorization', value: 'Bearer {{token}}' }
+                ],
+                url: {
+                    raw: '{{baseUrl}}/graphql',
+                    host: ['{{baseUrl}}'],
+                    path: ['graphql']
+                },
+                body: {
+                    mode: 'graphql',
+                    graphql: {
+                        query: 'query GetProjects {\n  projects {\n    id\n    name\n    description\n    language\n    stars\n    forks\n  }\n}',
+                        variables: '{}'
+                    }
+                }
+            },
             response: []
         }
     ]
 });
 
 fs.writeFileSync(outputPath, JSON.stringify(collection, null, 2));
-console.log('Postman collection generated at ' + outputPath);
+console.log('Postman collection generated successfully!');
+console.log('Output: ' + outputPath);
+console.log('Total folders: ' + collection.item.length);
+console.log('Total requests: ' + collection.item.reduce((acc, folder) => acc + (folder.item?.length || 0), 0));

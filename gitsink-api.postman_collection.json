@@ -42,7 +42,7 @@
           },
           "response": [
             {
-              "name": "200 - User successfully created",
+              "name": "200 OK - User successfully created",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -78,14 +78,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"id\": \"string\",\n  \"email\": \"string\",\n  \"username\": \"string\",\n  \"createdAt\": \"string\",\n  \"message\": \"User created successfully\",\n  \"apiKey\": \"string\"\n}"
             },
             {
-              "name": "201 - User successfully created",
+              "name": "201 Created - User successfully created",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -121,14 +121,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "409 - Email or username already exists",
+              "name": "409 Response - Email or username already exists",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -158,20 +158,20 @@
                   }
                 }
               },
-              "status": "OK",
+              "status": "Response",
               "code": 409,
               "_postman_previewlanguage": "json",
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -207,7 +207,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -248,7 +248,7 @@
           },
           "response": [
             {
-              "name": "200 - Signin email sent if user exists",
+              "name": "200 OK - Signin email sent if user exists",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -284,14 +284,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Invalid credentials",
+              "name": "401 Unauthorized - Invalid credentials",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -327,14 +327,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -370,7 +370,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -411,7 +411,7 @@
           },
           "response": [
             {
-              "name": "200 - Password reset email sent if user exists",
+              "name": "200 OK - Password reset email sent if user exists",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -447,14 +447,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -490,7 +490,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -522,7 +522,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"token\": \"string\",\n  \"newPassword\": \"newPassword123\"\n}",
+              "raw": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"newPassword\": \"newPassword123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -532,7 +532,7 @@
           },
           "response": [
             {
-              "name": "200 - Password successfully reset",
+              "name": "200 OK - Password successfully reset",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -555,7 +555,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"token\": \"string\",\n  \"newPassword\": \"newPassword123\"\n}",
+                  "raw": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"newPassword\": \"newPassword123\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -569,14 +569,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "400 - Invalid token or weak password",
+              "name": "400 Bad Request - Invalid token or weak password",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -599,7 +599,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"token\": \"string\",\n  \"newPassword\": \"newPassword123\"\n}",
+                  "raw": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"newPassword\": \"newPassword123\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -613,14 +613,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -643,7 +643,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"token\": \"string\",\n  \"newPassword\": \"newPassword123\"\n}",
+                  "raw": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"newPassword\": \"newPassword123\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -657,7 +657,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -694,7 +694,7 @@
           },
           "response": [
             {
-              "name": "200 - User profile retrieved",
+              "name": "200 OK - User profile retrieved",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -716,14 +716,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -745,7 +745,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -783,7 +783,7 @@
           },
           "response": [
             {
-              "name": "200 - New API key generated",
+              "name": "200 OK - New API key generated",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -806,14 +806,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -836,14 +836,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -866,7 +866,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -904,7 +904,7 @@
           },
           "response": [
             {
-              "name": "200 - API key revoked",
+              "name": "200 OK - API key revoked",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -927,14 +927,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -957,14 +957,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -987,7 +987,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1039,7 +1039,7 @@
           },
           "response": [
             {
-              "name": "200 - GitHub account connected",
+              "name": "200 OK - GitHub account connected",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1076,14 +1076,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1120,14 +1120,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1164,7 +1164,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1192,7 +1192,7 @@
           },
           "response": [
             {
-              "name": "200 - Magic link sent if user exists",
+              "name": "200 OK - Magic link sent if user exists",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1215,14 +1215,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"If an account with this email exists, a magic link has been sent\"\n}"
             },
             {
-              "name": "400 - Invalid email format",
+              "name": "400 Bad Request - Invalid email format",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1245,14 +1245,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1275,7 +1275,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1303,7 +1303,7 @@
           },
           "response": [
             {
-              "name": "200 - Magic link validated successfully",
+              "name": "200 OK - Magic link validated successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1326,14 +1326,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"accessToken\": \"jwt_access_token\",\n  \"refreshToken\": \"jwt_refresh_token\",\n  \"expiresIn\": 900,\n  \"user\": {\n    \"id\": \"user_id\",\n    \"email\": \"user@example.com\",\n    \"username\": \"username\"\n  }\n}"
             },
             {
-              "name": "400 - Invalid token format",
+              "name": "400 Bad Request - Invalid token format",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1356,14 +1356,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Invalid or expired magic link",
+              "name": "401 Unauthorized - Invalid or expired magic link",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1386,14 +1386,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1416,7 +1416,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1454,7 +1454,7 @@
           },
           "response": [
             {
-              "name": "200 - Magic link statistics",
+              "name": "200 OK - Magic link statistics",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -1477,14 +1477,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"totalActive\": 5,\n  \"totalExpired\": 12,\n  \"recentlyCreated\": 2\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -1507,7 +1507,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1545,7 +1545,7 @@
           },
           "response": [
             {
-              "name": "200 - Expired tokens cleaned up",
+              "name": "200 OK - Expired tokens cleaned up",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1568,14 +1568,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"Cleaned up expired magic link tokens\",\n  \"count\": 5\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1598,14 +1598,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1628,7 +1628,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1666,7 +1666,7 @@
           },
           "response": [
             {
-              "name": "200 - API key statistics",
+              "name": "200 OK - API key statistics",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -1689,14 +1689,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"totalKeys\": 150,\n  \"activeKeys\": 120,\n  \"revokedKeys\": 30,\n  \"totalUsage\": 50000,\n  \"recentUsage\": 1200,\n  \"topUsers\": [\n    {\n      \"userId\": \"user-1\",\n      \"email\": \"user@example.com\",\n      \"usageCount\": 500\n    }\n  ]\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -1719,7 +1719,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1757,7 +1757,7 @@
           },
           "response": [
             {
-              "name": "200 - Metrics updated successfully",
+              "name": "200 OK - Metrics updated successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1780,14 +1780,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1810,14 +1810,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1840,7 +1840,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1868,7 +1868,7 @@
           },
           "response": [
             {
-              "name": "200 - New access token generated",
+              "name": "200 OK - New access token generated",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1891,14 +1891,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"accessToken\": \"new_jwt_access_token\",\n  \"expiresIn\": 900\n}"
             },
             {
-              "name": "401 - Invalid refresh token",
+              "name": "401 Unauthorized - Invalid refresh token",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1921,14 +1921,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -1951,7 +1951,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -1979,7 +1979,7 @@
           },
           "response": [
             {
-              "name": "200 - Token revoked successfully",
+              "name": "200 OK - Token revoked successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2002,14 +2002,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "400 - Invalid token",
+              "name": "400 Bad Request - Invalid token",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2032,14 +2032,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2062,7 +2062,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -2100,7 +2100,7 @@
           },
           "response": [
             {
-              "name": "200 - All tokens revoked successfully",
+              "name": "200 OK - All tokens revoked successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2123,14 +2123,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2153,14 +2153,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2183,7 +2183,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -2221,7 +2221,7 @@
           },
           "response": [
             {
-              "name": "200 - Token statistics",
+              "name": "200 OK - Token statistics",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2244,14 +2244,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"totalTokensIssued\": 1500,\n  \"activeRefreshTokens\": 120,\n  \"blacklistedTokens\": 45,\n  \"expiredTokens\": 300,\n  \"recentTokens\": 25\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2274,7 +2274,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -2312,7 +2312,7 @@
           },
           "response": [
             {
-              "name": "200 - Expired tokens cleaned up",
+              "name": "200 OK - Expired tokens cleaned up",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2335,14 +2335,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"Expired tokens cleaned up successfully\",\n  \"refreshTokens\": 15,\n  \"blacklistEntries\": 8\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2365,14 +2365,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2395,7 +2395,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -2422,7 +2422,7 @@
           },
           "response": [
             {
-              "name": "200 - Auth service is healthy",
+              "name": "200 OK - Auth service is healthy",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2444,7 +2444,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -2492,7 +2492,7 @@
           },
           "response": [
             {
-              "name": "200 - List of projects retrieved successfully",
+              "name": "200 OK - List of projects retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2519,14 +2519,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "[\n  {}\n]"
             },
             {
-              "name": "401 - Unauthorized - Invalid API Key",
+              "name": "401 Unauthorized - Unauthorized - Invalid API Key",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2553,14 +2553,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2587,7 +2587,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -2618,7 +2618,8 @@
               "variable": [
                 {
                   "key": "repoUrl",
-                  "value": ""
+                  "value": "https%3A%2F%2Fgithub.com%2Fuser%2Frepo",
+                  "description": ""
                 }
               ]
             },
@@ -2635,7 +2636,7 @@
           },
           "response": [
             {
-              "name": "200 - Project data retrieved successfully",
+              "name": "200 OK - Project data retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2650,7 +2651,8 @@
                   "variable": [
                     {
                       "key": "repoUrl",
-                      "value": ""
+                      "value": "https%3A%2F%2Fgithub.com%2Fuser%2Frepo",
+                      "description": ""
                     }
                   ]
                 },
@@ -2668,14 +2670,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2690,7 +2692,8 @@
                   "variable": [
                     {
                       "key": "repoUrl",
-                      "value": ""
+                      "value": "https%3A%2F%2Fgithub.com%2Fuser%2Frepo",
+                      "description": ""
                     }
                   ]
                 },
@@ -2708,14 +2711,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Project not found",
+              "name": "404 Not Found - Project not found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2730,7 +2733,8 @@
                   "variable": [
                     {
                       "key": "repoUrl",
-                      "value": ""
+                      "value": "https%3A%2F%2Fgithub.com%2Fuser%2Frepo",
+                      "description": ""
                     }
                   ]
                 },
@@ -2748,14 +2752,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -2770,7 +2774,8 @@
                   "variable": [
                     {
                       "key": "repoUrl",
-                      "value": ""
+                      "value": "https%3A%2F%2Fgithub.com%2Fuser%2Frepo",
+                      "description": ""
                     }
                   ]
                 },
@@ -2788,7 +2793,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -2844,7 +2849,7 @@
           },
           "response": [
             {
-              "name": "200 - Sync job enqueued successfully",
+              "name": "200 OK - Sync job enqueued successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2885,14 +2890,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"enqueued\": true\n}"
             },
             {
-              "name": "400 - Invalid input data",
+              "name": "400 Bad Request - Invalid input data",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2933,14 +2938,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -2981,14 +2986,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -3029,7 +3034,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3075,7 +3080,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"string\"",
+              "raw": "\"string_value\"",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3085,7 +3090,7 @@
           },
           "response": [
             {
-              "name": "200 - Sync all jobs enqueued successfully",
+              "name": "200 OK - Sync all jobs enqueued successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -3112,7 +3117,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "\"string\"",
+                  "raw": "\"string_value\"",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3126,14 +3131,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"queued\": true\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -3160,7 +3165,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "\"string\"",
+                  "raw": "\"string_value\"",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3174,14 +3179,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "429 - Too many requests",
+              "name": "429 Too Many Requests - Too many requests",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -3208,7 +3213,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "\"string\"",
+                  "raw": "\"string_value\"",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3222,7 +3227,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3231,21 +3236,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "AI Enrichment",
-      "description": "AI-powered project analysis and enrichment",
-      "item": []
-    },
-    {
-      "name": "Profiles",
-      "description": "Public developer profiles and customization",
-      "item": []
-    },
-    {
-      "name": "Webhooks",
-      "description": "Real-time repository event processing",
-      "item": []
     },
     {
       "name": "Health",
@@ -3269,7 +3259,7 @@
           },
           "response": [
             {
-              "name": "200 - Service is healthy",
+              "name": "200 OK - Service is healthy",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3290,7 +3280,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3317,7 +3307,7 @@
           },
           "response": [
             {
-              "name": "200 - Detailed health information",
+              "name": "200 OK - Detailed health information",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3339,7 +3329,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3366,7 +3356,7 @@
           },
           "response": [
             {
-              "name": "200 - Database health status",
+              "name": "200 OK - Database health status",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3388,7 +3378,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3415,7 +3405,7 @@
           },
           "response": [
             {
-              "name": "200 - Redis health status",
+              "name": "200 OK - Redis health status",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3437,7 +3427,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3464,7 +3454,7 @@
           },
           "response": [
             {
-              "name": "200 - Queue health status",
+              "name": "200 OK - Queue health status",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3486,7 +3476,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3513,7 +3503,7 @@
           },
           "response": [
             {
-              "name": "200 - External services health status",
+              "name": "200 OK - External services health status",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3535,7 +3525,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3562,7 +3552,7 @@
           },
           "response": [
             {
-              "name": "200 - Current system metrics",
+              "name": "200 OK - Current system metrics",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3584,7 +3574,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3611,7 +3601,7 @@
           },
           "response": [
             {
-              "name": "200 - Configuration health status",
+              "name": "200 OK - Configuration health status",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3633,7 +3623,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3660,7 +3650,7 @@
           },
           "response": [
             {
-              "name": "200 - Scaling recommendation based on current health",
+              "name": "200 OK - Scaling recommendation based on current health",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3682,7 +3672,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3714,7 +3704,7 @@
           },
           "response": [
             {
-              "name": "200 - Prometheus metrics in text format",
+              "name": "200 OK - Prometheus metrics in text format",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3735,7 +3725,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3762,7 +3752,7 @@
           },
           "response": [
             {
-              "name": "200 - Service is healthy",
+              "name": "200 OK - Service is healthy",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -3784,7 +3774,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -3793,11 +3783,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "Audit",
-      "description": "Audit trails and sync history",
-      "item": []
     },
     {
       "name": "Sandbox",
@@ -3842,7 +3827,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"sessionName\": \"string\",\n  \"maxProjects\": 0,\n  \"maxApiCalls\": 0\n}",
+              "raw": "{\n  \"sessionName\": \"John Doe\",\n  \"maxProjects\": 1,\n  \"maxApiCalls\": 100\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3852,7 +3837,7 @@
           },
           "response": [
             {
-              "name": "201 - Sandbox session started successfully",
+              "name": "201 Created - Sandbox session started successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -3880,7 +3865,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"sessionName\": \"string\",\n  \"maxProjects\": 0,\n  \"maxApiCalls\": 0\n}",
+                  "raw": "{\n  \"sessionName\": \"John Doe\",\n  \"maxProjects\": 1,\n  \"maxApiCalls\": 100\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3894,14 +3879,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"string\",\n  \"userId\": \"string\",\n  \"startedAt\": \"2026-01-11T19:56:44.251Z\",\n  \"expiresAt\": \"2026-01-11T19:56:44.251Z\",\n  \"projectCount\": 0,\n  \"apiCallCount\": 0,\n  \"syncOperationCount\": 0,\n  \"isActive\": true,\n  \"metadata\": \"string\"\n}"
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"startedAt\": \"2026-01-12T00:00:00.000Z\",\n  \"expiresAt\": \"2026-01-12T00:00:00.000Z\",\n  \"projectCount\": 42,\n  \"apiCallCount\": 42,\n  \"syncOperationCount\": 42,\n  \"isActive\": true,\n  \"metadata\": \"string_value\"\n}"
             },
             {
-              "name": "400 - Invalid request parameters",
+              "name": "400 Bad Request - Invalid request parameters",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -3929,7 +3914,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"sessionName\": \"string\",\n  \"maxProjects\": 0,\n  \"maxApiCalls\": 0\n}",
+                  "raw": "{\n  \"sessionName\": \"John Doe\",\n  \"maxProjects\": 1,\n  \"maxApiCalls\": 100\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3943,14 +3928,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Sandbox mode is disabled",
+              "name": "403 Forbidden - Sandbox mode is disabled",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -3978,7 +3963,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"sessionName\": \"string\",\n  \"maxProjects\": 0,\n  \"maxApiCalls\": 0\n}",
+                  "raw": "{\n  \"sessionName\": \"John Doe\",\n  \"maxProjects\": 1,\n  \"maxApiCalls\": 100\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3992,7 +3977,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4035,7 +4020,7 @@
           },
           "response": [
             {
-              "name": "200 - Current sandbox session information",
+              "name": "200 OK - Current sandbox session information",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -4063,14 +4048,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"string\",\n  \"userId\": \"string\",\n  \"startedAt\": \"2026-01-11T19:56:44.251Z\",\n  \"expiresAt\": \"2026-01-11T19:56:44.251Z\",\n  \"projectCount\": 0,\n  \"apiCallCount\": 0,\n  \"syncOperationCount\": 0,\n  \"isActive\": true,\n  \"metadata\": \"string\"\n}"
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"startedAt\": \"2026-01-12T00:00:00.000Z\",\n  \"expiresAt\": \"2026-01-12T00:00:00.000Z\",\n  \"projectCount\": 42,\n  \"apiCallCount\": 42,\n  \"syncOperationCount\": 42,\n  \"isActive\": true,\n  \"metadata\": \"string_value\"\n}"
             },
             {
-              "name": "404 - No active sandbox session found",
+              "name": "404 Not Found - No active sandbox session found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -4098,7 +4083,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4141,7 +4126,7 @@
           },
           "response": [
             {
-              "name": "204 - Sandbox session ended successfully",
+              "name": "204 No Content - Sandbox session ended successfully",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -4169,14 +4154,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - No active sandbox session found",
+              "name": "404 Not Found - No active sandbox session found",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -4204,7 +4189,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4247,7 +4232,7 @@
           },
           "response": [
             {
-              "name": "200 - Sandbox usage statistics",
+              "name": "200 OK - Sandbox usage statistics",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -4275,14 +4260,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"projectsUsed\": 0,\n  \"maxProjects\": 0,\n  \"apiCallsUsed\": 0,\n  \"maxApiCalls\": 0,\n  \"syncOperationsUsed\": 0,\n  \"maxSyncOperations\": 0,\n  \"sessionTimeRemaining\": 0\n}"
             },
             {
-              "name": "404 - No active sandbox session found",
+              "name": "404 Not Found - No active sandbox session found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -4310,7 +4295,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4353,7 +4338,7 @@
           },
           "response": [
             {
-              "name": "200 - List of sandbox test repositories",
+              "name": "200 OK - List of sandbox test repositories",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -4381,11 +4366,11 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"string\",\n    \"name\": \"string\",\n    \"fullName\": \"string\",\n    \"description\": \"string\",\n    \"htmlUrl\": \"string\",\n    \"cloneUrl\": \"string\",\n    \"defaultBranch\": \"string\",\n    \"language\": \"string\",\n    \"topics\": [\n      \"string\"\n    ],\n    \"starCount\": 0,\n    \"forkCount\": 0,\n    \"isPrivate\": true,\n    \"createdAt\": \"2026-01-11T19:56:44.251Z\",\n    \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n    \"pushedAt\": \"2026-01-11T19:56:44.251Z\",\n    \"platform\": \"string\",\n    \"portfolioContent\": \"string\",\n    \"readmeContent\": \"string\"\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"fullName\": \"John Doe\",\n    \"description\": \"A sample description\",\n    \"htmlUrl\": \"https://example.com\",\n    \"cloneUrl\": \"https://example.com\",\n    \"defaultBranch\": \"string_value\",\n    \"language\": \"TypeScript\",\n    \"topics\": [\n      \"string_value\"\n    ],\n    \"starCount\": 42,\n    \"forkCount\": 42,\n    \"isPrivate\": false,\n    \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n    \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"pushedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"platform\": \"github\",\n    \"portfolioContent\": \"string_value\",\n    \"readmeContent\": \"string_value\"\n  }\n]"
             }
           ]
         },
@@ -4427,7 +4412,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"confirmationToken\": \"string\",\n  \"keepSession\": true\n}",
+              "raw": "{\n  \"confirmationToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"keepSession\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4437,7 +4422,7 @@
           },
           "response": [
             {
-              "name": "200 - Sandbox data reset successfully",
+              "name": "200 OK - Sandbox data reset successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -4464,7 +4449,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"confirmationToken\": \"string\",\n  \"keepSession\": true\n}",
+                  "raw": "{\n  \"confirmationToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"keepSession\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -4478,14 +4463,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - No active sandbox session found",
+              "name": "404 Not Found - No active sandbox session found",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -4512,7 +4497,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"confirmationToken\": \"string\",\n  \"keepSession\": true\n}",
+                  "raw": "{\n  \"confirmationToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"keepSession\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -4526,7 +4511,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4582,7 +4567,7 @@
           },
           "response": [
             {
-              "name": "200 - Migration completed",
+              "name": "200 OK - Migration completed",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -4623,14 +4608,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"success\": true,\n  \"projectsMigrated\": 0,\n  \"profileMigrated\": true,\n  \"settingsMigrated\": true,\n  \"errors\": [\n    \"string\"\n  ]\n}"
+              "body": "{\n  \"success\": true,\n  \"projectsMigrated\": 0,\n  \"profileMigrated\": true,\n  \"settingsMigrated\": true,\n  \"errors\": [\n    \"string_value\"\n  ]\n}"
             },
             {
-              "name": "404 - No active sandbox session found",
+              "name": "404 Not Found - No active sandbox session found",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -4671,7 +4656,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4714,7 +4699,7 @@
           },
           "response": [
             {
-              "name": "200 - Sandbox configuration",
+              "name": "200 OK - Sandbox configuration",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -4742,7 +4727,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4785,7 +4770,7 @@
           },
           "response": [
             {
-              "name": "200 - Sandbox status information",
+              "name": "200 OK - Sandbox status information",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -4813,7 +4798,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4822,11 +4807,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "Waitlist",
-      "description": "User waitlist management",
-      "item": []
     },
     {
       "name": "metadata",
@@ -4859,7 +4839,7 @@
           },
           "response": [
             {
-              "name": "201 - Metadata created successfully",
+              "name": "201 Created - Metadata created successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -4880,14 +4860,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "400 - Invalid metadata or validation failed",
+              "name": "400 Bad Request - Invalid metadata or validation failed",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -4908,14 +4888,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Project not found",
+              "name": "404 Not Found - Project not found",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -4936,7 +4916,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -4961,13 +4941,15 @@
               "variable": [
                 {
                   "key": "projectId",
-                  "value": ""
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": ""
                 }
               ],
               "query": [
                 {
                   "key": "version",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 }
               ]
@@ -4985,7 +4967,7 @@
           },
           "response": [
             {
-              "name": "200 - Metadata retrieved successfully",
+              "name": "200 OK - Metadata retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -5000,13 +4982,15 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     }
                   ],
                   "query": [
                     {
                       "key": "version",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     }
                   ]
@@ -5019,14 +5003,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Metadata not found",
+              "name": "404 Not Found - Metadata not found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -5041,13 +5025,15 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     }
                   ],
                   "query": [
                     {
                       "key": "version",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     }
                   ]
@@ -5060,7 +5046,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5085,7 +5071,8 @@
               "variable": [
                 {
                   "key": "projectId",
-                  "value": ""
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": ""
                 }
               ]
             },
@@ -5102,7 +5089,7 @@
           },
           "response": [
             {
-              "name": "200 - Metadata updated successfully",
+              "name": "200 OK - Metadata updated successfully",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -5117,7 +5104,8 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     }
                   ]
                 },
@@ -5129,14 +5117,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "400 - Invalid metadata or validation failed",
+              "name": "400 Bad Request - Invalid metadata or validation failed",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -5151,7 +5139,8 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     }
                   ]
                 },
@@ -5163,14 +5152,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Project not found",
+              "name": "404 Not Found - Project not found",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -5185,7 +5174,8 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     }
                   ]
                 },
@@ -5197,7 +5187,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5223,18 +5213,21 @@
               "variable": [
                 {
                   "key": "projectId",
-                  "value": ""
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": ""
                 }
               ],
               "query": [
                 {
                   "key": "limit",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "offset",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 }
               ]
@@ -5252,7 +5245,7 @@
           },
           "response": [
             {
-              "name": "200 - Metadata history retrieved successfully",
+              "name": "200 OK - Metadata history retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -5268,18 +5261,21 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     }
                   ],
                   "query": [
                     {
                       "key": "limit",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "offset",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     }
                   ]
@@ -5292,7 +5288,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5320,15 +5316,18 @@
               "variable": [
                 {
                   "key": "projectId",
-                  "value": ""
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": ""
                 },
                 {
                   "key": "version1",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 },
                 {
                   "key": "version2",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             },
@@ -5345,7 +5344,7 @@
           },
           "response": [
             {
-              "name": "200 - Metadata comparison completed successfully",
+              "name": "200 OK - Metadata comparison completed successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -5363,15 +5362,18 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     },
                     {
                       "key": "version1",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     },
                     {
                       "key": "version2",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -5383,14 +5385,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - One or both versions not found",
+              "name": "404 Not Found - One or both versions not found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -5408,15 +5410,18 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     },
                     {
                       "key": "version1",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     },
                     {
                       "key": "version2",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -5428,7 +5433,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5465,7 +5470,7 @@
           },
           "response": [
             {
-              "name": "200 - Search completed successfully",
+              "name": "200 OK - Search completed successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -5487,7 +5492,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5525,7 +5530,7 @@
           },
           "response": [
             {
-              "name": "200 - Statistics retrieved successfully",
+              "name": "200 OK - Statistics retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -5548,7 +5553,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5575,11 +5580,13 @@
               "variable": [
                 {
                   "key": "projectId",
-                  "value": ""
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": ""
                 },
                 {
                   "key": "version",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             },
@@ -5596,7 +5603,7 @@
           },
           "response": [
             {
-              "name": "200 - Metadata version deleted successfully",
+              "name": "200 OK - Metadata version deleted successfully",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -5613,11 +5620,13 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     },
                     {
                       "key": "version",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -5629,14 +5638,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Access denied",
+              "name": "403 Forbidden - Access denied",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -5653,11 +5662,13 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     },
                     {
                       "key": "version",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -5669,14 +5680,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Version not found",
+              "name": "404 Not Found - Version not found",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -5693,11 +5704,13 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": ""
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": ""
                     },
                     {
                       "key": "version",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -5709,7 +5722,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5755,7 +5768,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -5791,7 +5804,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5824,7 +5837,7 @@
           },
           "response": [
             {
-              "name": "200 - Webhook processed successfully",
+              "name": "200 OK - Webhook processed successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -5847,7 +5860,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5879,7 +5892,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "[\n  \"string\"\n]",
+              "raw": "[\n  \"string_value\"\n]",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5889,7 +5902,7 @@
           },
           "response": [
             {
-              "name": "200 - Webhook processed successfully",
+              "name": "200 OK - Webhook processed successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -5912,7 +5925,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "[\n  \"string\"\n]",
+                  "raw": "[\n  \"string_value\"\n]",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -5926,7 +5939,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -5954,7 +5967,7 @@
           },
           "response": [
             {
-              "name": "200 - Webhook processed successfully",
+              "name": "200 OK - Webhook processed successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -5977,7 +5990,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6022,7 +6035,7 @@
           },
           "response": [
             {
-              "name": "201 - Created",
+              "name": "201 Created - Created",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -6057,7 +6070,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6090,7 +6103,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -6113,7 +6126,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6141,16 +6154,19 @@
                 {
                   "key": "code",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "state",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "error",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 }
               ]
@@ -6158,7 +6174,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -6176,16 +6192,19 @@
                     {
                       "key": "code",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "state",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "error",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     }
                   ]
@@ -6198,7 +6217,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6231,7 +6250,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -6254,7 +6273,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6282,16 +6301,19 @@
                 {
                   "key": "code",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "state",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "error",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 }
               ]
@@ -6299,7 +6321,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -6317,16 +6339,19 @@
                     {
                       "key": "code",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "state",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "error",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     }
                   ]
@@ -6339,7 +6364,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6359,11 +6384,13 @@
             "header": [
               {
                 "key": "x-gitlab-token",
-                "value": ""
+                "value": "",
+                "description": ""
               },
               {
                 "key": "x-gitlab-event",
-                "value": ""
+                "value": "",
+                "description": ""
               }
             ],
             "url": {
@@ -6380,7 +6407,7 @@
           },
           "response": [
             {
-              "name": "201 - Created",
+              "name": "201 Created - Created",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -6397,11 +6424,13 @@
                 "header": [
                   {
                     "key": "x-gitlab-token",
-                    "value": ""
+                    "value": "",
+                    "description": ""
                   },
                   {
                     "key": "x-gitlab-event",
-                    "value": ""
+                    "value": "",
+                    "description": ""
                   }
                 ]
               },
@@ -6411,7 +6440,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6431,11 +6460,13 @@
             "header": [
               {
                 "key": "x-hub-signature-256",
-                "value": ""
+                "value": "",
+                "description": ""
               },
               {
                 "key": "x-event-key",
-                "value": ""
+                "value": "",
+                "description": ""
               }
             ],
             "url": {
@@ -6452,7 +6483,7 @@
           },
           "response": [
             {
-              "name": "201 - Created",
+              "name": "201 Created - Created",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -6469,11 +6500,13 @@
                 "header": [
                   {
                     "key": "x-hub-signature-256",
-                    "value": ""
+                    "value": "",
+                    "description": ""
                   },
                   {
                     "key": "x-event-key",
-                    "value": ""
+                    "value": "",
+                    "description": ""
                   }
                 ]
               },
@@ -6483,7 +6516,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6528,7 +6561,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"string\",\n  \"displayName\": \"string\",\n  \"bio\": \"string\",\n  \"avatar\": \"string\",\n  \"location\": \"string\",\n  \"website\": \"string\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string\",\n    \"secondaryColor\": \"string\",\n    \"backgroundStyle\": \"string\",\n    \"fontFamily\": \"string\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string\"\n}",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"displayName\": \"John Doe\",\n  \"bio\": \"string_value\",\n  \"avatar\": \"string_value\",\n  \"location\": \"string_value\",\n  \"website\": \"string_value\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string_value\",\n    \"secondaryColor\": \"string_value\",\n    \"backgroundStyle\": \"string_value\",\n    \"fontFamily\": \"string_value\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string_value\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6538,7 +6571,7 @@
           },
           "response": [
             {
-              "name": "201 - Profile created successfully",
+              "name": "201 Created - Profile created successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -6559,7 +6592,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"username\": \"string\",\n  \"displayName\": \"string\",\n  \"bio\": \"string\",\n  \"avatar\": \"string\",\n  \"location\": \"string\",\n  \"website\": \"string\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string\",\n    \"secondaryColor\": \"string\",\n    \"backgroundStyle\": \"string\",\n    \"fontFamily\": \"string\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string\"\n}",
+                  "raw": "{\n  \"username\": \"johndoe\",\n  \"displayName\": \"John Doe\",\n  \"bio\": \"string_value\",\n  \"avatar\": \"string_value\",\n  \"location\": \"string_value\",\n  \"website\": \"string_value\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string_value\",\n    \"secondaryColor\": \"string_value\",\n    \"backgroundStyle\": \"string_value\",\n    \"fontFamily\": \"string_value\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string_value\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6573,14 +6606,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"string\",\n  \"userId\": \"string\",\n  \"username\": \"string\",\n  \"displayName\": null,\n  \"bio\": null,\n  \"avatar\": null,\n  \"location\": null,\n  \"website\": null,\n  \"socialLinks\": [\n    \"string\"\n  ],\n  \"theme\": null,\n  \"settings\": null,\n  \"isPublic\": true,\n  \"customDomain\": null,\n  \"viewCount\": 0,\n  \"createdAt\": \"2026-01-11T19:56:44.166Z\",\n  \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n  \"stats\": null\n}"
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"username\": \"johndoe\",\n  \"displayName\": {},\n  \"bio\": {},\n  \"avatar\": {},\n  \"location\": {},\n  \"website\": {},\n  \"socialLinks\": [\n    \"https://example.com\"\n  ],\n  \"theme\": {},\n  \"settings\": {},\n  \"isPublic\": true,\n  \"customDomain\": {},\n  \"viewCount\": 42,\n  \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n  \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n  \"stats\": {}\n}"
             },
             {
-              "name": "409 - Profile already exists or username/domain taken",
+              "name": "409 Response - Profile already exists or username/domain taken",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -6601,7 +6634,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"username\": \"string\",\n  \"displayName\": \"string\",\n  \"bio\": \"string\",\n  \"avatar\": \"string\",\n  \"location\": \"string\",\n  \"website\": \"string\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string\",\n    \"secondaryColor\": \"string\",\n    \"backgroundStyle\": \"string\",\n    \"fontFamily\": \"string\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string\"\n}",
+                  "raw": "{\n  \"username\": \"johndoe\",\n  \"displayName\": \"John Doe\",\n  \"bio\": \"string_value\",\n  \"avatar\": \"string_value\",\n  \"location\": \"string_value\",\n  \"website\": \"string_value\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string_value\",\n    \"secondaryColor\": \"string_value\",\n    \"backgroundStyle\": \"string_value\",\n    \"fontFamily\": \"string_value\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string_value\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6609,13 +6642,13 @@
                   }
                 }
               },
-              "status": "OK",
+              "status": "Response",
               "code": 409,
               "_postman_previewlanguage": "json",
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6652,7 +6685,7 @@
           },
           "response": [
             {
-              "name": "200 - Profile retrieved successfully",
+              "name": "200 OK - Profile retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -6674,14 +6707,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"string\",\n  \"userId\": \"string\",\n  \"username\": \"string\",\n  \"displayName\": null,\n  \"bio\": null,\n  \"avatar\": null,\n  \"location\": null,\n  \"website\": null,\n  \"socialLinks\": [\n    \"string\"\n  ],\n  \"theme\": null,\n  \"settings\": null,\n  \"isPublic\": true,\n  \"customDomain\": null,\n  \"viewCount\": 0,\n  \"createdAt\": \"2026-01-11T19:56:44.251Z\",\n  \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n  \"stats\": null\n}"
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"username\": \"johndoe\",\n  \"displayName\": {},\n  \"bio\": {},\n  \"avatar\": {},\n  \"location\": {},\n  \"website\": {},\n  \"socialLinks\": [\n    \"https://example.com\"\n  ],\n  \"theme\": {},\n  \"settings\": {},\n  \"isPublic\": true,\n  \"customDomain\": {},\n  \"viewCount\": 42,\n  \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n  \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n  \"stats\": {}\n}"
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -6703,7 +6736,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6744,7 +6777,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"string\",\n  \"displayName\": \"string\",\n  \"bio\": \"string\",\n  \"avatar\": \"string\",\n  \"location\": \"string\",\n  \"website\": \"string\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string\",\n    \"secondaryColor\": \"string\",\n    \"backgroundStyle\": \"string\",\n    \"fontFamily\": \"string\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string\"\n}",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"displayName\": \"John Doe\",\n  \"bio\": \"string_value\",\n  \"avatar\": \"string_value\",\n  \"location\": \"string_value\",\n  \"website\": \"string_value\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string_value\",\n    \"secondaryColor\": \"string_value\",\n    \"backgroundStyle\": \"string_value\",\n    \"fontFamily\": \"string_value\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string_value\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6754,7 +6787,7 @@
           },
           "response": [
             {
-              "name": "200 - Profile updated successfully",
+              "name": "200 OK - Profile updated successfully",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -6776,7 +6809,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"username\": \"string\",\n  \"displayName\": \"string\",\n  \"bio\": \"string\",\n  \"avatar\": \"string\",\n  \"location\": \"string\",\n  \"website\": \"string\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string\",\n    \"secondaryColor\": \"string\",\n    \"backgroundStyle\": \"string\",\n    \"fontFamily\": \"string\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string\"\n}",
+                  "raw": "{\n  \"username\": \"johndoe\",\n  \"displayName\": \"John Doe\",\n  \"bio\": \"string_value\",\n  \"avatar\": \"string_value\",\n  \"location\": \"string_value\",\n  \"website\": \"string_value\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string_value\",\n    \"secondaryColor\": \"string_value\",\n    \"backgroundStyle\": \"string_value\",\n    \"fontFamily\": \"string_value\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string_value\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6790,14 +6823,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"string\",\n  \"userId\": \"string\",\n  \"username\": \"string\",\n  \"displayName\": null,\n  \"bio\": null,\n  \"avatar\": null,\n  \"location\": null,\n  \"website\": null,\n  \"socialLinks\": [\n    \"string\"\n  ],\n  \"theme\": null,\n  \"settings\": null,\n  \"isPublic\": true,\n  \"customDomain\": null,\n  \"viewCount\": 0,\n  \"createdAt\": \"2026-01-11T19:56:44.251Z\",\n  \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n  \"stats\": null\n}"
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"username\": \"johndoe\",\n  \"displayName\": {},\n  \"bio\": {},\n  \"avatar\": {},\n  \"location\": {},\n  \"website\": {},\n  \"socialLinks\": [\n    \"https://example.com\"\n  ],\n  \"theme\": {},\n  \"settings\": {},\n  \"isPublic\": true,\n  \"customDomain\": {},\n  \"viewCount\": 42,\n  \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n  \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n  \"stats\": {}\n}"
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -6819,7 +6852,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"username\": \"string\",\n  \"displayName\": \"string\",\n  \"bio\": \"string\",\n  \"avatar\": \"string\",\n  \"location\": \"string\",\n  \"website\": \"string\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string\",\n    \"secondaryColor\": \"string\",\n    \"backgroundStyle\": \"string\",\n    \"fontFamily\": \"string\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string\"\n}",
+                  "raw": "{\n  \"username\": \"johndoe\",\n  \"displayName\": \"John Doe\",\n  \"bio\": \"string_value\",\n  \"avatar\": \"string_value\",\n  \"location\": \"string_value\",\n  \"website\": \"string_value\",\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ],\n  \"theme\": {\n    \"primaryColor\": \"string_value\",\n    \"secondaryColor\": \"string_value\",\n    \"backgroundStyle\": \"string_value\",\n    \"fontFamily\": \"string_value\"\n  },\n  \"isPublic\": true,\n  \"customDomain\": \"string_value\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6833,7 +6866,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6870,7 +6903,7 @@
           },
           "response": [
             {
-              "name": "200 - Profile deleted successfully",
+              "name": "200 OK - Profile deleted successfully",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -6892,14 +6925,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -6921,7 +6954,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -6963,7 +6996,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"isPublic\": true,\n  \"showEmail\": true,\n  \"showStats\": true,\n  \"showPrivateRepos\": true,\n  \"featuredProjects\": [\n    \"string\"\n  ],\n  \"customSections\": [\n    {\n      \"title\": \"string\",\n      \"content\": \"string\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ],\n  \"layout\": \"string\",\n  \"showActivity\": true,\n  \"showContributions\": true\n}",
+              "raw": "{\n  \"isPublic\": true,\n  \"showEmail\": true,\n  \"showStats\": true,\n  \"showPrivateRepos\": false,\n  \"featuredProjects\": [\n    \"string_value\"\n  ],\n  \"customSections\": [\n    {\n      \"title\": \"Sample Title\",\n      \"content\": \"string_value\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ],\n  \"layout\": \"string_value\",\n  \"showActivity\": true,\n  \"showContributions\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6973,7 +7006,7 @@
           },
           "response": [
             {
-              "name": "200 - Settings updated successfully",
+              "name": "200 OK - Settings updated successfully",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -6996,7 +7029,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"isPublic\": true,\n  \"showEmail\": true,\n  \"showStats\": true,\n  \"showPrivateRepos\": true,\n  \"featuredProjects\": [\n    \"string\"\n  ],\n  \"customSections\": [\n    {\n      \"title\": \"string\",\n      \"content\": \"string\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ],\n  \"layout\": \"string\",\n  \"showActivity\": true,\n  \"showContributions\": true\n}",
+                  "raw": "{\n  \"isPublic\": true,\n  \"showEmail\": true,\n  \"showStats\": true,\n  \"showPrivateRepos\": false,\n  \"featuredProjects\": [\n    \"string_value\"\n  ],\n  \"customSections\": [\n    {\n      \"title\": \"Sample Title\",\n      \"content\": \"string_value\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ],\n  \"layout\": \"string_value\",\n  \"showActivity\": true,\n  \"showContributions\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -7010,14 +7043,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -7040,7 +7073,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"isPublic\": true,\n  \"showEmail\": true,\n  \"showStats\": true,\n  \"showPrivateRepos\": true,\n  \"featuredProjects\": [\n    \"string\"\n  ],\n  \"customSections\": [\n    {\n      \"title\": \"string\",\n      \"content\": \"string\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ],\n  \"layout\": \"string\",\n  \"showActivity\": true,\n  \"showContributions\": true\n}",
+                  "raw": "{\n  \"isPublic\": true,\n  \"showEmail\": true,\n  \"showStats\": true,\n  \"showPrivateRepos\": false,\n  \"featuredProjects\": [\n    \"string_value\"\n  ],\n  \"customSections\": [\n    {\n      \"title\": \"Sample Title\",\n      \"content\": \"string_value\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ],\n  \"layout\": \"string_value\",\n  \"showActivity\": true,\n  \"showContributions\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -7054,7 +7087,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7080,14 +7113,15 @@
               "variable": [
                 {
                   "key": "username",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             }
           },
           "response": [
             {
-              "name": "200 - Username availability checked",
+              "name": "200 OK - Username availability checked",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7103,7 +7137,8 @@
                   "variable": [
                     {
                       "key": "username",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -7115,7 +7150,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7141,14 +7176,15 @@
               "variable": [
                 {
                   "key": "domain",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             }
           },
           "response": [
             {
-              "name": "200 - Domain availability checked",
+              "name": "200 OK - Domain availability checked",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7164,7 +7200,8 @@
                   "variable": [
                     {
                       "key": "domain",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -7176,7 +7213,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7223,7 +7260,7 @@
           },
           "response": [
             {
-              "name": "200 - Profiles found",
+              "name": "200 OK - Profiles found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7265,11 +7302,11 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"string\",\n    \"userId\": \"string\",\n    \"username\": \"string\",\n    \"displayName\": null,\n    \"bio\": null,\n    \"avatar\": null,\n    \"location\": null,\n    \"website\": null,\n    \"socialLinks\": [\n      \"string\"\n    ],\n    \"theme\": null,\n    \"settings\": null,\n    \"isPublic\": true,\n    \"customDomain\": null,\n    \"viewCount\": 0,\n    \"createdAt\": \"2026-01-11T19:56:44.251Z\",\n    \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n    \"stats\": null\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"username\": \"johndoe\",\n    \"displayName\": {},\n    \"bio\": {},\n    \"avatar\": {},\n    \"location\": {},\n    \"website\": {},\n    \"socialLinks\": [\n      \"https://example.com\"\n    ],\n    \"theme\": {},\n    \"settings\": {},\n    \"isPublic\": true,\n    \"customDomain\": {},\n    \"viewCount\": 42,\n    \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n    \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"stats\": {}\n  }\n]"
             }
           ]
         },
@@ -7300,7 +7337,7 @@
           },
           "response": [
             {
-              "name": "200 - Featured profiles retrieved",
+              "name": "200 OK - Featured profiles retrieved",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7330,11 +7367,11 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"string\",\n    \"userId\": \"string\",\n    \"username\": \"string\",\n    \"displayName\": null,\n    \"bio\": null,\n    \"avatar\": null,\n    \"location\": null,\n    \"website\": null,\n    \"socialLinks\": [\n      \"string\"\n    ],\n    \"theme\": null,\n    \"settings\": null,\n    \"isPublic\": true,\n    \"customDomain\": null,\n    \"viewCount\": 0,\n    \"createdAt\": \"2026-01-11T19:56:44.251Z\",\n    \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n    \"stats\": null\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"username\": \"johndoe\",\n    \"displayName\": {},\n    \"bio\": {},\n    \"avatar\": {},\n    \"location\": {},\n    \"website\": {},\n    \"socialLinks\": [\n      \"https://example.com\"\n    ],\n    \"theme\": {},\n    \"settings\": {},\n    \"isPublic\": true,\n    \"customDomain\": {},\n    \"viewCount\": 42,\n    \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n    \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n    \"stats\": {}\n  }\n]"
             }
           ]
         },
@@ -7355,14 +7392,15 @@
               "variable": [
                 {
                   "key": "username",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             }
           },
           "response": [
             {
-              "name": "200 - Profile retrieved successfully",
+              "name": "200 OK - Profile retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7377,7 +7415,8 @@
                   "variable": [
                     {
                       "key": "username",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -7389,14 +7428,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"string\",\n  \"userId\": \"string\",\n  \"username\": \"string\",\n  \"displayName\": null,\n  \"bio\": null,\n  \"avatar\": null,\n  \"location\": null,\n  \"website\": null,\n  \"socialLinks\": [\n    \"string\"\n  ],\n  \"theme\": null,\n  \"settings\": null,\n  \"isPublic\": true,\n  \"customDomain\": null,\n  \"viewCount\": 0,\n  \"createdAt\": \"2026-01-11T19:56:44.251Z\",\n  \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n  \"stats\": null\n}"
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"username\": \"johndoe\",\n  \"displayName\": {},\n  \"bio\": {},\n  \"avatar\": {},\n  \"location\": {},\n  \"website\": {},\n  \"socialLinks\": [\n    \"https://example.com\"\n  ],\n  \"theme\": {},\n  \"settings\": {},\n  \"isPublic\": true,\n  \"customDomain\": {},\n  \"viewCount\": 42,\n  \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n  \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n  \"stats\": {}\n}"
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7411,7 +7450,8 @@
                   "variable": [
                     {
                       "key": "username",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -7423,7 +7463,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7449,14 +7489,15 @@
               "variable": [
                 {
                   "key": "domain",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             }
           },
           "response": [
             {
-              "name": "200 - Profile retrieved successfully",
+              "name": "200 OK - Profile retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7472,7 +7513,8 @@
                   "variable": [
                     {
                       "key": "domain",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -7484,14 +7526,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"string\",\n  \"userId\": \"string\",\n  \"username\": \"string\",\n  \"displayName\": null,\n  \"bio\": null,\n  \"avatar\": null,\n  \"location\": null,\n  \"website\": null,\n  \"socialLinks\": [\n    \"string\"\n  ],\n  \"theme\": null,\n  \"settings\": null,\n  \"isPublic\": true,\n  \"customDomain\": null,\n  \"viewCount\": 0,\n  \"createdAt\": \"2026-01-11T19:56:44.251Z\",\n  \"updatedAt\": \"2026-01-11T19:56:44.251Z\",\n  \"stats\": null\n}"
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"username\": \"johndoe\",\n  \"displayName\": {},\n  \"bio\": {},\n  \"avatar\": {},\n  \"location\": {},\n  \"website\": {},\n  \"socialLinks\": [\n    \"https://example.com\"\n  ],\n  \"theme\": {},\n  \"settings\": {},\n  \"isPublic\": true,\n  \"customDomain\": {},\n  \"viewCount\": 42,\n  \"createdAt\": \"2026-01-12T00:00:00.000Z\",\n  \"updatedAt\": \"2026-01-12T00:00:00.000Z\",\n  \"stats\": {}\n}"
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7507,7 +7549,8 @@
                   "variable": [
                     {
                       "key": "domain",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -7519,7 +7562,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7547,7 +7590,7 @@
           },
           "response": [
             {
-              "name": "200 - Theme presets retrieved successfully",
+              "name": "200 OK - Theme presets retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7570,7 +7613,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7622,7 +7665,7 @@
           },
           "response": [
             {
-              "name": "200 - Theme updated successfully",
+              "name": "200 OK - Theme updated successfully",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -7659,14 +7702,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -7703,7 +7746,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7756,7 +7799,7 @@
           },
           "response": [
             {
-              "name": "200 - Theme preset applied successfully",
+              "name": "200 OK - Theme preset applied successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -7794,14 +7837,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -7839,7 +7882,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7866,7 +7909,7 @@
           },
           "response": [
             {
-              "name": "200 - Supported platforms retrieved successfully",
+              "name": "200 OK - Supported platforms retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -7888,7 +7931,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -7930,7 +7973,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ]\n}",
+              "raw": "{\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7940,7 +7983,7 @@
           },
           "response": [
             {
-              "name": "200 - Social links updated successfully",
+              "name": "200 OK - Social links updated successfully",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -7963,7 +8006,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ]\n}",
+                  "raw": "{\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -7977,14 +8020,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -8007,7 +8050,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"socialLinks\": [\n    {\n      \"platform\": \"string\",\n      \"url\": \"string\",\n      \"label\": \"string\"\n    }\n  ]\n}",
+                  "raw": "{\n  \"socialLinks\": [\n    {\n      \"platform\": \"github\",\n      \"url\": \"https://example.com\",\n      \"label\": \"string_value\"\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8021,7 +8064,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8073,7 +8116,7 @@
           },
           "response": [
             {
-              "name": "200 - Social link added successfully",
+              "name": "200 OK - Social link added successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -8110,14 +8153,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -8154,7 +8197,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8181,7 +8224,8 @@
               "variable": [
                 {
                   "key": "platform",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             },
@@ -8198,7 +8242,7 @@
           },
           "response": [
             {
-              "name": "200 - Social link removed successfully",
+              "name": "200 OK - Social link removed successfully",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -8215,7 +8259,8 @@
                   "variable": [
                     {
                       "key": "platform",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -8227,14 +8272,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -8251,7 +8296,8 @@
                   "variable": [
                     {
                       "key": "platform",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -8263,7 +8309,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8305,7 +8351,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customSections\": [\n    {\n      \"title\": \"string\",\n      \"content\": \"string\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ]\n}",
+              "raw": "{\n  \"customSections\": [\n    {\n      \"title\": \"Sample Title\",\n      \"content\": \"string_value\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8315,7 +8361,7 @@
           },
           "response": [
             {
-              "name": "200 - Custom sections updated successfully",
+              "name": "200 OK - Custom sections updated successfully",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -8338,7 +8384,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"customSections\": [\n    {\n      \"title\": \"string\",\n      \"content\": \"string\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ]\n}",
+                  "raw": "{\n  \"customSections\": [\n    {\n      \"title\": \"Sample Title\",\n      \"content\": \"string_value\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8352,14 +8398,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -8382,7 +8428,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"customSections\": [\n    {\n      \"title\": \"string\",\n      \"content\": \"string\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ]\n}",
+                  "raw": "{\n  \"customSections\": [\n    {\n      \"title\": \"Sample Title\",\n      \"content\": \"string_value\",\n      \"order\": 0,\n      \"visible\": true\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8396,7 +8442,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8434,7 +8480,7 @@
           },
           "response": [
             {
-              "name": "200 - Profile statistics retrieved successfully",
+              "name": "200 OK - Profile statistics retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -8457,14 +8503,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - Profile not found",
+              "name": "404 Not Found - Profile not found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -8487,7 +8533,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8603,7 +8649,7 @@
           },
           "response": [
             {
-              "name": "200 - Audit logs retrieved successfully",
+              "name": "200 OK - Audit logs retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -8699,7 +8745,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8728,11 +8774,13 @@
                 {
                   "key": "limit",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "offset",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 }
               ]
@@ -8750,7 +8798,7 @@
           },
           "response": [
             {
-              "name": "200 - User audit logs retrieved successfully",
+              "name": "200 OK - User audit logs retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -8769,11 +8817,13 @@
                     {
                       "key": "limit",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "offset",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     }
                   ]
@@ -8786,7 +8836,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8816,21 +8866,25 @@
                 {
                   "key": "resource",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "resourceId",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "limit",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "offset",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 }
               ]
@@ -8848,7 +8902,7 @@
           },
           "response": [
             {
-              "name": "200 - Resource audit logs retrieved successfully",
+              "name": "200 OK - Resource audit logs retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -8868,21 +8922,25 @@
                     {
                       "key": "resource",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "resourceId",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "limit",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "offset",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     }
                   ]
@@ -8895,7 +8953,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -8958,7 +9016,7 @@
           },
           "response": [
             {
-              "name": "200 - Audit summary retrieved successfully",
+              "name": "200 OK - Audit summary retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -9006,7 +9064,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9051,7 +9109,7 @@
           },
           "response": [
             {
-              "name": "200 - Audit logs exported successfully",
+              "name": "200 OK - Audit logs exported successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -9081,7 +9139,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9132,7 +9190,7 @@
           },
           "response": [
             {
-              "name": "201 - Audit log created successfully",
+              "name": "201 Created - Audit log created successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -9168,7 +9226,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9206,7 +9264,7 @@
           },
           "response": [
             {
-              "name": "200 - Suspicious activity analysis completed",
+              "name": "200 OK - Suspicious activity analysis completed",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -9229,7 +9287,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9258,6 +9316,7 @@
                 {
                   "key": "userId",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 }
               ]
@@ -9275,7 +9334,7 @@
           },
           "response": [
             {
-              "name": "200 - User suspicious activity analysis completed",
+              "name": "200 OK - User suspicious activity analysis completed",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -9294,6 +9353,7 @@
                     {
                       "key": "userId",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     }
                   ]
@@ -9306,7 +9366,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9362,7 +9422,7 @@
           },
           "response": [
             {
-              "name": "201 - Sync operation started successfully",
+              "name": "201 Created - Sync operation started successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -9398,7 +9458,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9449,7 +9509,7 @@
           },
           "response": [
             {
-              "name": "200 - Sync operation completed successfully",
+              "name": "200 OK - Sync operation completed successfully",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -9485,7 +9545,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9536,7 +9596,7 @@
           },
           "response": [
             {
-              "name": "200 - Sync operation marked as failed",
+              "name": "200 OK - Sync operation marked as failed",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
@@ -9572,7 +9632,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9676,7 +9736,7 @@
           },
           "response": [
             {
-              "name": "200 - Sync history retrieved successfully",
+              "name": "200 OK - Sync history retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -9765,7 +9825,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9822,7 +9882,7 @@
           },
           "response": [
             {
-              "name": "200 - Sync history statistics retrieved successfully",
+              "name": "200 OK - Sync history statistics retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -9864,7 +9924,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -9890,7 +9950,7 @@
               "variable": [
                 {
                   "key": "projectId",
-                  "value": "",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
                   "description": "Project ID"
                 }
               ],
@@ -9898,11 +9958,13 @@
                 {
                   "key": "limit",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "offset",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 }
               ]
@@ -9920,7 +9982,7 @@
           },
           "response": [
             {
-              "name": "200 - Project sync history retrieved successfully",
+              "name": "200 OK - Project sync history retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -9936,7 +9998,7 @@
                   "variable": [
                     {
                       "key": "projectId",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "Project ID"
                     }
                   ],
@@ -9944,11 +10006,13 @@
                     {
                       "key": "limit",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "offset",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     }
                   ]
@@ -9961,7 +10025,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10019,7 +10083,7 @@
           },
           "response": [
             {
-              "name": "200 - Sync failure analysis completed",
+              "name": "200 OK - Sync failure analysis completed",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10062,7 +10126,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10088,7 +10152,7 @@
               "variable": [
                 {
                   "key": "userId",
-                  "value": "",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
                   "description": "User ID"
                 }
               ],
@@ -10096,11 +10160,13 @@
                 {
                   "key": "limit",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 },
                 {
                   "key": "offset",
                   "value": "",
+                  "description": "",
                   "disabled": false
                 }
               ]
@@ -10118,7 +10184,7 @@
           },
           "response": [
             {
-              "name": "200 - User sync history retrieved successfully",
+              "name": "200 OK - User sync history retrieved successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10134,7 +10200,7 @@
                   "variable": [
                     {
                       "key": "userId",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "User ID"
                     }
                   ],
@@ -10142,11 +10208,13 @@
                     {
                       "key": "limit",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     },
                     {
                       "key": "offset",
                       "value": "",
+                      "description": "",
                       "disabled": false
                     }
                   ]
@@ -10159,7 +10227,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10222,7 +10290,7 @@
           },
           "response": [
             {
-              "name": "200 - Security report generated successfully",
+              "name": "200 OK - Security report generated successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10265,7 +10333,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10323,7 +10391,7 @@
           },
           "response": [
             {
-              "name": "200 - Compliance report generated successfully",
+              "name": "200 OK - Compliance report generated successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10366,7 +10434,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10424,7 +10492,7 @@
           },
           "response": [
             {
-              "name": "200 - Activity report generated successfully",
+              "name": "200 OK - Activity report generated successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10467,7 +10535,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10525,7 +10593,7 @@
           },
           "response": [
             {
-              "name": "200 - Performance report generated successfully",
+              "name": "200 OK - Performance report generated successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10568,7 +10636,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10650,7 +10718,7 @@
           },
           "response": [
             {
-              "name": "200 - Audit data exported successfully",
+              "name": "200 OK - Audit data exported successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10717,7 +10785,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10793,7 +10861,7 @@
           },
           "response": [
             {
-              "name": "200 - Audit logs searched successfully",
+              "name": "200 OK - Audit logs searched successfully",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -10854,7 +10922,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10892,7 +10960,7 @@
           },
           "response": [
             {
-              "name": "200 - Custom report generated successfully",
+              "name": "200 OK - Custom report generated successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -10915,7 +10983,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -10945,14 +11013,15 @@
               "variable": [
                 {
                   "key": "platform",
-                  "value": ""
+                  "value": "example_value",
+                  "description": ""
                 }
               ]
             }
           },
           "response": [
             {
-              "name": "200 - Webhook processed successfully",
+              "name": "200 OK - Webhook processed successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -10967,7 +11036,8 @@
                   "variable": [
                     {
                       "key": "platform",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -10979,14 +11049,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "400 - Invalid webhook payload",
+              "name": "400 Bad Request - Invalid webhook payload",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11001,7 +11071,8 @@
                   "variable": [
                     {
                       "key": "platform",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -11013,14 +11084,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Invalid webhook signature",
+              "name": "401 Unauthorized - Invalid webhook signature",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11035,7 +11106,8 @@
                   "variable": [
                     {
                       "key": "platform",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -11047,14 +11119,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "500 - Internal server error",
+              "name": "500 Internal Server Error - Internal server error",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11069,7 +11141,8 @@
                   "variable": [
                     {
                       "key": "platform",
-                      "value": ""
+                      "value": "example_value",
+                      "description": ""
                     }
                   ]
                 },
@@ -11081,7 +11154,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11108,31 +11181,37 @@
                 {
                   "key": "platform",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "eventType",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "repositoryId",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "processed",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "offset",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "limit",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 }
               ]
@@ -11140,7 +11219,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11157,31 +11236,37 @@
                     {
                       "key": "platform",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "eventType",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "repositoryId",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "processed",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "offset",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "limit",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     }
                   ]
@@ -11194,7 +11279,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11220,7 +11305,7 @@
               "variable": [
                 {
                   "key": "eventId",
-                  "value": "",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
                   "description": "Webhook event ID"
                 }
               ]
@@ -11228,7 +11313,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11244,7 +11329,7 @@
                   "variable": [
                     {
                       "key": "eventId",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "Webhook event ID"
                     }
                   ]
@@ -11257,7 +11342,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11284,7 +11369,7 @@
               "variable": [
                 {
                   "key": "eventId",
-                  "value": "",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
                   "description": "Webhook event ID"
                 }
               ]
@@ -11292,7 +11377,7 @@
           },
           "response": [
             {
-              "name": "201 - Created",
+              "name": "201 Created - Created",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11309,7 +11394,7 @@
                   "variable": [
                     {
                       "key": "eventId",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "Webhook event ID"
                     }
                   ]
@@ -11322,7 +11407,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11349,16 +11434,19 @@
                 {
                   "key": "platform",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "fromDate",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 },
                 {
                   "key": "toDate",
                   "value": "",
+                  "description": "",
                   "disabled": true
                 }
               ]
@@ -11366,7 +11454,7 @@
           },
           "response": [
             {
-              "name": "200 - OK",
+              "name": "200 OK - OK",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11383,16 +11471,19 @@
                     {
                       "key": "platform",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "fromDate",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     },
                     {
                       "key": "toDate",
                       "value": "",
+                      "description": "",
                       "disabled": true
                     }
                   ]
@@ -11405,7 +11496,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11461,7 +11552,7 @@
           },
           "response": [
             {
-              "name": "200 - Security statistics retrieved",
+              "name": "200 OK - Security statistics retrieved",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11497,14 +11588,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"totalEvents\": 150,\n  \"eventsByType\": {\n    \"suspicious_login\": 25,\n    \"brute_force_attempt\": 10,\n    \"rate_limit_exceeded\": 50\n  },\n  \"eventsBySeverity\": {\n    \"low\": 80,\n    \"medium\": 45,\n    \"high\": 20,\n    \"critical\": 5\n  },\n  \"blockedIps\": 12,\n  \"suspiciousActivities\": 8,\n  \"recentAlerts\": []\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11540,14 +11631,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Insufficient permissions",
+              "name": "403 Forbidden - Insufficient permissions",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11583,7 +11674,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11609,7 +11700,7 @@
               "variable": [
                 {
                   "key": "identifier",
-                  "value": "",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
                   "description": "IP address or user ID"
                 }
               ]
@@ -11627,7 +11718,7 @@
           },
           "response": [
             {
-              "name": "200 - Suspicious activity retrieved",
+              "name": "200 OK - Suspicious activity retrieved",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11643,7 +11734,7 @@
                   "variable": [
                     {
                       "key": "identifier",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "IP address or user ID"
                     }
                   ]
@@ -11656,14 +11747,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"identifier\": \"ip:192.168.1.1\",\n  \"score\": 85,\n  \"events\": [],\n  \"firstSeen\": \"2024-01-01T00:00:00Z\",\n  \"lastSeen\": \"2024-01-01T12:00:00Z\",\n  \"isBlocked\": false\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11679,7 +11770,7 @@
                   "variable": [
                     {
                       "key": "identifier",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "IP address or user ID"
                     }
                   ]
@@ -11692,14 +11783,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Insufficient permissions",
+              "name": "403 Forbidden - Insufficient permissions",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11715,7 +11806,7 @@
                   "variable": [
                     {
                       "key": "identifier",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "IP address or user ID"
                     }
                   ]
@@ -11728,14 +11819,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "404 - No suspicious activity found",
+              "name": "404 Not Found - No suspicious activity found",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -11751,7 +11842,7 @@
                   "variable": [
                     {
                       "key": "identifier",
-                      "value": "",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
                       "description": "IP address or user ID"
                     }
                   ]
@@ -11764,7 +11855,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11801,7 +11892,7 @@
           },
           "response": [
             {
-              "name": "200 - IP address blocked successfully",
+              "name": "200 OK - IP address blocked successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11823,14 +11914,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"IP address blocked successfully\",\n  \"ipAddress\": \"192.168.1.1\",\n  \"durationMinutes\": 60,\n  \"reason\": \"Manual block by admin\"\n}"
             },
             {
-              "name": "400 - Invalid IP address or parameters",
+              "name": "400 Bad Request - Invalid IP address or parameters",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11852,14 +11943,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11881,14 +11972,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Insufficient permissions",
+              "name": "403 Forbidden - Insufficient permissions",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -11910,7 +12001,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -11936,7 +12027,7 @@
               "variable": [
                 {
                   "key": "ipAddress",
-                  "value": "",
+                  "value": "example_value",
                   "description": "IP address to unblock"
                 }
               ]
@@ -11954,7 +12045,7 @@
           },
           "response": [
             {
-              "name": "200 - IP address unblocked successfully",
+              "name": "200 OK - IP address unblocked successfully",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -11970,7 +12061,7 @@
                   "variable": [
                     {
                       "key": "ipAddress",
-                      "value": "",
+                      "value": "example_value",
                       "description": "IP address to unblock"
                     }
                   ]
@@ -11983,14 +12074,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"IP address unblocked successfully\",\n  \"ipAddress\": \"192.168.1.1\"\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -12006,7 +12097,7 @@
                   "variable": [
                     {
                       "key": "ipAddress",
-                      "value": "",
+                      "value": "example_value",
                       "description": "IP address to unblock"
                     }
                   ]
@@ -12019,14 +12110,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Insufficient permissions",
+              "name": "403 Forbidden - Insufficient permissions",
               "originalRequest": {
                 "method": "DELETE",
                 "url": {
@@ -12042,7 +12133,7 @@
                   "variable": [
                     {
                       "key": "ipAddress",
-                      "value": "",
+                      "value": "example_value",
                       "description": "IP address to unblock"
                     }
                   ]
@@ -12055,7 +12146,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -12107,7 +12198,7 @@
           },
           "response": [
             {
-              "name": "200 - Rate limiting statistics retrieved",
+              "name": "200 OK - Rate limiting statistics retrieved",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -12144,14 +12235,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"totalRequests\": 10000,\n  \"blockedRequests\": 150,\n  \"blockRate\": 0.015,\n  \"topBlockedEndpoints\": [\n    {\n      \"endpoint\": \"/auth/signin\",\n      \"count\": 50\n    },\n    {\n      \"endpoint\": \"/projects/sync\",\n      \"count\": 30\n    }\n  ],\n  \"tierBreakdown\": {\n    \"free\": {\n      \"allowed\": 8000,\n      \"blocked\": 120\n    },\n    \"premium\": {\n      \"allowed\": 1800,\n      \"blocked\": 25\n    },\n    \"enterprise\": {\n      \"allowed\": 200,\n      \"blocked\": 5\n    }\n  }\n}"
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -12188,14 +12279,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Insufficient permissions",
+              "name": "403 Forbidden - Insufficient permissions",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -12232,7 +12323,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -12270,7 +12361,7 @@
           },
           "response": [
             {
-              "name": "200 - Rate limit cleared successfully",
+              "name": "200 OK - Rate limit cleared successfully",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -12293,14 +12384,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"Rate limit cleared successfully\",\n  \"identifier\": \"user:123\",\n  \"endpoint\": \"/auth/signin\"\n}"
             },
             {
-              "name": "400 - Invalid parameters",
+              "name": "400 Bad Request - Invalid parameters",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -12323,14 +12414,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "401 - Unauthorized",
+              "name": "401 Unauthorized - Unauthorized",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -12353,14 +12444,14 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
               "body": ""
             },
             {
-              "name": "403 - Insufficient permissions",
+              "name": "403 Forbidden - Insufficient permissions",
               "originalRequest": {
                 "method": "POST",
                 "url": {
@@ -12383,7 +12474,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -12420,7 +12511,7 @@
           },
           "response": [
             {
-              "name": "200 - Security service is healthy",
+              "name": "200 OK - Security service is healthy",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -12442,7 +12533,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -12471,7 +12562,7 @@
           },
           "response": [
             {
-              "name": "200 - Parsed Portfolio markdown",
+              "name": "200 OK - Parsed Portfolio markdown",
               "originalRequest": {
                 "method": "GET",
                 "url": {
@@ -12490,7 +12581,7 @@
               "header": [
                 {
                   "key": "Content-Type",
-                  "value": "application/json"
+                  "value": "application/json; charset=utf-8"
                 }
               ],
               "cookie": [],
@@ -12531,6 +12622,66 @@
               "mode": "graphql",
               "graphql": {
                 "query": "query {\n  __schema {\n    types {\n      name\n      kind\n    }\n  }\n}",
+                "variables": "{}"
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Introspection Result",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/graphql",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "graphql"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"__schema\": {\n      \"types\": [\n        {\n          \"name\": \"Query\",\n          \"kind\": \"OBJECT\"\n        }\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sample Query - Get Projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetProjects {\n  projects {\n    id\n    name\n    description\n    language\n    stars\n    forks\n  }\n}",
                 "variables": "{}"
               }
             }
