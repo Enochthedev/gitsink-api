@@ -131,6 +131,8 @@ import { SyncEventsModule } from './sync/sync-events.module';
         };
       },
     }),
+    MetricsModule,
+    QueuesModule,
     ProjectsModule,
     PrismaModule,
     AuthModule,
@@ -139,9 +141,9 @@ import { SyncEventsModule } from './sync/sync-events.module';
     PlatformsModule,
     AIEnrichmentModule,
     ProfilesModule,
-    QueuesModule,
+
     HealthModule,
-    MetricsModule,
+
     AuditModule,
     WebhooksModule,
     SandboxModule,

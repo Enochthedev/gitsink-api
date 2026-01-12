@@ -13,6 +13,11 @@ export class EnhancedValidationPipe implements PipeTransform<any> {
     private readonly logger = new Logger(EnhancedValidationPipe.name);
 
     async transform(value: any, { metatype, type, data }: ArgumentMetadata) {
+        // Skip validation for undefined/null values (nullable arguments in GraphQL)
+        if (value === undefined || value === null) {
+            return value;
+        }
+
         // Skip validation for primitive types and if no metatype
         if (!metatype || !this.toValidate(metatype)) {
             return value;

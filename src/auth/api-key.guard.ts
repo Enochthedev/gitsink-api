@@ -67,6 +67,33 @@ export class ApiKeyGuard implements CanActivate {
       throw new ForbiddenException('Rate limit exceeded');
     }
 
+    // DEV HACK: If using local bypass key, try to use the user from the Bearer token
+    if (validationResult.isValid && validationResult.user.id === 'local-user') {
+      const authHeader = request.headers?.['authorization'];
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.slice(7);
+        try {
+          const payloadPart = token.split('.')[1];
+          if (payloadPart) {
+            const payloadStr = Buffer.from(payloadPart, 'base64').toString();
+            const payload = JSON.parse(payloadStr);
+
+            if (payload.sub) {
+              validationResult.user = {
+                ...validationResult.user,
+                id: payload.sub,
+                email: payload.email || validationResult.user.email,
+                username: payload.username || validationResult.user.username,
+                // Keep tier as enterprise from bypass
+              } as any;
+            }
+          }
+        } catch (e) {
+          // Ignore decode errors, fallback to local-user
+        }
+      }
+    }
+
     // Attach user and usage info to request for later use
     request.user = validationResult.user;
     request.apiKeyUsage = {

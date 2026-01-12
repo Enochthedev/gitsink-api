@@ -18,14 +18,16 @@ import { GithubStrategy } from './github.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from '@auth/auth.controller';
 import { GithubController } from './github.controller';
-import { QueuesModule } from '@queues/queues.module';
+import { QueueCoreModule } from '../queues/queue-core.module';
+import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     ConfigModule,
-    QueuesModule,
+
+    QueueCoreModule,
     ScheduleModule.forRoot(),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -49,6 +51,7 @@ import { QueuesModule } from '@queues/queues.module';
     JwtStrategy,
     ApiKeyGuard,
     EnhancedJwtGuard,
+    EnqueueService,
   ],
   controllers: [AuthController, GithubController],
   exports: [

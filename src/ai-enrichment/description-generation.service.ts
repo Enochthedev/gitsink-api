@@ -157,65 +157,93 @@ export class DescriptionGenerationService {
   /**
    * Generate description using external AI service
    */
+  /**
+   * Generate description using external AI service (OpenRouter/OpenAI compatible)
+   */
   private async generateWithAIService(content: RepositoryContent): Promise<AIServiceResponse> {
     const maxRetries = 3;
     let lastError: Error | null = null;
+    const model = this.configService.get<string>('AI_MODEL', 'openai/gpt-3.5-turbo');
+    const isChatCompletion = this.aiServiceUrl.includes('openrouter') || this.aiServiceUrl.includes('openai') || this.aiServiceUrl.includes('v1');
+
+    // Construct endpoint URL correctly
+    let endpoint = this.aiServiceUrl;
+    if (endpoint.endsWith('/')) {
+      endpoint = endpoint.slice(0, -1);
+    }
+
+    if (isChatCompletion && !endpoint.endsWith('/chat/completions')) {
+      endpoint = `${endpoint}/chat/completions`;
+    }
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const prompt = this.buildPrompt(content);
         const timeout = 30000 + (attempt - 1) * 10000; // Increase timeout with retries
 
-        this.logger.debug(`AI service attempt ${attempt}/${maxRetries}`);
+        this.logger.debug(`AI service attempt ${attempt}/${maxRetries} using model ${model}`);
+
+        // Prepare headers
+        const headers: Record<string, string> = {
+          Authorization: `Bearer ${this.aiServiceApiKey}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'Gitsink-AI-Enrichment/1.0',
+        };
+
+        if (this.aiServiceUrl.includes('openrouter')) {
+          headers['HTTP-Referer'] = this.configService.get('APP_URL') || 'http://localhost:3000';
+          headers['X-Title'] = 'GitSink AI';
+        }
+
+        // Prepare Body (Chat Completion Format)
+        const body = {
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert technical writer and software architect. Analyze the provided repository information and generate a concise, professional description. Return only the description text.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.7,
+        };
 
         const response = await firstValueFrom(
-          this.httpService.post<{
-            description?: string;
-            text?: string;
-            content?: string;
-            confidence?: number;
-            error?: string;
-          }>(
-            `${this.aiServiceUrl}/generate-description`,
-            {
-              prompt,
-              max_tokens: 250,
-              temperature: 0.7,
-              model: 'gpt-3.5-turbo',
-              project_type: this.determineProjectType(this.extractProjectInfo(content), content),
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${this.aiServiceApiKey}`,
-                'Content-Type': 'application/json',
-                'User-Agent': 'Gitsink-AI-Enrichment/1.0',
-              },
-              timeout,
-            },
+          this.httpService.post<any>(
+            endpoint,
+            body,
+            { headers, timeout },
           ),
         );
 
-        // Handle different response formats
-        const description =
-          response.data.description || response.data.text || response.data.content;
+        // Handle Chat Completion response
+        const description = response.data?.choices?.[0]?.message?.content;
 
+        // Fallback for legacy format if needed
         if (!description) {
+          const legacyDesc = response.data?.description || response.data?.text || response.data?.content;
+          if (legacyDesc) {
+            return {
+              description: legacyDesc,
+              confidence: response.data?.confidence || 0.8
+            };
+          }
           throw new Error('No description in AI service response');
-        }
-
-        if (response.data.error) {
-          throw new Error(`AI service error: ${response.data.error}`);
         }
 
         return {
           description,
-          confidence: response.data.confidence || 0.8,
+          confidence: 0.85,
         };
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < maxRetries) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff, max 5s
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff
           this.logger.warn(
             `AI service attempt ${attempt} failed, retrying in ${delay}ms:`,
             lastError.message,

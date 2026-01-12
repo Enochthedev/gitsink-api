@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { WaitlistService } from './waitlist.service';
 import { WaitlistController } from './waitlist.controller';
 import { PrismaModule } from '../prisma/prisma.module';
-import { QueuesModule } from '@queues/queues.module';
+import { QueueCoreModule } from '../queues/queue-core.module';
 
 @Module({
-  imports: [PrismaModule, QueuesModule],
+  imports: [PrismaModule, QueueCoreModule],
   controllers: [WaitlistController],
   providers: [WaitlistService],
 })
-export class WaitlistModule {}
+export class WaitlistModule { }

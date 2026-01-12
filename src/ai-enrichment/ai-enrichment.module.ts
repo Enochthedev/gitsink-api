@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { AIEnrichmentService } from './ai-enrichment.service';
 import { TechnologyDetectionService } from './technology-detection.service';
@@ -11,7 +11,7 @@ import { AuthModule } from '../auth/auth.module';
 import { PubSubProvider } from '../common/providers/pubsub.provider';
 
 @Module({
-  imports: [PrismaModule, ConfigModule, HttpModule, AuthModule],
+  imports: [PrismaModule, ConfigModule, HttpModule, forwardRef(() => AuthModule)],
   providers: [
     AIEnrichmentService,
     TechnologyDetectionService,
@@ -27,4 +27,4 @@ import { PubSubProvider } from '../common/providers/pubsub.provider';
     ProjectCategorizationService,
   ],
 })
-export class AIEnrichmentModule {}
+export class AIEnrichmentModule { }

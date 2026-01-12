@@ -15,7 +15,7 @@ import { JwtTokenService } from './jwt-token.service';
 import axios from 'axios';
 import { encrypt } from '../utils/encryption';
 import * as bcrypt from 'bcryptjs';
-import { EnqueueService } from '@queues/email/enqueue/enqueue.service';
+import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
 import { MetricsService } from '@metrics/metrics.service';
 import { Counter, Histogram } from 'prom-client';
 import { v4 as uuidv4 } from 'uuid';

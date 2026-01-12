@@ -17,6 +17,7 @@ import { ErrorHandlingModule } from '../common/error-handling.module';
 import { PubSubProvider } from '../common/providers/pubsub.provider';
 import { SyncEventsModule } from '../sync/sync-events.module';
 
+
 @Module({
   imports: [
     PrismaModule,

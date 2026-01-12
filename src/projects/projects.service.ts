@@ -27,6 +27,9 @@ import {
 } from '../common/decorators/error-boundary.decorator';
 import { EnhancedLoggerService } from '../common/services/enhanced-logger.service';
 import { SyncEventsService } from '../sync/sync-events.service';
+import { QueueManagerService } from '../queues/services/queue-manager.service';
+import { QueueType } from '../queues/config/queue.config';
+import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
 
 /**
  * Service encapsulating all project-related persistence logic. It handles
@@ -43,6 +46,7 @@ export class ProjectsService {
     @Inject(forwardRef(() => SyncQueueService))
     private readonly syncQueue: SyncQueueService,
     private readonly syncEvents: SyncEventsService,
+    private readonly queueManager: QueueManagerService,
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) {
     this.logger.setContext(ProjectsService.name);
@@ -155,6 +159,22 @@ export class ProjectsService {
 
         const mdRaw: string = mdResponse.data;
         portfolioMdExists = true;
+
+        // Check for blacklist status in frontmatter
+        try {
+          const fm = matter(mdRaw);
+          const data = fm.data as Record<string, unknown>;
+          if (
+            data['blacklisted'] === true ||
+            data['blacklist'] === true ||
+            data['allowed'] === false
+          ) {
+            blacklisted = true;
+            this.logger.debug(`Repository marked as blacklisted via Portfolio.md`, { syncId });
+          }
+        } catch (e) {
+          // Ignore matter errors
+        }
 
         this.logger.debug(`Successfully fetched Portfolio.md`, {
           syncId,
@@ -383,6 +403,34 @@ export class ProjectsService {
         });
       }
 
+      // Trigger AI enrichment
+      try {
+        if (project && !project.blacklisted && !project.deletedAt) {
+          await this.queueManager.addJob(
+            QueueType.AI_ENRICHMENT,
+            'enrich-project',
+            {
+              repositoryId: project.id,
+              userId: project.ownerId,
+              repositoryUrl: project.repoUrl,
+              enrichmentType: 'full',
+              options: {
+                forceRegenerate: false,
+                includeReadme: true,
+                analyzeCode: true,
+                generateTags: true,
+              },
+            }
+          );
+          this.logger.debug(`Queued AI enrichment for project ${project.id}`, { syncId });
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to queue AI enrichment`, {
+          syncId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+
       const operationDuration = Date.now() - operationStart;
       if (project) {
         this.logger.info(`GitHub sync operation completed successfully`, {
@@ -474,25 +522,13 @@ export class ProjectsService {
         },
       });
 
-      // Cache the results with error handling
-      try {
-        const cacheTTL = includeDeleted ? 60000 : 300000; // Shorter TTL for deleted projects
-        await this.cache.set(cacheKey, projects, cacheTTL);
-        this.logger.debug(`Cache set for user projects`, {
-          userId,
-          cacheKey,
-          projectCount: projects.length,
-          includeDeleted,
-          cacheTTL,
-        });
-      } catch (cacheError) {
-        this.logger.warn(`Cache set failed for user projects`, {
-          userId,
-          cacheKey,
-          error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-        });
-        // Don't fail the request if cache fails
-      }
+      // Cache the result for 5 minutes
+      await this.cache.set(cacheKey, projects, 300000);
+
+      this.logger.debug(`Cached ${projects.length} projects for user`, {
+        userId,
+        cacheKey,
+      });
 
       return projects;
     } catch (dbError) {
@@ -502,6 +538,84 @@ export class ProjectsService {
         error: dbError instanceof Error ? dbError.message : String(dbError),
       });
       throw dbError;
+    }
+  }
+
+  /**
+   * Return paginated projects for the provided user.
+   */
+  async getPaginatedProjectsForUser(
+    userId: string,
+    pagination: PaginationDto,
+    includeDeleted = false,
+  ): Promise<PaginatedResult<Project>> {
+    const { page = 1, limit = 20, sortBy, sortDirection = 'desc' } = pagination;
+    const skip = (page - 1) * limit;
+
+    const cacheKey = `user:${userId}:projects:p:${page}:l:${limit}:s:${sortBy || 'def'}:${sortDirection}${includeDeleted ? ':del' : ''}`;
+
+    try {
+      const cached = await this.cache.get<PaginatedResult<Project>>(cacheKey);
+      if (cached) return cached;
+    } catch (e) { }
+
+    const whereClause: Prisma.ProjectWhereInput = {
+      ownerId: userId,
+      ...(includeDeleted ? {} : { deletedAt: null }),
+    };
+
+    let orderBy: Prisma.ProjectOrderByWithRelationInput | Prisma.ProjectOrderByWithRelationInput[];
+
+    if (sortBy) {
+      orderBy = { [sortBy]: sortDirection };
+    } else {
+      orderBy = [
+        { featured: 'desc' },
+        { published: 'desc' },
+        { updatedAt: 'desc' },
+      ];
+    }
+
+    try {
+      const [total, projects] = await this.prisma.$transaction([
+        this.prisma.project.count({ where: whereClause }),
+        this.prisma.project.findMany({
+          where: whereClause,
+          orderBy,
+          skip,
+          take: limit,
+          include: {
+            aiAnalysis: {
+              orderBy: { version: 'desc' },
+              take: 1,
+              select: {
+                id: true,
+                confidence: true,
+                createdAt: true,
+              }
+            }
+          }
+        })
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+      const result: PaginatedResult<Project> = {
+        data: projects,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        }
+      };
+
+      await this.cache.set(cacheKey, result, 300000);
+      return result;
+
+    } catch (error) {
+      throw new DatabaseError(`Failed to fetch paginated projects: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -602,108 +716,88 @@ export class ProjectsService {
 
       const headers = { Authorization: `token ${token}` };
 
+      // 1. Fetch all repositories
       const repos = await axios.get<GitHubRepo[]>(
-        'https://api.github.com/user/repos?per_page=100&affiliation=owner',
+        'https://api.github.com/user/repos?per_page=100&affiliation=owner&sort=updated',
         { headers },
       );
 
       const totalRepos = repos.data.length;
       let processedCount = 0;
 
+      // 2. Upsert all repositories immediately as placeholders
+      await this.syncEvents.publishSyncProgress(userId, 0, totalRepos, 'Creating project placeholders...');
+
       for (const repo of repos.data) {
         processedCount++;
-
-        // Publish progress event
-        await this.syncEvents.publishSyncProgress(
-          userId,
-          processedCount,
-          totalRepos,
-          `Syncing ${repo.name}...`,
-        );
-
         const repoUrl = repo.html_url;
-        const { owner, repo: repoName } = parseGitHubRepoUrl(String(repoUrl));
-        const profileUrl = `${this.config.get<string>('GITHUB_MD_URL')}/${owner}/${repoName}/${typeof repo.default_branch === 'string' ? repo.default_branch : 'main'
-          }/Profile.md`;
-        let blacklisted = false;
-        try {
-          const profileRes = await axios.get<string>(profileUrl, { headers });
-          const profileData = matter(profileRes.data).data as Record<string, unknown>;
-          if (
-            profileData['blacklisted'] === true ||
-            profileData['blacklist'] === true ||
-            profileData['allowed'] === false
-          ) {
-            blacklisted = true;
-          }
-        } catch (err) {
-          if (axios.isAxiosError(err) && err.response?.status !== 404) {
-            this.logger.warn(
-              `Error fetching Profile.md for ${String(repo.full_name)}: ${err.message}`,
-            );
-          }
-        }
-        try {
-          if (blacklisted) {
-            const project = await this.prisma.project.upsert({
-              where: {
-                ownerId_repoUrl: {
-                  ownerId: userId,
-                  repoUrl: String(repoUrl),
-                },
-              },
-              create: {
-                ownerId: userId,
-                title: repo.name,
-                description: repo.description || '',
-                tags: [],
-                repoUrl: String(repoUrl),
-                featured: false,
-                published: false,
-                githubSync: false,
-                blacklisted: true,
-                markdown: '',
-                collaborators: [],
-                firstCommitAt: null,
-                lastCommitAt: new Date(repo.pushed_at),
-                githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
-                customMetadata: {},
-                syncedAt: new Date(),
-              },
-              update: {
-                blacklisted: true,
-                githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
-                syncedAt: new Date(),
-              },
-            });
-            syncedProjects.push({
-              id: project.id,
-              title: project.title,
-              repoUrl: String(repoUrl),
-              language: typeof repo.language === 'string' ? repo.language : undefined,
-              starCount: Number(repo.stargazers_count) || 0,
-              isPrivate: Boolean(repo.private),
-            });
-            continue;
-          }
 
+        // Upsert project placeholder
+        // This ensures the user sees the project immediately
+        // The background worker will later populate details or mark as blacklisted
+        const project = await this.prisma.project.upsert({
+          where: {
+            ownerId_repoUrl: {
+              ownerId: userId,
+              repoUrl: String(repoUrl),
+            },
+          },
+          create: {
+            ownerId: userId,
+            title: repo.name,
+            description: repo.description || '',
+            repoUrl: String(repoUrl),
+            featured: false,
+            published: false, // Default to false, worker will enable if Portfolio.md exists
+            githubSync: true,
+            blacklisted: false, // Assume active until worker verifies otherwise
+            markdown: '',
+            tags: [],
+            collaborators: [],
+            firstCommitAt: null,
+            lastCommitAt: new Date(repo.pushed_at),
+            githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
+            customMetadata: {},
+            syncedAt: new Date(),
+          },
+          update: {
+            description: repo.description || '',
+            lastCommitAt: new Date(repo.pushed_at),
+            githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
+            syncedAt: new Date(),
+          },
+        });
+
+        // Add to synced lists for response/event
+        syncedProjects.push({
+          id: project.id,
+          title: project.title,
+          repoUrl: String(repoUrl),
+          language: typeof repo.language === 'string' ? repo.language : undefined,
+          starCount: Number(repo.stargazers_count) || 0,
+          isPrivate: Boolean(repo.private),
+        });
+
+        // 3. Queue background sync job for content
+        // IMPORTANT: We use the queue to handle rate limiting and methodically sync content
+        try {
           await this.queueSyncProject(
             userId,
             String(repoUrl),
             typeof repo.default_branch === 'string' ? repo.default_branch : 'main',
           );
+        } catch (queueError) {
+          this.logger.error(`Failed to queue sync for ${repo.name}`, queueError);
+        }
 
-          // Track for sync completed event
-          syncedProjects.push({
-            id: `pending-${processedCount}`,
-            title: repo.name,
-            repoUrl: String(repoUrl),
-            language: typeof repo.language === 'string' ? repo.language : undefined,
-            starCount: Number(repo.stargazers_count) || 0,
-            isPrivate: Boolean(repo.private),
-          });
-        } catch (e) {
-          this.logger.warn({ err: e }, `Failed to sync repo: ${String(repo.full_name)}`);
+        // Publish incremental progress
+        if (processedCount % 5 === 0) {
+          await this.syncEvents.publishSyncProgress(
+            userId,
+            processedCount,
+            totalRepos,
+            `Queued ${processedCount}/${totalRepos} repositories...`,
+          );
         }
       }
 
@@ -711,8 +805,9 @@ export class ProjectsService {
 
       const duration = Date.now() - startTime;
 
-      // Publish sync completed event
+      // Publish sync completed event (placeholders created)
       await this.syncEvents.publishSyncCompleted(userId, syncedProjects, duration);
+
     } catch (error) {
       const duration = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : String(error);

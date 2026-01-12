@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Req, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiSecurity, ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { SyncProjectInput } from './dto/sync-project.input';
 import { Project } from './entities/project.entity';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { RequestWithUser } from '../auth/request-with-user';
+import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
 
 @UseGuards(ApiKeyGuard)
 @ApiTags('Projects')
@@ -18,16 +19,17 @@ export class ProjectsController {
    * Retrieve all projects for the authenticated user.
    */
   @Get()
-  @ApiOperation({ summary: 'Get all projects', description: 'Retrieve a list of all projects associated with the authenticated user.' })
+  @ApiOperation({ summary: 'Get all projects', description: 'Retrieve a paginated list of all projects associated with the authenticated user.' })
   @ApiOkResponse({
-    description: 'List of projects retrieved successfully',
-    type: Project,
-    isArray: true,
+    description: 'Paginated list of projects retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API Key' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async findAll(@Req() req: RequestWithUser): Promise<Project[]> {
-    return this.projectsService.getAllProjectsForUser(req.user.id);
+  async findAll(
+    @Req() req: RequestWithUser,
+    @Query() pagination: PaginationDto,
+  ): Promise<PaginatedResult<Project>> {
+    return this.projectsService.getPaginatedProjectsForUser(req.user.id, pagination);
   }
 
   @Get(':repoUrl')

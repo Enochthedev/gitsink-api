@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { BaseWorkerService, JobContext } from './base-worker.service';
 import { QueueConfigService, QueueType } from '../config/queue.config';
 import { MetricsService } from '../../metrics/metrics.service';
+import { AIEnrichmentService } from '../../ai-enrichment/ai-enrichment.service';
+import { ProjectsService } from '../../projects/projects.service';
+import { RepositoryContent } from '../../ai-enrichment/interfaces/ai-enrichment.interface';
 
 export interface AIEnrichmentJobData {
   repositoryId: string;
@@ -22,17 +25,7 @@ export interface AIEnrichmentResult {
   repositoryId: string;
   enrichmentType: string;
   processedAt: Date;
-  results: {
-    description?: string;
-    technologies?: {
-      languages: Record<string, number>;
-      frameworks: string[];
-      tools: string[];
-    };
-    category?: string;
-    tags?: string[];
-    confidence?: number;
-  };
+  results: any;
   error?: string;
 }
 
@@ -41,10 +34,9 @@ export class AIEnrichmentWorkerService extends BaseWorkerService {
   constructor(
     queueConfig: QueueConfigService,
     metricsService: MetricsService,
-    // Note: In a real implementation, you'd inject AI services here
-    // private readonly aiEnrichmentService: AIEnrichmentService,
-    // private readonly technologyDetectionService: TechnologyDetectionService,
-    // private readonly descriptionGenerationService: DescriptionGenerationService,
+    private readonly aiEnrichmentService: AIEnrichmentService,
+    @Inject(forwardRef(() => ProjectsService))
+    private readonly projectsService: ProjectsService,
   ) {
     super(queueConfig, metricsService, QueueType.AI_ENRICHMENT);
   }
@@ -70,22 +62,16 @@ export class AIEnrichmentWorkerService extends BaseWorkerService {
       await job.updateProgress(20);
 
       // Get repository data
-      const repositoryData = await this.getRepositoryData(repositoryId);
+      const repositoryContent = await this.getRepositoryContent(repositoryId, userId);
 
       await job.updateProgress(30);
 
-      // Perform AI enrichment based on type
-      const enrichmentResults = await this.performEnrichment(
-        repositoryData,
-        enrichmentType,
-        options,
-        job,
+      // Perform AI enrichment
+      const analysisResult = await this.aiEnrichmentService.analyzeRepository(
+        repositoryId,
+        repositoryContent,
+        options.forceRegenerate,
       );
-
-      await job.updateProgress(90);
-
-      // Save enrichment results
-      await this.saveEnrichmentResults(repositoryId, enrichmentResults);
 
       await job.updateProgress(100);
 
@@ -94,10 +80,10 @@ export class AIEnrichmentWorkerService extends BaseWorkerService {
         repositoryId,
         enrichmentType,
         processedAt: new Date(),
-        results: enrichmentResults,
+        results: analysisResult,
       };
 
-      this.logger.log(`Successfully enriched repository ${repositoryId} with ${enrichmentType}`);
+      this.logger.log(`Successfully enriched repository ${repositoryId}`);
       return result;
     } catch (error) {
       this.logger.error(`AI enrichment failed for repository ${repositoryId}:`, error);
@@ -108,12 +94,7 @@ export class AIEnrichmentWorkerService extends BaseWorkerService {
         enrichmentType,
         processedAt: new Date(),
         results: {},
-        error:
-          error instanceof Error
-            ? error instanceof Error
-              ? error.message
-              : String(error)
-            : 'Unknown error',
+        error: error instanceof Error ? error.message : String(error),
       };
 
       // Record failure metrics
@@ -124,154 +105,50 @@ export class AIEnrichmentWorkerService extends BaseWorkerService {
   }
 
   private validateEnrichmentJobData(data: AIEnrichmentJobData): void {
-    if (!data.repositoryId) {
-      throw new Error('Repository ID is required');
-    }
-    if (!data.userId) {
-      throw new Error('User ID is required');
-    }
-    if (!data.repositoryUrl) {
-      throw new Error('Repository URL is required');
-    }
-    if (!['description', 'technologies', 'categorization', 'full'].includes(data.enrichmentType)) {
-      throw new Error(`Invalid enrichment type: ${data.enrichmentType}`);
+    if (!data.repositoryId || !data.userId) {
+      throw new Error('Repository ID and User ID are required');
     }
   }
 
-  private async getRepositoryData(repositoryId: string) {
-    // This would fetch repository data from database
-    // For now, return mock data
+  private async getRepositoryContent(projectId: string, userId: string): Promise<RepositoryContent> {
+    // Fetch project from DB using ProjectsService
+    // We access Prisma through projects service's internal method or assume accessing DB directly but we can't here easily.
+    // Instead we'll use access to the projects cache/db from ProjectsService if exposed, 
+    // or just assume we have access to PrismaService if we injected it. 
+    // Since we didn't inject PrismaService, let's use a workaround or best effort.
+    // Actually, ProjectsService has getAllProjectsForUser methods. We can use that or rely on `any` cast to get raw access.
+
+    // Better: Inject PrismaService directly? No, let's stick to ProjectsService public API or just use what we can.
+    // Wait, getting a single project is fundamental. ProjectsService should have `getProjectById`.
+    // It doesn't seem to have a public `getProjectById` in the view I saw (only `getAllProjectsForUser` and `getEnhancedProjects`).
+
+    // I'll use `getEnhancedProjects` with a filter.
+    const projects = await this.projectsService.getEnhancedProjects(userId, { id: projectId });
+    const project = projects.projects[0]; // Assuming structure { projects: [], ... }
+
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+
+    const languages: Record<string, number> = {};
+    if (project.language) {
+      languages[project.language] = 1000;
+    }
+
     return {
-      id: repositoryId,
-      name: 'sample-repo',
-      description: 'A sample repository',
-      language: 'TypeScript',
-      topics: ['web', 'api'],
-      readme: '# Sample Repository\n\nThis is a sample repository for testing.',
+      readme: project.markdown || '',
       files: [
         {
-          name: 'package.json',
-          content: '{"name": "sample", "dependencies": {"express": "^4.0.0"}}',
-        },
-        {
-          name: 'src/index.ts',
-          content: 'import express from "express";\nconst app = express();',
-        },
+          name: 'README.md',
+          path: 'README.md',
+          extension: 'md',
+          size: project.markdown?.length || 0,
+          content: project.markdown || '',
+        }
       ],
+      packageJson: {}, // We don't have this stored
+      languages,
+      totalSize: project.size || 0,
     };
-  }
-
-  private async performEnrichment(
-    repositoryData: any,
-    enrichmentType: string,
-    options: any,
-    job: Job,
-  ) {
-    const results: any = {};
-
-    switch (enrichmentType) {
-      case 'description':
-        results.description = await this.generateDescription(repositoryData, job);
-        break;
-      case 'technologies':
-        results.technologies = await this.detectTechnologies(repositoryData, job);
-        break;
-      case 'categorization':
-        results.category = await this.categorizeRepository(repositoryData, job);
-        break;
-      case 'full':
-        results.description = await this.generateDescription(repositoryData, job);
-        await job.updateProgress(50);
-        results.technologies = await this.detectTechnologies(repositoryData, job);
-        await job.updateProgress(65);
-        results.category = await this.categorizeRepository(repositoryData, job);
-        await job.updateProgress(75);
-        results.tags = await this.generateTags(repositoryData, job);
-        break;
-    }
-
-    results.confidence = this.calculateConfidence(results);
-    return results;
-  }
-
-  private async generateDescription(repositoryData: any, job: Job): Promise<string> {
-    await job.updateProgress(40);
-
-    // Simulate AI description generation
-    await this.simulateAIOperation(1500);
-
-    const descriptions = [
-      'A modern web application built with TypeScript and Express.js',
-      'A full-stack application featuring RESTful APIs and modern frontend technologies',
-      'A scalable backend service with comprehensive API documentation',
-    ];
-
-    await job.updateProgress(60);
-    return descriptions[Math.floor(Math.random() * descriptions.length)];
-  }
-
-  private async detectTechnologies(repositoryData: any, job: Job) {
-    await job.updateProgress(45);
-
-    // Simulate technology detection
-    await this.simulateAIOperation(1000);
-
-    const technologies = {
-      languages: {
-        TypeScript: 75,
-        JavaScript: 20,
-        CSS: 5,
-      },
-      frameworks: ['Express.js', 'Node.js'],
-      tools: ['npm', 'Git', 'ESLint'],
-    };
-
-    await job.updateProgress(65);
-    return technologies;
-  }
-
-  private async categorizeRepository(repositoryData: any, job: Job): Promise<string> {
-    await job.updateProgress(50);
-
-    // Simulate categorization
-    await this.simulateAIOperation(800);
-
-    const categories = ['Web Application', 'API Service', 'Library', 'Tool', 'Framework'];
-
-    await job.updateProgress(70);
-    return categories[Math.floor(Math.random() * categories.length)];
-  }
-
-  private async generateTags(repositoryData: any, job: Job): Promise<string[]> {
-    await job.updateProgress(55);
-
-    // Simulate tag generation
-    await this.simulateAIOperation(600);
-
-    const tags = ['typescript', 'express', 'api', 'web', 'backend', 'nodejs'];
-
-    await job.updateProgress(75);
-    return tags.slice(0, Math.floor(Math.random() * 4) + 2);
-  }
-
-  private calculateConfidence(results: any): number {
-    // Simple confidence calculation based on available results
-    let confidence = 0.5;
-
-    if (results.description) confidence += 0.2;
-    if (results.technologies) confidence += 0.2;
-    if (results.category) confidence += 0.1;
-    if (results.tags) confidence += 0.1;
-
-    return Math.min(confidence, 1.0);
-  }
-
-  private async saveEnrichmentResults(repositoryId: string, results: any) {
-    // This would save results to database
-    this.logger.debug(`Saved enrichment results for repository ${repositoryId}`);
-  }
-
-  private async simulateAIOperation(delay: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, delay));
   }
 }

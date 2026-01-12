@@ -53,9 +53,24 @@ export class SyncQueueService {
     this.worker = new Worker(
       'sync',
       async job => {
-        const { userId, repoUrl, branch } = job.data;
         const jobId = job.id;
         const attemptNumber = job.attemptsMade + 1;
+
+        if (job.name === 'sync-all-repos') {
+          const { userId } = job.data;
+          this.logger.log(`Processing sync-all-repos job ${jobId} for user ${userId}`);
+          try {
+            await this.projectsService.syncAllReposForUser(userId);
+            this.logger.log(`Sync-all-repos job ${jobId} completed successfully`);
+            return { success: true };
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            this.logger.error(`Sync-all-repos job ${jobId} failed: ${errorMessage}`);
+            throw error;
+          }
+        }
+
+        const { userId, repoUrl, branch } = job.data;
 
         this.logger.log(`Processing sync job ${jobId} (attempt ${attemptNumber})`, {
           userId,
