@@ -567,11 +567,22 @@ export class ProjectsService {
    */
   async syncAllReposForUser(userId: string): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user?.githubToken) {
+    // Check both githubToken and accessToken for backwards compatibility
+    const encryptedToken = user?.githubToken || user?.accessToken;
+    if (!encryptedToken) {
       throw new Error('GitHub token not found for user');
     }
     const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
-    const token = key ? decrypt(user.githubToken, key) : user.githubToken;
+    // Only decrypt if the token looks encrypted (contains non-token characters)
+    let token = encryptedToken;
+    if (key && !encryptedToken.startsWith('gho_') && !encryptedToken.startsWith('ghp_')) {
+      try {
+        token = decrypt(encryptedToken, key);
+      } catch {
+        // Token might not be encrypted, use as-is
+        token = encryptedToken;
+      }
+    }
 
     const headers = { Authorization: `token ${token}` };
 
