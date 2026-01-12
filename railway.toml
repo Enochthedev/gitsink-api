@@ -1,0 +1,20 @@
+[build]
+  builder = "DOCKERFILE"
+  dockerfilePath = "Dockerfile"
+
+[deploy]
+  healthcheckPath = "/health"
+  healthcheckTimeout = 300
+  restartPolicyType = "ON_FAILURE"
+  restartPolicyMaxRetries = 3
+
+[[services]]
+  name = "gitsink-api"
+  
+[services.healthcheck]
+  path = "/health"
+  interval = 30
+  timeout = 10
+
+# Environment variable references (set in Railway dashboard or Phase)
+# These are injected at runtime from Phase secrets

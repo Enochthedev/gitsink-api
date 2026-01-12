@@ -1,0 +1,163 @@
+# Phase Secrets Management Configuration
+# https://phase.dev/docs
+# 
+# This file defines the structure of secrets used by GitSink API.
+# Secrets are managed in Phase and injected into the application at runtime.
+
+version: "1.0"
+name: gitsink-api
+
+# Define environments
+environments:
+  - development
+  - staging
+  - production
+
+# Secret definitions grouped by category
+secrets:
+  # Database
+  - name: DATABASE_URL
+    description: PostgreSQL connection string
+    required: true
+    environments:
+      - development
+      - staging
+      - production
+
+  # Redis
+  - name: REDIS_URL
+    description: Redis connection URL
+    required: true
+    environments:
+      - development
+      - staging
+      - production
+
+  # Authentication & Security
+  - name: JWT_SECRET
+    description: Secret key for JWT token signing (min 32 chars)
+    required: true
+    environments:
+      - development
+      - staging
+      - production
+
+  - name: TOKEN_ENCRYPTION_KEY
+    description: Encryption key for token storage (min 32 chars)
+    required: true
+    environments:
+      - development
+      - staging
+      - production
+
+  - name: LOCAL_API_KEY
+    description: API key for local/system access
+    required: true
+    environments:
+      - development
+      - staging
+      - production
+
+  # GitHub OAuth
+  - name: GITHUB_CLIENT_ID
+    description: GitHub OAuth App Client ID
+    required: true
+    environments:
+      - staging
+      - production
+
+  - name: GITHUB_CLIENT_SECRET
+    description: GitHub OAuth App Client Secret
+    required: true
+    environments:
+      - staging
+      - production
+
+  - name: GITHUB_PERSONAL_TOKEN
+    description: GitHub Personal Access Token for API calls
+    required: false
+    environments:
+      - development
+      - staging
+      - production
+
+  # Email / SMTP
+  - name: SMTP_HOST
+    description: SMTP server hostname
+    required: true
+    environments:
+      - staging
+      - production
+
+  - name: SMTP_PORT
+    description: SMTP server port
+    required: true
+    environments:
+      - staging
+      - production
+
+  - name: SMTP_USER
+    description: SMTP username
+    required: true
+    environments:
+      - staging
+      - production
+
+  - name: SMTP_PASS
+    description: SMTP password
+    required: true
+    environments:
+      - staging
+      - production
+
+  - name: EMAIL_FROM
+    description: Default from email address
+    required: true
+    environments:
+      - staging
+      - production
+
+  # AI Services
+  - name: OPENAI_API_KEY
+    description: OpenAI API key for AI enrichment
+    required: false
+    environments:
+      - staging
+      - production
+
+  # Monitoring
+  - name: SENTRY_DSN
+    description: Sentry DSN for error reporting
+    required: false
+    environments:
+      - staging
+      - production
+
+  # Multi-Platform OAuth (Optional)
+  - name: GITLAB_CLIENT_ID
+    description: GitLab OAuth App Client ID
+    required: false
+    environments:
+      - staging
+      - production
+
+  - name: GITLAB_CLIENT_SECRET
+    description: GitLab OAuth App Client Secret
+    required: false
+    environments:
+      - staging
+      - production
+
+  - name: BITBUCKET_CLIENT_ID
+    description: Bitbucket OAuth App Client ID
+    required: false
+    environments:
+      - staging
+      - production
+
+  - name: BITBUCKET_CLIENT_SECRET
+    description: Bitbucket OAuth App Client Secret
+    required: false
+    environments:
+      - staging
+      - production
