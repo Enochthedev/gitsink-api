@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { MagicLinkService } from './magic-link.service';
 import { MagicLinkCleanupService } from './magic-link-cleanup.service';
@@ -17,7 +17,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { GithubStrategy } from './github.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from '@auth/auth.controller';
+import { GithubController } from './github.controller';
 import { QueuesModule } from '@queues/queues.module';
+
 @Module({
   imports: [
     PrismaModule,
@@ -48,7 +50,7 @@ import { QueuesModule } from '@queues/queues.module';
     ApiKeyGuard,
     EnhancedJwtGuard,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, GithubController],
   exports: [
     ApiKeyGuard,
     EnhancedJwtGuard,

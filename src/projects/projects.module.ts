@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { EnhancedProjectsService } from './enhanced-projects.service';
 import { ProjectsResolver } from './projects.resolver';
@@ -17,7 +17,7 @@ import { ErrorHandlingModule } from '../common/error-handling.module';
 import { PubSubProvider } from '../common/providers/pubsub.provider';
 
 @Module({
-  imports: [PrismaModule, ParserModule, ConfigModule, AuthModule, PlatformsModule, ErrorHandlingModule],
+  imports: [PrismaModule, ParserModule, ConfigModule, forwardRef(() => AuthModule), PlatformsModule, ErrorHandlingModule],
   controllers: [ProjectsController, GitHubWebhookController],
   providers: [
     ProjectsService,

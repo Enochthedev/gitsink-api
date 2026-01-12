@@ -73,14 +73,21 @@ export class ProjectsController {
    * Synchronize every GitHub repository linked to the authenticated user.
    */
   @ApiOperation({ summary: 'Sync all projects', description: 'Trigger synchronization for all repositories linked to the user account.' })
-  @ApiBody({ description: 'No body required', required: false })
+  @ApiBody({
+    description: 'No body required',
+    required: false,
+    schema: { type: 'object', nullable: true }
+  })
   @ApiOkResponse({
     description: 'Sync all jobs enqueued successfully',
     schema: { example: { queued: true } }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async syncAll(@Req() req: RequestWithUser): Promise<{ queued: boolean }> {
+  async syncAll(
+    @Req() req: RequestWithUser,
+    @Body() _body?: Record<string, unknown>, // Accept optional body to prevent parse errors
+  ): Promise<{ queued: boolean }> {
     await this.projectsService.syncAllReposForUser(req.user.id);
     return { queued: true };
   }

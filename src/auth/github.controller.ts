@@ -13,6 +13,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtTokenService } from './jwt-token.service';
+import { QueueManagerService } from '../queues/services/queue-manager.service';
+import { QueueType } from '../queues/config/queue.config';
 
 interface GitHubUser {
   accessToken: string;
@@ -33,6 +35,7 @@ export class GithubController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtTokenService: JwtTokenService,
+    private readonly queueManager: QueueManagerService,
   ) { }
 
   @Get('github')
@@ -132,12 +135,29 @@ export class GithubController {
         email: user.email,
       });
 
+      // Auto-sync GitHub repos after connection (fire and forget via queue)
+      try {
+        await this.queueManager.addJob(QueueType.SYNC, 'sync-all-repos', {
+          userId: user.id,
+          triggeredBy: 'github-oauth',
+          timestamp: new Date().toISOString(),
+        });
+        this.logger.log('Queued auto-sync of GitHub repos for user', { userId: user.id });
+      } catch (syncError) {
+        this.logger.warn('Failed to queue auto-sync after GitHub OAuth', {
+          error: syncError instanceof Error ? syncError.message : String(syncError),
+          userId: user.id,
+        });
+        // Don't fail OAuth if sync queueing fails
+      }
+
       // Return tokens in response
       return res.json({
         message: 'GitHub authentication successful',
         accessToken: tokenPair.accessToken,
         refreshToken: tokenPair.refreshToken,
         expiresIn: tokenPair.expiresIn,
+        syncQueued: true,
         user: {
           id: user.id,
           email: user.email,
