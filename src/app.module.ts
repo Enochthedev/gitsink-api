@@ -46,6 +46,7 @@ import { GracefulShutdownService } from './common/services/graceful-shutdown.ser
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { BillingModule } from './billing/billing.module';
+import { SyncEventsModule } from './sync/sync-events.module';
 
 
 @Module({
@@ -149,6 +150,7 @@ import { BillingModule } from './billing/billing.module';
     ApiKeysModule,
     SubscriptionsModule,
     BillingModule,
+    SyncEventsModule,
   ],
   controllers: [AppController],
   providers: [

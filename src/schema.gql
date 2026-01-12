@@ -664,6 +664,7 @@ type Query {
   searchProjects(filter: EnhancedProjectFilterInput, pagination: PaginationInput, query: String!): [Project!]!
   securityReport(endDate: String!, reportType: ReportType!, startDate: String!, userId: String): SecurityReportEntity!
   serviceHealth: ServiceHealthStatus!
+  syncEventsInfo: String!
   syncFailureAnalysis(endDate: String, startDate: String, userId: String): FailureAnalysis!
   syncHistory(endDate: DateTime, limit: Float = 50, offset: Float = 0, operations: [SyncOperationType!], orderBy: String = "startedAt", orderDirection: String = "desc", platforms: [String!], projectId: String, startDate: DateTime, statuses: [SyncStatus!], userId: String): SyncHistoryConnection!
   syncHistoryStats(endDate: DateTime, startDate: DateTime, userId: String): SyncHistoryStatsEntity!
@@ -848,9 +849,32 @@ type Subscription {
   sandboxSessionStarted: SandboxSession!
   sandboxUsageUpdated: SandboxUsage!
   serviceHealthUpdates: ServiceHealthStatus!
+
+  """Subscribe to sync events for real-time updates"""
+  syncEvents(userId: ID!): SyncEvent!
   syncStatusUpdates: SyncStatusUpdate!
   systemHealthUpdates: SystemHealthStatus!
   userEnrichmentUpdates: EnrichmentStatusUpdate!
+}
+
+type SyncEvent {
+  duration: Float
+  error: String
+  id: ID!
+  message: String
+  progress: SyncProgress
+  projects: [SyncedProject!]
+  timestamp: DateTime!
+  type: SyncEventType!
+  userId: ID!
+}
+
+"""Type of sync event"""
+enum SyncEventType {
+  SYNC_COMPLETED
+  SYNC_FAILED
+  SYNC_PROGRESS
+  SYNC_STARTED
 }
 
 type SyncHistoryConnection {
@@ -913,6 +937,12 @@ type SyncPlatformStats {
   successRate: Float!
 }
 
+type SyncProgress {
+  current: Float!
+  percentage: Float!
+  total: Float!
+}
+
 input SyncProjectInput {
   branch: String
   repoUrl: String!
@@ -933,6 +963,15 @@ type SyncStatusUpdate {
   status: String!
   timestamp: DateTime!
   userId: String!
+}
+
+type SyncedProject {
+  id: ID!
+  isPrivate: Boolean!
+  language: String
+  repoUrl: String!
+  starCount: Float!
+  title: String!
 }
 
 type SystemChanges {

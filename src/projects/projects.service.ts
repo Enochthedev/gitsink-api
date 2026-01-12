@@ -26,6 +26,7 @@ import {
   ValidationErrorBoundary
 } from '../common/decorators/error-boundary.decorator';
 import { EnhancedLoggerService } from '../common/services/enhanced-logger.service';
+import { SyncEventsService } from '../sync/sync-events.service';
 
 /**
  * Service encapsulating all project-related persistence logic. It handles
@@ -41,7 +42,7 @@ export class ProjectsService {
     private readonly enhancedLogger: EnhancedLoggerService,
     @Inject(forwardRef(() => SyncQueueService))
     private readonly syncQueue: SyncQueueService,
-
+    private readonly syncEvents: SyncEventsService,
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) {
     this.logger.setContext(ProjectsService.name);
@@ -566,101 +567,163 @@ export class ProjectsService {
    * flags found in `Profile.md`.
    */
   async syncAllReposForUser(userId: string): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    // Check both githubToken and accessToken for backwards compatibility
-    const encryptedToken = user?.githubToken || user?.accessToken;
-    if (!encryptedToken) {
-      throw new Error('GitHub token not found for user');
-    }
-    const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
-    // Only decrypt if the token looks encrypted (contains non-token characters)
-    let token = encryptedToken;
-    if (key && !encryptedToken.startsWith('gho_') && !encryptedToken.startsWith('ghp_')) {
-      try {
-        token = decrypt(encryptedToken, key);
-      } catch {
-        // Token might not be encrypted, use as-is
-        token = encryptedToken;
+    const startTime = Date.now();
+    const syncedProjects: Array<{
+      id: string;
+      title: string;
+      repoUrl: string;
+      language?: string;
+      starCount: number;
+      isPrivate: boolean;
+    }> = [];
+
+    try {
+      // Publish sync started event
+      await this.syncEvents.publishSyncStarted(userId, 'Fetching repositories from GitHub...');
+
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      // Check both githubToken and accessToken for backwards compatibility
+      const encryptedToken = user?.githubToken || user?.accessToken;
+      if (!encryptedToken) {
+        await this.syncEvents.publishSyncFailed(userId, 'GitHub token not found for user');
+        throw new Error('GitHub token not found for user');
       }
-    }
-
-    const headers = { Authorization: `token ${token}` };
-
-    const repos = await axios.get<GitHubRepo[]>(
-      'https://api.github.com/user/repos?per_page=100&affiliation=owner',
-      { headers },
-    );
-
-    for (const repo of repos.data) {
-      const repoUrl = repo.html_url;
-      const { owner, repo: repoName } = parseGitHubRepoUrl(String(repoUrl));
-      const profileUrl = `${this.config.get<string>('GITHUB_MD_URL')}/${owner}/${repoName}/${typeof repo.default_branch === 'string' ? repo.default_branch : 'main'
-        }/Profile.md`;
-      let blacklisted = false;
-      try {
-        const profileRes = await axios.get<string>(profileUrl, { headers });
-        const profileData = matter(profileRes.data).data as Record<string, unknown>;
-        if (
-          profileData['blacklisted'] === true ||
-          profileData['blacklist'] === true ||
-          profileData['allowed'] === false
-        ) {
-          blacklisted = true;
-        }
-      } catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status !== 404) {
-          this.logger.warn(
-            `Error fetching Profile.md for ${String(repo.full_name)}: ${err.message}`,
-          );
+      const key = this.config.get<string>('TOKEN_ENCRYPTION_KEY');
+      // Only decrypt if the token looks encrypted (contains non-token characters)
+      let token = encryptedToken;
+      if (key && !encryptedToken.startsWith('gho_') && !encryptedToken.startsWith('ghp_')) {
+        try {
+          token = decrypt(encryptedToken, key);
+        } catch {
+          // Token might not be encrypted, use as-is
+          token = encryptedToken;
         }
       }
-      try {
-        if (blacklisted) {
-          await this.prisma.project.upsert({
-            where: {
-              ownerId_repoUrl: {
-                ownerId: userId,
-                repoUrl: String(repoUrl),
-              },
-            },
-            create: {
-              ownerId: userId,
-              title: repo.name,
-              description: repo.description || '',
-              tags: [],
-              repoUrl: String(repoUrl),
-              featured: false,
-              published: false,
-              githubSync: false,
-              blacklisted: true,
-              markdown: '',
-              collaborators: [],
-              firstCommitAt: null,
-              lastCommitAt: new Date(repo.pushed_at),
-              githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
-              customMetadata: {},
-              syncedAt: new Date(),
-            },
-            update: {
-              blacklisted: true,
-              githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
-              syncedAt: new Date(),
-            },
-          });
-          continue;
-        }
 
-        await this.queueSyncProject(
+      const headers = { Authorization: `token ${token}` };
+
+      const repos = await axios.get<GitHubRepo[]>(
+        'https://api.github.com/user/repos?per_page=100&affiliation=owner',
+        { headers },
+      );
+
+      const totalRepos = repos.data.length;
+      let processedCount = 0;
+
+      for (const repo of repos.data) {
+        processedCount++;
+
+        // Publish progress event
+        await this.syncEvents.publishSyncProgress(
           userId,
-          String(repoUrl),
-          typeof repo.default_branch === 'string' ? repo.default_branch : 'main',
+          processedCount,
+          totalRepos,
+          `Syncing ${repo.name}...`,
         );
-      } catch (e) {
-        this.logger.warn({ err: e }, `Failed to sync repo: ${String(repo.full_name)}`);
-      }
-    }
 
-    await this.cache.del(`projects:${userId}`);
+        const repoUrl = repo.html_url;
+        const { owner, repo: repoName } = parseGitHubRepoUrl(String(repoUrl));
+        const profileUrl = `${this.config.get<string>('GITHUB_MD_URL')}/${owner}/${repoName}/${typeof repo.default_branch === 'string' ? repo.default_branch : 'main'
+          }/Profile.md`;
+        let blacklisted = false;
+        try {
+          const profileRes = await axios.get<string>(profileUrl, { headers });
+          const profileData = matter(profileRes.data).data as Record<string, unknown>;
+          if (
+            profileData['blacklisted'] === true ||
+            profileData['blacklist'] === true ||
+            profileData['allowed'] === false
+          ) {
+            blacklisted = true;
+          }
+        } catch (err) {
+          if (axios.isAxiosError(err) && err.response?.status !== 404) {
+            this.logger.warn(
+              `Error fetching Profile.md for ${String(repo.full_name)}: ${err.message}`,
+            );
+          }
+        }
+        try {
+          if (blacklisted) {
+            const project = await this.prisma.project.upsert({
+              where: {
+                ownerId_repoUrl: {
+                  ownerId: userId,
+                  repoUrl: String(repoUrl),
+                },
+              },
+              create: {
+                ownerId: userId,
+                title: repo.name,
+                description: repo.description || '',
+                tags: [],
+                repoUrl: String(repoUrl),
+                featured: false,
+                published: false,
+                githubSync: false,
+                blacklisted: true,
+                markdown: '',
+                collaborators: [],
+                firstCommitAt: null,
+                lastCommitAt: new Date(repo.pushed_at),
+                githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
+                customMetadata: {},
+                syncedAt: new Date(),
+              },
+              update: {
+                blacklisted: true,
+                githubMetadata: isInputJsonValue(repo) ? (repo as Prisma.InputJsonValue) : {},
+                syncedAt: new Date(),
+              },
+            });
+            syncedProjects.push({
+              id: project.id,
+              title: project.title,
+              repoUrl: String(repoUrl),
+              language: typeof repo.language === 'string' ? repo.language : undefined,
+              starCount: Number(repo.stargazers_count) || 0,
+              isPrivate: Boolean(repo.private),
+            });
+            continue;
+          }
+
+          await this.queueSyncProject(
+            userId,
+            String(repoUrl),
+            typeof repo.default_branch === 'string' ? repo.default_branch : 'main',
+          );
+
+          // Track for sync completed event
+          syncedProjects.push({
+            id: `pending-${processedCount}`,
+            title: repo.name,
+            repoUrl: String(repoUrl),
+            language: typeof repo.language === 'string' ? repo.language : undefined,
+            starCount: Number(repo.stargazers_count) || 0,
+            isPrivate: Boolean(repo.private),
+          });
+        } catch (e) {
+          this.logger.warn({ err: e }, `Failed to sync repo: ${String(repo.full_name)}`);
+        }
+      }
+
+      await this.cache.del(`projects:${userId}`);
+
+      const duration = Date.now() - startTime;
+
+      // Publish sync completed event
+      await this.syncEvents.publishSyncCompleted(userId, syncedProjects, duration);
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Publish sync failed event (if not already published)
+      if (!errorMessage.includes('GitHub token not found')) {
+        await this.syncEvents.publishSyncFailed(userId, errorMessage);
+      }
+
+      throw error;
+    }
   }
 
   // Enhanced GraphQL methods
