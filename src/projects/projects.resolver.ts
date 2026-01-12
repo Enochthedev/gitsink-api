@@ -20,7 +20,7 @@ export class ProjectsResolver {
   constructor(
     private readonly projectsService: ProjectsService,
     @Inject('PUB_SUB') private pubSub: PubSub,
-  ) {}
+  ) { }
 
   @Mutation(() => Project, { name: 'syncProject' })
   async syncProject(
@@ -32,11 +32,6 @@ export class ProjectsResolver {
     }
     await this.projectsService.queueSyncProject(context.userId, input.repoUrl, input.branch);
     return { enqueued: true };
-  }
-
-  @Query(() => String)
-  ping(): string {
-    return 'pong';
   }
 
   @Query(() => [Project])

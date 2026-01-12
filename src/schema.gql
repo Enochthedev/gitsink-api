@@ -641,6 +641,8 @@ type Query {
   myProfile: PublicProfileGraphQL
   myProfileGraphQL: PublicProfileGraphQL
   performanceReport(endDate: String!, reportType: ReportType!, startDate: String!, userId: String): PerformanceReportEntity!
+
+  """Simple health check ping that returns pong"""
   ping: String!
   profileByDomain(domain: String!): PublicProfileGraphQL
   project(repoUrl: String!): Project

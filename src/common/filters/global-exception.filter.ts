@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { GqlArgumentsHost, GqlExecutionContext } from '@nestjs/graphql';
+import { GraphQLError } from 'graphql';
 import { AppError, ErrorCategory } from '../exceptions/app-error';
 import { ErrorHandlerService } from '../exceptions/error-handler.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -59,13 +60,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         response.status(appError.getStatus()).json(errorResponse);
     }
 
-    private handleGraphQLException(exception: unknown, host: ArgumentsHost) {
+    private handleGraphQLException(exception: unknown, host: ArgumentsHost): never {
         const gqlHost = GqlArgumentsHost.create(host);
         const context = gqlHost.getContext();
         const info = gqlHost.getInfo();
 
-        const requestId = context.req?.requestId || uuidv4();
-        const userId = context.req?.user?.id;
+        const requestId = context?.req?.requestId || uuidv4();
+        const userId = context?.req?.user?.id;
 
         // Convert to standardized error
         const appError = this.errorHandler.handleError(
@@ -78,8 +79,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         // Log the error with GraphQL context
         this.errorHandler.logError(appError, `GraphQL:${info?.fieldName}`);
 
-        // Return GraphQL-formatted error
-        return this.buildGraphQLError(appError);
+        // Throw a proper GraphQL error
+        const errorDetails = this.buildGraphQLError(appError);
+        throw new GraphQLError(errorDetails.message, {
+            extensions: errorDetails.extensions,
+        });
     }
 
     private buildErrorResponse(error: AppError, request: Request) {

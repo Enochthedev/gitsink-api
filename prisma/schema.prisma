@@ -43,6 +43,8 @@ model User {
   syncHistory       SyncHistory[]
   auditLogs         AuditLog[]
   customMetadata    CustomMetadata[]
+  apiKeyTokens      ApiKeyToken[]
+  subscription      Subscription?
   
   @@index([tier])
   @@index([lastSyncAt])
@@ -454,4 +456,182 @@ model FailedEmailJob {
   @@index([nextRetryAt, attempts])
   @@index([email])
   @@index([type])
+}
+
+/// Multiple API Keys per user for different applications/purposes
+model ApiKeyToken {
+  id            String    @id @default(uuid())
+  userId        String
+  name          String    // User-friendly name (e.g., "Production App", "Development")
+  keyHash       String    @unique // SHA-256 hash of the API key (never store raw)
+  keyPrefix     String    // First 8 characters for display (e.g., "gs_abc12...")
+  permissions   String[]  @default(["read", "write"]) // read, write, admin
+  rateLimit     Int       @default(1000) // Requests per hour
+  expiresAt     DateTime? // Optional expiration
+  lastUsedAt    DateTime?
+  lastUsedIp    String?
+  usageCount    Int       @default(0)
+  isActive      Boolean   @default(true)
+  environment   String    @default("production") // development, staging, production
+  allowedIps    String[]  @default([]) // IP whitelist (empty = all allowed)
+  allowedOrigins String[] @default([]) // CORS origins (empty = all allowed)
+  metadata      Json      @default("{}")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  revokedAt     DateTime?
+  revokedReason String?
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([keyPrefix])
+  @@index([isActive])
+  @@index([lastUsedAt])
+  @@index([environment])
+  @@index([createdAt])
+}
+
+/// Subscription tiers with feature limits and pricing
+model Tier {
+  id            String   @id @default(uuid())
+  name          String   @unique // 'free', 'pro', 'enterprise'
+  displayName   String
+  description   String?
+  monthlyPrice  Decimal  @default(0) @db.Decimal(10, 2)
+  yearlyPrice   Decimal  @default(0) @db.Decimal(10, 2)
+  currency      String   @default("USD")
+  
+  // Limits (use -1 for unlimited)
+  projectLimit      Int    @default(5)
+  apiKeyLimit       Int    @default(1)
+  apiCallsPerMonth  Int    @default(1000)
+  syncFrequency     String @default("daily") // realtime, hourly, daily
+  webhookLimit      Int    @default(1)
+  teamMemberLimit   Int    @default(0)
+  storageLimit      Int    @default(100) // MB
+  
+  // Features (boolean flags)
+  aiEnrichment      Boolean @default(false)
+  customDomain      Boolean @default(false)
+  prioritySupport   Boolean @default(false)
+  analytics         Boolean @default(false)
+  exportData        Boolean @default(false)
+  whiteLabel        Boolean @default(false)
+  sso               Boolean @default(false)
+  
+  features      String[] @default([]) // Additional feature flags
+  metadata      Json     @default("{}")
+  isActive      Boolean  @default(true)
+  isPopular     Boolean  @default(false) // Highlight in UI
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subscriptions Subscription[]
+  
+  // External payment provider IDs
+  stripeProductId        String?
+  stripePriceIdMonthly   String?
+  stripePriceIdYearly    String?
+  paypalPlanIdMonthly    String?
+  paypalPlanIdYearly     String?
+  lemonSqueezyVariantIdMonthly String?
+  lemonSqueezyVariantIdYearly  String?
+
+  @@index([name])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+/// User subscriptions linking users to tiers
+model Subscription {
+  id                    String    @id @default(uuid())
+  userId                String    @unique // One active subscription per user
+  tierId                String
+  status                String    @default("active") // active, canceled, past_due, trialing, paused
+  billingCycle          String    @default("monthly") // monthly, yearly
+  
+  // Billing period
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  trialStart            DateTime?
+  trialEnd              DateTime?
+  
+  // Cancellation
+  cancelAtPeriodEnd     Boolean   @default(false)
+  canceledAt            DateTime?
+  cancelReason          String?
+  
+  // Payment provider info
+  paymentProvider       String?   // 'stripe', 'paypal', 'lemonsqueezy', null for free
+  externalSubscriptionId String?  // External subscription ID
+  externalCustomerId    String?   // External customer ID
+  
+  // Usage tracking (reset each period)
+  currentApiCalls       Int       @default(0)
+  currentProjects       Int       @default(0)
+  currentStorage        Int       @default(0) // MB used
+  
+  metadata              Json      @default("{}")
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier                  Tier      @relation(fields: [tierId], references: [id])
+  payments              Payment[]
+
+  @@index([userId])
+  @@index([tierId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@index([paymentProvider])
+}
+
+/// Payment history and invoices
+model Payment {
+  id                String   @id @default(uuid())
+  userId            String
+  subscriptionId    String?
+  
+  // Amount
+  amount            Decimal  @db.Decimal(10, 2)
+  currency          String   @default("USD")
+  
+  // Status
+  status            String   // succeeded, pending, failed, refunded, disputed
+  type              String   @default("subscription") // subscription, one_time, refund
+  
+  // Payment provider
+  paymentProvider   String   // stripe, paypal, lemonsqueezy
+  externalPaymentId String?  // External payment/charge ID
+  externalInvoiceId String?  // External invoice ID
+  
+  // URLs
+  invoiceUrl        String?
+  receiptUrl        String?
+  hostedInvoiceUrl  String?
+  
+  // Details
+  description       String?
+  billingReason     String?  // subscription_create, subscription_cycle, subscription_update
+  failureCode       String?
+  failureMessage    String?
+  
+  // Refund info
+  refundedAmount    Decimal? @db.Decimal(10, 2)
+  refundedAt        DateTime?
+  refundReason      String?
+  
+  metadata          Json     @default("{}")
+  paidAt            DateTime?
+  createdAt         DateTime @default(now())
+
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([paymentProvider])
+  @@index([createdAt])
+  @@index([paidAt])
 }

@@ -17,18 +17,27 @@ export class ApiKeyGuard implements CanActivate {
     private readonly authService: AuthService,
     private readonly apiKeyService: ApiKeyService,
     private readonly config: ConfigService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType<'http' | 'graphql'>();
-    const request: RequestWithUser =
-      type === 'http'
-        ? context.switchToHttp().getRequest()
-        : (GqlExecutionContext.create(context).getContext().req as RequestWithUser);
+    let request: RequestWithUser | undefined;
+
+    if (type === 'http') {
+      request = context.switchToHttp().getRequest();
+    } else {
+      const gqlContext = GqlExecutionContext.create(context).getContext();
+      request = gqlContext?.req as RequestWithUser | undefined;
+    }
+
+    // Check if request exists (may not exist for some GraphQL operations)
+    if (!request) {
+      throw new UnauthorizedException('Request context unavailable');
+    }
 
     // Extract API key from headers
-    const headerKey = request.headers['x-api-key'] as string | undefined;
-    const authHeader = request.headers['authorization'];
+    const headerKey = request.headers?.['x-api-key'] as string | undefined;
+    const authHeader = request.headers?.['authorization'];
     const bearerKey = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
     const apiKey = headerKey || bearerKey;
 
@@ -42,8 +51,8 @@ export class ApiKeyGuard implements CanActivate {
       method: request.method || 'unknown',
       statusCode: 200, // Will be updated later by middleware
       duration: 0, // Will be updated later by middleware
-      ipAddress: request.ip || request.connection?.remoteAddress,
-      userAgent: request.headers['user-agent'],
+      ipAddress: request.ip || request.connection?.remoteAddress || 'unknown',
+      userAgent: request.headers?.['user-agent'],
       timestamp: new Date(),
     };
 

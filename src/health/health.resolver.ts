@@ -16,6 +16,11 @@ export class HealthResolver {
     this.startHealthUpdates();
   }
 
+  @Query(() => String, { description: 'Simple health check ping that returns pong' })
+  ping(): string {
+    return 'pong';
+  }
+
   @Query(() => SystemHealthStatus)
   async systemHealth(): Promise<SystemHealthStatus> {
     try {

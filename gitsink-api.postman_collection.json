@@ -12629,6 +12629,2868 @@
       ]
     },
     {
+      "name": "API Keys",
+      "item": [
+        {
+          "name": "List all API keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - List of API keys",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"Production App\",\n    \"keyPrefix\": \"gs_abc12...\",\n    \"permissions\": [\n      \"read\",\n      \"write\"\n    ],\n    \"rateLimit\": 1000,\n    \"expiresAt\": \"2025-12-31T23:59:59.000Z\",\n    \"lastUsedAt\": \"2024-01-15T10:30:00.000Z\",\n    \"usageCount\": 42,\n    \"isActive\": true,\n    \"environment\": \"production\",\n    \"allowedIps\": [],\n    \"allowedOrigins\": [],\n    \"createdAt\": \"2024-01-01T00:00:00.000Z\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Create a new API key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Production App\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59Z\",\n  \"environment\": \"production\",\n  \"allowedIps\": [\n    \"192.168.1.1\",\n    \"10.0.0.0/8\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created - API key created. Save the apiKey value - it will not be shown again!",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Production App\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59Z\",\n  \"environment\": \"production\",\n  \"allowedIps\": [\n    \"192.168.1.1\",\n    \"10.0.0.0/8\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"name\": \"Production App\",\n  \"keyPrefix\": \"gs_abc12...\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59.000Z\",\n  \"lastUsedAt\": \"2024-01-15T10:30:00.000Z\",\n  \"usageCount\": 42,\n  \"isActive\": true,\n  \"environment\": \"production\",\n  \"allowedIps\": [],\n  \"allowedOrigins\": [],\n  \"createdAt\": \"2024-01-01T00:00:00.000Z\",\n  \"apiKey\": \"gs_live_abc123xyz789def456ghi\"\n}"
+            },
+            {
+              "name": "400 Bad Request - Invalid input",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Production App\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59Z\",\n  \"environment\": \"production\",\n  \"allowedIps\": [\n    \"192.168.1.1\",\n    \"10.0.0.0/8\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Production App\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59Z\",\n  \"environment\": \"production\",\n  \"allowedIps\": [\n    \"192.168.1.1\",\n    \"10.0.0.0/8\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "403 Forbidden - API key limit reached",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Production App\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59Z\",\n  \"environment\": \"production\",\n  \"allowedIps\": [\n    \"192.168.1.1\",\n    \"10.0.0.0/8\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get API key statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "stats"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - API key statistics",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/stats",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    "stats"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/stats",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    "stats"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get API key details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": "API key ID"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - API key details",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"name\": \"Production App\",\n  \"keyPrefix\": \"gs_abc12...\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59.000Z\",\n  \"lastUsedAt\": \"2024-01-15T10:30:00.000Z\",\n  \"usageCount\": 42,\n  \"isActive\": true,\n  \"environment\": \"production\",\n  \"allowedIps\": [],\n  \"allowedOrigins\": [],\n  \"createdAt\": \"2024-01-01T00:00:00.000Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found - API key not found",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Update an API key",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": "API key ID"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 2000,\n  \"expiresAt\": \"2026-12-31T23:59:59Z\",\n  \"environment\": \"development\",\n  \"allowedIps\": [\n    \"192.168.1.1\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ],\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - API key updated",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Name\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 2000,\n  \"expiresAt\": \"2026-12-31T23:59:59Z\",\n  \"environment\": \"development\",\n  \"allowedIps\": [\n    \"192.168.1.1\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ],\n  \"isActive\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"name\": \"Production App\",\n  \"keyPrefix\": \"gs_abc12...\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59.000Z\",\n  \"lastUsedAt\": \"2024-01-15T10:30:00.000Z\",\n  \"usageCount\": 42,\n  \"isActive\": true,\n  \"environment\": \"production\",\n  \"allowedIps\": [],\n  \"allowedOrigins\": [],\n  \"createdAt\": \"2024-01-01T00:00:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request - Invalid input",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Name\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 2000,\n  \"expiresAt\": \"2026-12-31T23:59:59Z\",\n  \"environment\": \"development\",\n  \"allowedIps\": [\n    \"192.168.1.1\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ],\n  \"isActive\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Name\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 2000,\n  \"expiresAt\": \"2026-12-31T23:59:59Z\",\n  \"environment\": \"development\",\n  \"allowedIps\": [\n    \"192.168.1.1\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ],\n  \"isActive\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found - API key not found",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Name\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 2000,\n  \"expiresAt\": \"2026-12-31T23:59:59Z\",\n  \"environment\": \"development\",\n  \"allowedIps\": [\n    \"192.168.1.1\"\n  ],\n  \"allowedOrigins\": [\n    \"https://example.com\"\n  ],\n  \"isActive\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Revoke an API key",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": "API key ID"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Key compromised\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content - API key revoked",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Key compromised\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Key compromised\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found - API key not found",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Key compromised\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Rotate an API key",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/:id/rotate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                ":id",
+                "rotate"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123e4567-e89b-12d3-a456-426614174000",
+                  "description": "API key ID"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - New API key generated. Save it - it will not be shown again!",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id/rotate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id",
+                    "rotate"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"name\": \"Production App\",\n  \"keyPrefix\": \"gs_abc12...\",\n  \"permissions\": [\n    \"read\",\n    \"write\"\n  ],\n  \"rateLimit\": 1000,\n  \"expiresAt\": \"2025-12-31T23:59:59.000Z\",\n  \"lastUsedAt\": \"2024-01-15T10:30:00.000Z\",\n  \"usageCount\": 42,\n  \"isActive\": true,\n  \"environment\": \"production\",\n  \"allowedIps\": [],\n  \"allowedOrigins\": [],\n  \"createdAt\": \"2024-01-01T00:00:00.000Z\",\n  \"apiKey\": \"gs_live_abc123xyz789def456ghi\"\n}"
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id/rotate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id",
+                    "rotate"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found - API key not found",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api-keys/:id/rotate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-keys",
+                    ":id",
+                    "rotate"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "123e4567-e89b-12d3-a456-426614174000",
+                      "description": "API key ID"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "List all available tiers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tiers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tiers"
+              ],
+              "variable": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - List of tiers",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/tiers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tiers"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"pro\",\n    \"displayName\": \"Pro Plan\",\n    \"description\": \"Unlock more projects and API calls\",\n    \"monthlyPrice\": 19.99,\n    \"yearlyPrice\": 199.99,\n    \"currency\": \"USD\",\n    \"projectLimit\": 50,\n    \"apiKeyLimit\": 5,\n    \"apiCallsPerMonth\": 50000,\n    \"syncFrequency\": \"hourly\",\n    \"webhookLimit\": 10,\n    \"teamMemberLimit\": 5,\n    \"storageLimit\": 1000,\n    \"aiEnrichment\": true,\n    \"customDomain\": true,\n    \"prioritySupport\": false,\n    \"features\": [\n      \"advanced_analytics\",\n      \"custom_reports\"\n    ],\n    \"isPopular\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get tier details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tiers/:name",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tiers",
+                ":name"
+              ],
+              "variable": [
+                {
+                  "key": "name",
+                  "value": "example_value",
+                  "description": "Tier name (free, pro, enterprise)"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Tier details",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/tiers/:name",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tiers",
+                    ":name"
+                  ],
+                  "variable": [
+                    {
+                      "key": "name",
+                      "value": "example_value",
+                      "description": "Tier name (free, pro, enterprise)"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"name\": \"pro\",\n  \"displayName\": \"Pro Plan\",\n  \"description\": \"Unlock more projects and API calls\",\n  \"monthlyPrice\": 19.99,\n  \"yearlyPrice\": 199.99,\n  \"currency\": \"USD\",\n  \"projectLimit\": 50,\n  \"apiKeyLimit\": 5,\n  \"apiCallsPerMonth\": 50000,\n  \"syncFrequency\": \"hourly\",\n  \"webhookLimit\": 10,\n  \"teamMemberLimit\": 5,\n  \"storageLimit\": 1000,\n  \"aiEnrichment\": true,\n  \"customDomain\": true,\n  \"prioritySupport\": false,\n  \"features\": [\n    \"advanced_analytics\",\n    \"custom_reports\"\n  ],\n  \"isPopular\": true\n}"
+            },
+            {
+              "name": "404 Not Found - Tier not found",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/tiers/:name",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tiers",
+                    ":name"
+                  ],
+                  "variable": [
+                    {
+                      "key": "name",
+                      "value": "example_value",
+                      "description": "Tier name (free, pro, enterprise)"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get current subscription",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/current",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "current"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Current subscription",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/current",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "current"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"status\": \"active\",\n  \"billingCycle\": \"monthly\",\n  \"tier\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"pro\",\n    \"displayName\": \"Pro Plan\",\n    \"description\": \"Unlock more projects and API calls\",\n    \"monthlyPrice\": 19.99,\n    \"yearlyPrice\": 199.99,\n    \"currency\": \"USD\",\n    \"projectLimit\": 50,\n    \"apiKeyLimit\": 5,\n    \"apiCallsPerMonth\": 50000,\n    \"syncFrequency\": \"hourly\",\n    \"webhookLimit\": 10,\n    \"teamMemberLimit\": 5,\n    \"storageLimit\": 1000,\n    \"aiEnrichment\": true,\n    \"customDomain\": true,\n    \"prioritySupport\": false,\n    \"features\": [\n      \"advanced_analytics\",\n      \"custom_reports\"\n    ],\n    \"isPopular\": true\n  },\n  \"currentPeriodStart\": \"2024-01-01T00:00:00.000Z\",\n  \"currentPeriodEnd\": \"2024-02-01T00:00:00.000Z\",\n  \"trialEnd\": \"2024-01-15T00:00:00.000Z\",\n  \"cancelAtPeriodEnd\": false,\n  \"paymentProvider\": \"stripe\",\n  \"createdAt\": \"2024-01-01T00:00:00.000Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/current",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "current"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get usage statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/usage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "usage"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Usage statistics",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/usage",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "usage"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"apiCallsUsed\": 3500,\n  \"apiCallsLimit\": 50000,\n  \"apiCallsPercentage\": 7,\n  \"projectsUsed\": 12,\n  \"projectsLimit\": 50,\n  \"projectsPercentage\": 24,\n  \"apiKeysUsed\": 2,\n  \"apiKeysLimit\": 5,\n  \"apiKeysPercentage\": 40,\n  \"storageUsed\": 45,\n  \"storageLimit\": 1000,\n  \"storagePercentage\": 4.5,\n  \"resetDate\": \"2024-02-01T00:00:00.000Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/usage",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "usage"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Upgrade subscription tier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/upgrade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "upgrade"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tierName\": \"pro\",\n  \"billingCycle\": \"monthly\",\n  \"paymentProvider\": \"stripe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Upgrade initiated",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/upgrade",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "upgrade"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tierName\": \"pro\",\n  \"billingCycle\": \"monthly\",\n  \"paymentProvider\": \"stripe\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "400 Bad Request - Invalid tier or already on tier",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/upgrade",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "upgrade"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tierName\": \"pro\",\n  \"billingCycle\": \"monthly\",\n  \"paymentProvider\": \"stripe\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/upgrade",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "upgrade"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tierName\": \"pro\",\n  \"billingCycle\": \"monthly\",\n  \"paymentProvider\": \"stripe\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Cancel subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "cancel"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Too expensive\",\n  \"immediate\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Subscription canceled",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "cancel"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Too expensive\",\n  \"immediate\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"status\": \"active\",\n  \"billingCycle\": \"monthly\",\n  \"tier\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"pro\",\n    \"displayName\": \"Pro Plan\",\n    \"description\": \"Unlock more projects and API calls\",\n    \"monthlyPrice\": 19.99,\n    \"yearlyPrice\": 199.99,\n    \"currency\": \"USD\",\n    \"projectLimit\": 50,\n    \"apiKeyLimit\": 5,\n    \"apiCallsPerMonth\": 50000,\n    \"syncFrequency\": \"hourly\",\n    \"webhookLimit\": 10,\n    \"teamMemberLimit\": 5,\n    \"storageLimit\": 1000,\n    \"aiEnrichment\": true,\n    \"customDomain\": true,\n    \"prioritySupport\": false,\n    \"features\": [\n      \"advanced_analytics\",\n      \"custom_reports\"\n    ],\n    \"isPopular\": true\n  },\n  \"currentPeriodStart\": \"2024-01-01T00:00:00.000Z\",\n  \"currentPeriodEnd\": \"2024-02-01T00:00:00.000Z\",\n  \"trialEnd\": \"2024-01-15T00:00:00.000Z\",\n  \"cancelAtPeriodEnd\": false,\n  \"paymentProvider\": \"stripe\",\n  \"createdAt\": \"2024-01-01T00:00:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request - Cannot cancel free subscription",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "cancel"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Too expensive\",\n  \"immediate\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "cancel"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Too expensive\",\n  \"immediate\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Resume subscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/resume",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "resume"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Subscription resumed",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/resume",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "resume"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"status\": \"active\",\n  \"billingCycle\": \"monthly\",\n  \"tier\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"pro\",\n    \"displayName\": \"Pro Plan\",\n    \"description\": \"Unlock more projects and API calls\",\n    \"monthlyPrice\": 19.99,\n    \"yearlyPrice\": 199.99,\n    \"currency\": \"USD\",\n    \"projectLimit\": 50,\n    \"apiKeyLimit\": 5,\n    \"apiCallsPerMonth\": 50000,\n    \"syncFrequency\": \"hourly\",\n    \"webhookLimit\": 10,\n    \"teamMemberLimit\": 5,\n    \"storageLimit\": 1000,\n    \"aiEnrichment\": true,\n    \"customDomain\": true,\n    \"prioritySupport\": false,\n    \"features\": [\n      \"advanced_analytics\",\n      \"custom_reports\"\n    ],\n    \"isPopular\": true\n  },\n  \"currentPeriodStart\": \"2024-01-01T00:00:00.000Z\",\n  \"currentPeriodEnd\": \"2024-02-01T00:00:00.000Z\",\n  \"trialEnd\": \"2024-01-15T00:00:00.000Z\",\n  \"cancelAtPeriodEnd\": false,\n  \"paymentProvider\": \"stripe\",\n  \"createdAt\": \"2024-01-01T00:00:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request - Subscription not set to cancel",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/resume",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "resume"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/resume",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "resume"
+                  ],
+                  "variable": []
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Check feature access",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/features/:feature",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "features",
+                ":feature"
+              ],
+              "variable": [
+                {
+                  "key": "feature",
+                  "value": "example_value",
+                  "description": "Feature name to check"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Feature access status",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/features/:feature",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "features",
+                    ":feature"
+                  ],
+                  "variable": [
+                    {
+                      "key": "feature",
+                      "value": "example_value",
+                      "description": "Feature name to check"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/features/:feature",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "features",
+                    ":feature"
+                  ],
+                  "variable": [
+                    {
+                      "key": "feature",
+                      "value": "example_value",
+                      "description": "Feature name to check"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "Create checkout session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "checkout"
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tierName\": \"pro\",\n  \"provider\": \"stripe\",\n  \"billingCycle\": \"monthly\",\n  \"successUrl\": \"https://app.gitsink.dev/billing/success\",\n  \"cancelUrl\": \"https://app.gitsink.dev/billing/cancel\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Checkout session created",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "checkout"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tierName\": \"pro\",\n  \"provider\": \"stripe\",\n  \"billingCycle\": \"monthly\",\n  \"successUrl\": \"https://app.gitsink.dev/billing/success\",\n  \"cancelUrl\": \"https://app.gitsink.dev/billing/cancel\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"checkoutUrl\": \"https://checkout.stripe.com/c/pay/...\",\n  \"sessionId\": \"cs_test_abc123\",\n  \"provider\": \"stripe\",\n  \"expiresAt\": \"2024-01-15T10:30:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request - Invalid tier or provider",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "checkout"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tierName\": \"pro\",\n  \"provider\": \"stripe\",\n  \"billingCycle\": \"monthly\",\n  \"successUrl\": \"https://app.gitsink.dev/billing/success\",\n  \"cancelUrl\": \"https://app.gitsink.dev/billing/cancel\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "checkout"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tierName\": \"pro\",\n  \"provider\": \"stripe\",\n  \"billingCycle\": \"monthly\",\n  \"successUrl\": \"https://app.gitsink.dev/billing/success\",\n  \"cancelUrl\": \"https://app.gitsink.dev/billing/cancel\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Create billing portal session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/portal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "portal"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "provider",
+                  "value": "",
+                  "description": "Payment provider (default: stripe)",
+                  "disabled": true
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Portal URL generated",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/portal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "portal"
+                  ],
+                  "variable": [],
+                  "query": [
+                    {
+                      "key": "provider",
+                      "value": "",
+                      "description": "Payment provider (default: stripe)",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"portalUrl\": \"https://billing.stripe.com/p/session/...\",\n  \"expiresAt\": \"2024-01-15T10:30:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request - No active subscription",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/portal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "portal"
+                  ],
+                  "variable": [],
+                  "query": [
+                    {
+                      "key": "provider",
+                      "value": "",
+                      "description": "Payment provider (default: stripe)",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/portal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "portal"
+                  ],
+                  "variable": [],
+                  "query": [
+                    {
+                      "key": "provider",
+                      "value": "",
+                      "description": "Payment provider (default: stripe)",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get payment history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "payments"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "Number of payments to return",
+                  "disabled": true
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Payment history",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/payments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "payments"
+                  ],
+                  "variable": [],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "",
+                      "description": "Number of payments to return",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"amount\": 19.99,\n    \"currency\": \"USD\",\n    \"status\": \"succeeded\",\n    \"type\": \"subscription\",\n    \"paymentProvider\": \"stripe\",\n    \"invoiceUrl\": \"https://invoice.stripe.com/i/...\",\n    \"receiptUrl\": \"https://pay.stripe.com/receipts/...\",\n    \"description\": \"Pro Plan - Monthly\",\n    \"paidAt\": \"2024-01-15T10:30:00.000Z\",\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/payments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "payments"
+                  ],
+                  "variable": [],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "",
+                      "description": "Number of payments to return",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "Number of invoices to return",
+                  "disabled": true
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Invoice list",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/invoices",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "invoices"
+                  ],
+                  "variable": [],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "",
+                      "description": "Number of invoices to return",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"in_1234567890\",\n    \"amount\": 19.99,\n    \"currency\": \"USD\",\n    \"status\": \"paid\",\n    \"invoiceUrl\": \"https://invoice.stripe.com/i/...\",\n    \"pdfUrl\": \"https://invoice.stripe.com/i/.../pdf\",\n    \"periodStart\": \"2024-01-01T00:00:00.000Z\",\n    \"periodEnd\": \"2024-02-01T00:00:00.000Z\",\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized - Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/invoices",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "invoices"
+                  ],
+                  "variable": [],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "",
+                      "description": "Number of invoices to return",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Stripe webhook handler",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "stripe-signature",
+                "value": "",
+                "description": ""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/webhooks/stripe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "webhooks",
+                "stripe"
+              ],
+              "variable": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Webhook processed",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/webhooks/stripe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "webhooks",
+                    "stripe"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "stripe-signature",
+                    "value": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "400 Bad Request - Invalid signature",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/webhooks/stripe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "webhooks",
+                    "stripe"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "stripe-signature",
+                    "value": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "PayPal webhook handler",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "paypal-transmission-sig",
+                "value": "",
+                "description": ""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/webhooks/paypal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "webhooks",
+                "paypal"
+              ],
+              "variable": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Webhook processed",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/webhooks/paypal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "webhooks",
+                    "paypal"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "paypal-transmission-sig",
+                    "value": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "400 Bad Request - Invalid signature",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/webhooks/paypal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "webhooks",
+                    "paypal"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "paypal-transmission-sig",
+                    "value": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "LemonSqueezy webhook handler",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-signature",
+                "value": "",
+                "description": ""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/webhooks/lemonsqueezy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "webhooks",
+                "lemonsqueezy"
+              ],
+              "variable": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Webhook processed",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/webhooks/lemonsqueezy",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "webhooks",
+                    "lemonsqueezy"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "x-signature",
+                    "value": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "400 Bad Request - Invalid signature",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/billing/webhooks/lemonsqueezy",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "billing",
+                    "webhooks",
+                    "lemonsqueezy"
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "x-signature",
+                    "value": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "app",
       "item": [
         {

@@ -26,7 +26,8 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { SecurityMiddleware } from './common/middleware/security.middleware';
 import { RequestContextMiddleware, UserContextMiddleware, PerformanceTrackingMiddleware } from './common/middleware/request-context.middleware';
 import { LoggingModule } from './common/logging.module';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
 import { ThrottleExceptionFilter } from './common/filters/throttle-exception.filter';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { ErrorHandlerService } from './common/exceptions/error-handler.service';
@@ -42,6 +43,10 @@ import { SecurityModule } from './common/security.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigValidationService } from './common/config/config-validation.service';
 import { GracefulShutdownService } from './common/services/graceful-shutdown.service';
+import { ApiKeysModule } from './api-keys/api-keys.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { BillingModule } from './billing/billing.module';
+
 
 @Module({
   imports: [
@@ -141,6 +146,9 @@ import { GracefulShutdownService } from './common/services/graceful-shutdown.ser
     SandboxModule,
     SecurityModule,
     LoggingModule,
+    ApiKeysModule,
+    SubscriptionsModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [
@@ -150,10 +158,10 @@ import { GracefulShutdownService } from './common/services/graceful-shutdown.ser
     EnhancedLoggerService,
     ConfigValidationService,
     GracefulShutdownService,
-    // Apply ThrottlerGuard globally
+    // Apply GqlThrottlerGuard globally (supports both HTTP and GraphQL contexts)
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: GqlThrottlerGuard,
     },
     // Apply UserContextGuard globally (but with lower priority)
     {

@@ -5,15 +5,25 @@ import { RequestWithUser } from '@auth/request-with-user';
 
 @Injectable()
 export class UserContextGuard implements CanActivate {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Determine request object for REST or GraphQL
-    let req: RequestWithUser = context.switchToHttp().getRequest<RequestWithUser>();
+    const type = context.getType<'http' | 'graphql'>();
+    let req: RequestWithUser | undefined;
     let gqlCtx: GqlExecutionContext | null = null;
-    if (!req) {
+
+    if (type === 'http') {
+      req = context.switchToHttp().getRequest<RequestWithUser>();
+    } else if (type === 'graphql' || (type as string) === 'graphql') {
       gqlCtx = GqlExecutionContext.create(context);
-      req = gqlCtx.getContext<{ req: RequestWithUser }>().req;
+      const gqlContextData = gqlCtx.getContext<{ req?: RequestWithUser }>();
+      req = gqlContextData?.req;
+    }
+
+    // If no request is available, allow the request to continue
+    // (auth will be handled by specific guards like ApiKeyGuard)
+    if (!req) {
+      return true;
     }
 
     let userId: string | undefined;
