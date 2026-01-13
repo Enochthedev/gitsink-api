@@ -19,7 +19,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from '@auth/auth.controller';
 import { GithubController } from './github.controller';
 import { QueueCoreModule } from '../queues/queue-core.module';
-import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
+
 
 @Module({
   imports: [
@@ -51,7 +51,7 @@ import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
     JwtStrategy,
     ApiKeyGuard,
     EnhancedJwtGuard,
-    EnqueueService,
+
   ],
   controllers: [AuthController, GithubController],
   exports: [
