@@ -30,7 +30,7 @@ export interface EnhancedJobOptions extends JobsOptions {
 
 @Injectable()
 export class QueueConfigService implements OnModuleDestroy {
-  private redisConnection: Redis;
+  private redisConnection: Redis | null = null;
 
   constructor(private readonly configService: ConfigService) { }
 
