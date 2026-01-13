@@ -42,19 +42,33 @@ export class QueueConfigService implements OnModuleDestroy {
 
   private getRedisConfig(): any {
     const redisUrl = this.configService.get<string>('REDIS_URL');
+
+    // Enhanced connection configuration for better connection management
+    const baseConfig = {
+      maxRetriesPerRequest: null, // Required by BullMQ for blocking commands
+      enableReadyCheck: false, // Reduce connection overhead
+      enableOfflineQueue: true, // Queue commands when disconnected
+      connectTimeout: 10000, // 10 seconds connection timeout
+      // Connection pool settings to limit connections
+      lazyConnect: false, // Connect immediately to detect issues
+      keepAlive: 30000, // Keep connection alive
+      family: 4, // IPv4
+      retryStrategy: (times: number) => {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+    };
+
     if (redisUrl) {
       try {
-        // Return the URL directly for IORedis to parse, or parse it if you need specific options mixed in
-        // For simplicity and compatibility, we'll return an object compatible with IORedis options
         const url = new URL(redisUrl);
         return {
+          ...baseConfig,
           host: url.hostname,
           port: parseInt(url.port, 10) || 6379,
           password: url.password || undefined,
           username: url.username || undefined,
           db: url.pathname ? parseInt(url.pathname.slice(1), 10) || 0 : 0,
-          maxRetriesPerRequest: null,
-          enableReadyCheck: false,
         };
       } catch (error) {
         console.warn('Failed to parse REDIS_URL, falling back to individual config:', error);
@@ -62,12 +76,11 @@ export class QueueConfigService implements OnModuleDestroy {
     }
 
     return {
+      ...baseConfig,
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
       password: this.configService.get<string>('REDIS_PASSWORD'),
       db: this.configService.get<number>('REDIS_DB', 0),
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
     };
   }
 
@@ -78,19 +91,33 @@ export class QueueConfigService implements OnModuleDestroy {
 
     const config = this.getRedisConfig();
 
-    // Create a singleton connection with maxRetriesPerRequest set to null as required by BullMQ
-    this.redisConnection = new Redis(config, {
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-      retryStrategy(times) {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
-      },
+    // Create a singleton connection - this will be SHARED across all Queue and QueueEvents instances
+    // This dramatically reduces the number of Redis connections needed
+    this.redisConnection = new Redis(config);
+
+    // Enhanced connection monitoring and error handling
+    this.redisConnection.on('connect', () => {
+      console.log('[QueueConfig] Shared Redis connection established');
     });
 
-    // Handle connection errors to prevent crash
+    this.redisConnection.on('ready', () => {
+      console.log('[QueueConfig] Shared Redis connection ready');
+    });
+
     this.redisConnection.on('error', (err) => {
-      console.error('Shared Redis connection error:', err);
+      console.error('[QueueConfig] Shared Redis connection error:', err.message);
+      // Don't log full stack trace for "max clients" errors to reduce noise
+      if (!err.message.includes('max number of clients')) {
+        console.error(err.stack);
+      }
+    });
+
+    this.redisConnection.on('close', () => {
+      console.warn('[QueueConfig] Shared Redis connection closed');
+    });
+
+    this.redisConnection.on('reconnecting', (delay: number) => {
+      console.log(`[QueueConfig] Shared Redis connection reconnecting in ${delay}ms`);
     });
 
     return this.redisConnection;
@@ -229,30 +256,30 @@ export class QueueConfigService implements OnModuleDestroy {
   }
 
   private getConcurrency(queueType: QueueType): number {
-    const defaultConcurrency = this.configService.get<number>('QUEUE_CONCURRENCY', 5);
+    // CRITICAL: Reduced default concurrency from 5 to 2 to minimize Redis connections
+    // Each worker creates 2 Redis connections (blocking + command), so:
+    // - 6 queue types × 2 avg concurrency × 2 connections = ~24 worker connections
+    // Previous setting: 6 × 5 avg × 2 = ~60 connections (exceeds Redis limit!)
+    const defaultConcurrency = this.configService.get<number>('QUEUE_CONCURRENCY', 2);
 
     switch (queueType) {
       case QueueType.EMAIL:
-        return this.configService.get<number>('EMAIL_QUEUE_CONCURRENCY', defaultConcurrency);
+        // Email is high priority but doesn't need many concurrent workers
+        return this.configService.get<number>('EMAIL_QUEUE_CONCURRENCY', 2);
       case QueueType.SYNC:
-        return this.configService.get<number>(
-          'SYNC_QUEUE_CONCURRENCY',
-          Math.max(defaultConcurrency - 2, 1),
-        );
+        // Sync operations are I/O bound, 2 workers is sufficient
+        return this.configService.get<number>('SYNC_QUEUE_CONCURRENCY', 2);
       case QueueType.AI_ENRICHMENT:
-        return this.configService.get<number>(
-          'AI_QUEUE_CONCURRENCY',
-          Math.max(defaultConcurrency - 3, 1),
-        );
+        // AI operations are expensive, keep at 1 to avoid overload
+        return this.configService.get<number>('AI_QUEUE_CONCURRENCY', 1);
       case QueueType.WEBHOOK:
-        return this.configService.get<number>('WEBHOOK_QUEUE_CONCURRENCY', defaultConcurrency + 2);
+        // Webhooks are fast, can handle slightly more concurrency
+        return this.configService.get<number>('WEBHOOK_QUEUE_CONCURRENCY', 3);
       case QueueType.CLEANUP:
         return 1; // Single worker for cleanup tasks
       case QueueType.ANALYTICS:
-        return this.configService.get<number>(
-          'ANALYTICS_QUEUE_CONCURRENCY',
-          Math.max(defaultConcurrency - 2, 1),
-        );
+        // Analytics can be processed slowly
+        return this.configService.get<number>('ANALYTICS_QUEUE_CONCURRENCY', 1);
       default:
         return defaultConcurrency;
     }

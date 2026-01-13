@@ -61,9 +61,10 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
       const queueOptions = this.queueConfig.getQueueOptions(queueType);
       const queue = new Queue(queueType, queueOptions);
 
-      // Create queue events for monitoring
+      // Create queue events for monitoring - REUSE the same connection as the queue
+      // This prevents creating 6 additional Redis connections (one per queue type)
       const queueEvents = new QueueEvents(queueType, {
-        connection: queueOptions.connection,
+        connection: this.queueConfig.getRedisConnection(), // Reuse singleton connection
       });
 
       this.queues.set(queueType, queue);
