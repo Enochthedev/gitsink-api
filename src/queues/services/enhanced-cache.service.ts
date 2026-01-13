@@ -289,16 +289,44 @@ export class EnhancedCacheService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async initializeRedis() {
-    const redisConfig = {
-      host: this.configService.get<string>('REDIS_HOST', 'localhost'),
-      port: this.configService.get<number>('REDIS_PORT', 6379),
-      password: this.configService.get<string>('REDIS_PASSWORD'),
-      db: this.configService.get<number>('REDIS_CACHE_DB', 1),
-      keyPrefix: this.config.keyPrefix,
-      retryDelayOnFailover: 100,
-      maxRetriesPerRequest: 3,
-      lazyConnect: true,
-    };
+    // Check if REDIS_URL is provided (Railway/production format)
+    const redisUrl = this.configService.get<string>('REDIS_URL');
+
+    let redisConfig: any;
+
+    if (redisUrl) {
+      // Parse REDIS_URL: redis://[user:password@]host:port[/db]
+      try {
+        const url = new URL(redisUrl);
+        redisConfig = {
+          host: url.hostname,
+          port: parseInt(url.port, 10) || 6379,
+          password: url.password || undefined,
+          username: url.username || undefined,
+          db: this.configService.get<number>('REDIS_CACHE_DB', 1), // Use separate DB for cache
+          keyPrefix: this.config.keyPrefix,
+          retryDelayOnFailover: 100,
+          maxRetriesPerRequest: 3,
+          lazyConnect: true,
+        };
+      } catch (error) {
+        this.logger.warn('Failed to parse REDIS_URL, falling back to individual config:', error);
+      }
+    }
+
+    // Fallback to individual environment variables
+    if (!redisConfig) {
+      redisConfig = {
+        host: this.configService.get<string>('REDIS_HOST', 'localhost'),
+        port: this.configService.get<number>('REDIS_PORT', 6379),
+        password: this.configService.get<string>('REDIS_PASSWORD'),
+        db: this.configService.get<number>('REDIS_CACHE_DB', 1),
+        keyPrefix: this.config.keyPrefix,
+        retryDelayOnFailover: 100,
+        maxRetriesPerRequest: 3,
+        lazyConnect: true,
+      };
+    }
 
     this.redis = new Redis(redisConfig);
 
