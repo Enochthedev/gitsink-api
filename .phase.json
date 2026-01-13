@@ -1,0 +1,8 @@
+{
+  "version": "2",
+  "phaseApp": "Gitsink_API",
+  "appId": "404ef577-b31e-4714-a430-07867e5bb035",
+  "defaultEnv": "Development",
+  "envId": "d8340cc8-05b8-46f9-85a3-7842327f3325",
+  "monorepoSupport": true
+}

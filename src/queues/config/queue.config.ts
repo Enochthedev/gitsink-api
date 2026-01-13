@@ -32,6 +32,31 @@ export class QueueConfigService {
   constructor(private readonly configService: ConfigService) { }
 
   getRedisConnection() {
+    // Check if REDIS_URL is provided (Railway/production format)
+    const redisUrl = this.configService.get<string>('REDIS_URL');
+
+    if (redisUrl) {
+      // Parse REDIS_URL: redis://[user:password@]host:port[/db]
+      try {
+        const url = new URL(redisUrl);
+        return {
+          host: url.hostname,
+          port: parseInt(url.port, 10) || 6379,
+          password: url.password || undefined,
+          username: url.username || undefined,
+          db: url.pathname ? parseInt(url.pathname.slice(1), 10) || 0 : 0,
+          maxRetriesPerRequest: null, // Critical: Must be null for BullMQ
+          retryDelayOnFailover: 100,
+          enableReadyCheck: false, // Recommended for BullMQ
+          maxLoadingTimeout: 5000,
+          lazyConnect: true,
+        };
+      } catch (error) {
+        console.warn('Failed to parse REDIS_URL, falling back to individual config:', error);
+      }
+    }
+
+    // Fallback to individual environment variables
     return {
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
