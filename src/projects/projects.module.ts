@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
 import { ProjectsService } from './projects.service';
 import { EnhancedProjectsService } from './enhanced-projects.service';
 import { ProjectsResolver } from './projects.resolver';
@@ -27,6 +28,10 @@ import { SyncEventsModule } from '../sync/sync-events.module';
     PlatformsModule,
     ErrorHandlingModule,
     SyncEventsModule,
+    BullModule.registerQueue(
+      { name: 'sync' },
+      { name: 'sync-dead-letter' }
+    ),
   ],
   controllers: [ProjectsController, GitHubWebhookController],
   providers: [

@@ -1,40 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bullmq';
 
 @Injectable()
 export class EnqueueService {
-  private queue: Queue;
-
-  constructor(private readonly config: ConfigService) {
-    // Parse REDIS_URL if provided (Railway/production format)
-    const redisUrl = this.config.get<string>('REDIS_URL');
-    let connection: any;
-
-    if (redisUrl) {
-      try {
-        const url = new URL(redisUrl);
-        connection = {
-          host: url.hostname,
-          port: parseInt(url.port, 10) || 6379,
-          password: url.password || undefined,
-          username: url.username || undefined,
-        };
-      } catch (error) {
-        console.warn('Failed to parse REDIS_URL in EnqueueService, falling back to individual config');
-      }
-    }
-
-    // Fallback to individual environment variables
-    if (!connection) {
-      connection = {
-        host: this.config.get<string>('REDIS_HOST', 'localhost'),
-        port: this.config.get<number>('REDIS_PORT', 6379),
-      };
-    }
-
-    this.queue = new Queue('email', { connection });
-  }
+  constructor(
+    private readonly config: ConfigService,
+    @InjectQueue('email') private queue: Queue,
+  ) { }
   async enqueueEmail(jobData: any, options: any = {}) {
     const defaultOptions = {
       removeOnComplete: this.config.get<number>('EMAIL_REMOVE_ON_COMPLETE', 100),

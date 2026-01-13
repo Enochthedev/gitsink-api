@@ -1,5 +1,6 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { QueueConfigService } from './config/queue.config';
 import { QueueManagerService } from './services/queue-manager.service';
 import { QueueHealthService } from './services/queue-health.service';
@@ -11,7 +12,12 @@ import { EnqueueService } from './email/enqueue/enqueue.service';
 
 @Global()
 @Module({
-    imports: [ConfigModule],
+    imports: [
+        ConfigModule,
+        BullModule.registerQueue({
+            name: 'email',
+        }),
+    ],
     providers: [
         QueueConfigService,
         QueueManagerService,

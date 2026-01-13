@@ -1,156 +1,24 @@
 import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
-import { Queue, Worker } from 'bullmq';
+import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
 import { ProjectsService } from './projects.service';
 
 @Injectable()
 export class SyncQueueService {
   private readonly logger = new Logger(SyncQueueService.name);
-  private queue!: Queue;
-  private worker!: Worker;
-  private deadLetterQueue!: Queue;
 
   constructor(
     private readonly config: ConfigService,
     @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
-  ) {
-    this.initializeQueues();
-    this.initializeWorker();
-  }
+    @InjectQueue('sync') private readonly queue: Queue,
+    @InjectQueue('sync-dead-letter') private readonly deadLetterQueue: Queue,
+  ) { }
 
-  private initializeQueues() {
-    const redisConnection = {
-      url: this.config.get<string>('REDIS_URL'),
-      maxRetriesPerRequest: null, // Critical: Must be null for BullMQ
-    };
+  // Worker initialization removed to prevent duplicate processing and connection exhaustion.
+  // Processing is handled by SyncWorkerService in QueuesModule.
 
-    // Main sync queue
-    this.queue = new Queue('sync', {
-      connection: redisConnection,
-      defaultJobOptions: {
-        removeOnComplete: 100,
-        removeOnFail: 50,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
-        },
-      },
-    });
-
-    // Dead letter queue for failed jobs
-    this.deadLetterQueue = new Queue('sync-dead-letter', {
-      connection: redisConnection,
-      defaultJobOptions: {
-        removeOnComplete: 1000,
-        removeOnFail: false, // Keep failed jobs for analysis
-      },
-    });
-  }
-
-  private initializeWorker() {
-    this.worker = new Worker(
-      'sync',
-      async job => {
-        const jobId = job.id;
-        const attemptNumber = job.attemptsMade + 1;
-
-        if (job.name === 'sync-all-repos') {
-          const { userId } = job.data;
-          this.logger.log(`Processing sync-all-repos job ${jobId} for user ${userId}`);
-          try {
-            await this.projectsService.syncAllReposForUser(userId);
-            this.logger.log(`Sync-all-repos job ${jobId} completed successfully`);
-            return { success: true };
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            this.logger.error(`Sync-all-repos job ${jobId} failed: ${errorMessage}`);
-            throw error;
-          }
-        }
-
-        const { userId, repoUrl, branch } = job.data;
-
-        this.logger.log(`Processing sync job ${jobId} (attempt ${attemptNumber})`, {
-          userId,
-          repoUrl,
-          branch,
-          jobId,
-          attemptNumber,
-        });
-
-        try {
-          const result = await this.projectsService.syncProjectFromGitHub(userId, repoUrl, branch);
-
-          this.logger.log(`Sync job ${jobId} completed successfully`, {
-            userId,
-            repoUrl,
-            projectId: result.id,
-            jobId,
-          });
-
-          return result;
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-
-          this.logger.error(`Sync job ${jobId} failed (attempt ${attemptNumber})`, {
-            userId,
-            repoUrl,
-            branch,
-            jobId,
-            attemptNumber,
-            error: errorMessage,
-            maxAttempts: job.opts.attempts,
-          });
-
-          // If this is the final attempt, move to dead letter queue
-          if (attemptNumber >= (job.opts.attempts || 3)) {
-            await this.moveToDeadLetterQueue(job, error);
-          }
-
-          throw error; // Re-throw to let BullMQ handle retries
-        }
-      },
-      {
-        connection: {
-          url: this.config.get<string>('REDIS_URL'),
-          maxRetriesPerRequest: null, // Critical: Must be null for BullMQ
-        },
-        concurrency: 5, // Process up to 5 jobs concurrently
-        settings: {},
-      },
-    );
-
-    // Set up event listeners for monitoring
-    this.setupEventListeners();
-  }
-
-  private setupEventListeners() {
-    this.worker.on('completed', job => {
-      this.logger.debug(`Job ${job.id} completed`, {
-        jobId: job.id,
-        duration: job.processedOn ? job.processedOn - job.timestamp : 0,
-      });
-    });
-
-    this.worker.on('failed', (job, err) => {
-      this.logger.warn(`Job ${job?.id} failed`, {
-        jobId: job?.id,
-        error: err.message,
-        attemptsMade: job?.attemptsMade,
-        attemptsTotal: job?.opts.attempts,
-      });
-    });
-
-    this.worker.on('stalled', jobId => {
-      this.logger.warn(`Job ${jobId} stalled`);
-    });
-
-    this.worker.on('error', err => {
-      this.logger.error('Worker error:', err);
-    });
-  }
 
   async addJob(
     userId: string,
@@ -309,14 +177,5 @@ export class SyncQueueService {
     }
   }
 
-  async close() {
-    try {
-      await Promise.all([this.worker?.close(), this.queue?.close(), this.deadLetterQueue?.close()]);
-      this.logger.log('Sync queue service closed');
-    } catch (error) {
-      this.logger.error('Error closing sync queue service', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
+
 }
