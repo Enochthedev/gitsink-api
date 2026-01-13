@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { QueueOptions, WorkerOptions, JobsOptions } from 'bullmq';
+import { Redis } from 'ioredis';
 
 export enum JobPriority {
   LOW = 1,
@@ -28,16 +29,23 @@ export interface EnhancedJobOptions extends JobsOptions {
 }
 
 @Injectable()
-export class QueueConfigService {
+export class QueueConfigService implements OnModuleDestroy {
+  private redisConnection: Redis;
+
   constructor(private readonly configService: ConfigService) { }
 
-  getRedisConnection() {
-    // Check if REDIS_URL is provided (Railway/production format)
-    const redisUrl = this.configService.get<string>('REDIS_URL');
+  onModuleDestroy() {
+    if (this.redisConnection) {
+      this.redisConnection.disconnect();
+    }
+  }
 
+  private getRedisConfig(): any {
+    const redisUrl = this.configService.get<string>('REDIS_URL');
     if (redisUrl) {
-      // Parse REDIS_URL: redis://[user:password@]host:port[/db]
       try {
+        // Return the URL directly for IORedis to parse, or parse it if you need specific options mixed in
+        // For simplicity and compatibility, we'll return an object compatible with IORedis options
         const url = new URL(redisUrl);
         return {
           host: url.hostname,
@@ -45,33 +53,52 @@ export class QueueConfigService {
           password: url.password || undefined,
           username: url.username || undefined,
           db: url.pathname ? parseInt(url.pathname.slice(1), 10) || 0 : 0,
-          maxRetriesPerRequest: null, // Critical: Must be null for BullMQ
-          retryDelayOnFailover: 100,
-          enableReadyCheck: false, // Recommended for BullMQ
-          maxLoadingTimeout: 5000,
-          lazyConnect: true,
+          maxRetriesPerRequest: null,
+          enableReadyCheck: false,
         };
       } catch (error) {
         console.warn('Failed to parse REDIS_URL, falling back to individual config:', error);
       }
     }
 
-    // Fallback to individual environment variables
     return {
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
       password: this.configService.get<string>('REDIS_PASSWORD'),
       db: this.configService.get<number>('REDIS_DB', 0),
-      maxRetriesPerRequest: null, // Critical: Must be null for BullMQ
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false, // Recommended for BullMQ
-      maxLoadingTimeout: 5000,
-      lazyConnect: true,
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
     };
+  }
+
+  getRedisConnection(): Redis {
+    if (this.redisConnection) {
+      return this.redisConnection;
+    }
+
+    const config = this.getRedisConfig();
+
+    // Create a singleton connection with maxRetriesPerRequest set to null as required by BullMQ
+    this.redisConnection = new Redis(config, {
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+      retryStrategy(times) {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+    });
+
+    // Handle connection errors to prevent crash
+    this.redisConnection.on('error', (err) => {
+      console.error('Shared Redis connection error:', err);
+    });
+
+    return this.redisConnection;
   }
 
   getQueueOptions(queueType: QueueType): QueueOptions {
     const baseOptions: QueueOptions = {
+      // PRODUCERS: Reuse the singleton connection
       connection: this.getRedisConnection(),
       defaultJobOptions: this.getDefaultJobOptions(queueType),
     };
@@ -176,7 +203,10 @@ export class QueueConfigService {
 
   getWorkerOptions(queueType: QueueType): WorkerOptions {
     const baseOptions: WorkerOptions = {
-      connection: this.getRedisConnection(),
+      // WORKERS: Use a FRESH configuration object so BullMQ creates dedicated connections
+      // This is critical for workers because they use blocking commands (BRPOP)
+      // Sharing a singleton here would cause "Client is in blocking mode" errors
+      connection: this.getRedisConfig(),
       concurrency: this.getConcurrency(queueType),
       maxStalledCount: 3,
       stalledInterval: 30000,
