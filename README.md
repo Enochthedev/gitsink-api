@@ -1,22 +1,22 @@
-# 🧠 Gitsink API
+# Gitsink API
 
 **Gitsink** is a modular, performance-optimized GitHub sync API developed by [Wave](https://github.com/enochthedev). It powers project enrichment, metadata extraction, and real-time syncing for dev dashboards, bots, and automation workflows.
 
 ---
 
-## 🚀 Features
+##  Features
 
-- 🔁 GitHub repo syncing via OAuth
-- 🗂️ Enrichment using `Portfolio.md` and GitHub metadata
-- 🔐 REST & GraphQL APIs with API key support
-- 🩺 Healthcheck endpoints for container orchestration
-- 📊 Monitoring with Prometheus & Grafana
-- ⚙️ Docker-based deployment with Caddy proxy
-- 📈 Artillery + K9 performance testing suite
+- GitHub repo syncing via OAuth
+- Enrichment using `Portfolio.md` and GitHub metadata
+- REST & GraphQL APIs with API key support
+- Healthcheck endpoints for container orchestration
+- Monitoring with Prometheus & Grafana
+- Docker-based deployment with Caddy proxy
+- Artillery + K9 performance testing suite
 
 ---
 
-## 🛠️ Stack
+##  Stack
 
 - **Backend**: NestJS + Prisma + TypeScript
 - **Database**: PostgreSQL
@@ -29,7 +29,7 @@
 
 ---
 
-## ⚙️ Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -115,7 +115,7 @@ npm run phase:debug
 npm run phase:prod
 ```
 
-### 🐳 Run Everything with Docker
+###  Run Everything with Docker
 
 ```bash
 docker-compose -f docker-compose.dev.yml up --build
@@ -131,7 +131,7 @@ Available services:
 | Redis Commander | http://localhost:8081 (with `--profile tools`) |
 | pgAdmin | http://localhost:8080 (with `--profile tools`) |
 
-### 🌐 Access Swagger UI
+###  Access Swagger UI
 
 Visit [http://localhost:3000/api-docs](http://localhost:3000/api-docs) to explore the API documentation.
 
@@ -158,7 +158,7 @@ Use results to analyze latency, throughput, and request bottlenecks.
 - Useful dashboards: API Latency, Request Rate, DB/Redis health
 - **Caddy**: Reverse proxy with automatic TLS for secure access
 
-### 🧪 Testing & CI
+###  Testing & CI
 
 **With Phase CLI (recommended):**
 
@@ -183,18 +183,18 @@ npm run phase:test:e2e
 
 **CI/CD**: Integrate with GitHub Actions for automated testing and deployment
 
-### 👤 Author
+###  Author
 
 Developed by Wave.
 Built to help devs expose, sync, and enrich their GitHub project data with speed and clarity.
 
-### 📜 License
+###  License
 
 This project is licensed under the **Business Source License 1.1 (BSL-1.1)**.
 
-- ✅ You may **view the source code**.
-- ❌ You **may not** use it for commercial purposes **until** the Change Date.
-- 🔓 On the Change Date, this project will be automatically released under the **Apache 2.0** license.
+-  You may **view the source code**.
+-  You **may not** use it for commercial purposes **until** the Change Date.
+-  On the Change Date, this project will be automatically released under the **Apache 2.0** license.
 
 **Change Date**: August 2, 2028  
 **Licensor**: Enoch Omosebi (Wave)
