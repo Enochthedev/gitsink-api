@@ -43,7 +43,7 @@ jobs:
 
       - name: Detect changes
         id: changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           filters: |
             src:
@@ -104,7 +104,7 @@ jobs:
         run: npm run security:audit
 
       - name: Dependency vulnerability scan
-        uses: actions/dependency-review-action@v3
+        uses: actions/dependency-review-action@v4
         if: github.event_name == 'pull_request'
 
       - name: Build application
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: test_password
           POSTGRES_USER: test_user
@@ -137,7 +137,7 @@ jobs:
           - 5432:5432
 
       redis:
-        image: redis:${{ env.REDIS_VERSION }}
+        image: redis:7
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -222,7 +222,7 @@ jobs:
     needs: [database-tests]
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: test_password
           POSTGRES_USER: test_user
@@ -236,7 +236,7 @@ jobs:
           - 5432:5432
 
       redis:
-        image: redis:${{ env.REDIS_VERSION }}
+        image: redis:7
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -284,7 +284,7 @@ jobs:
     needs: [integration-tests]
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: test_password
           POSTGRES_USER: test_user
@@ -298,7 +298,7 @@ jobs:
           - 5432:5432
 
       redis:
-        image: redis:${{ env.REDIS_VERSION }}
+        image: redis:7
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -369,15 +369,15 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
       - name: Run CodeQL Analysis
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: javascript
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
       - uses: actions/setup-node@v4
         with:
@@ -455,7 +455,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: test_password
           POSTGRES_USER: test_user
@@ -469,7 +469,7 @@ jobs:
           - 5432:5432
 
       redis:
-        image: redis:${{ env.REDIS_VERSION }}
+        image: redis:7
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -654,10 +654,8 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests, e2e-tests, security-scanning, build-images]
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    needs: [code-quality, unit-tests, integration-tests, e2e-tests, security-scanning, build-images]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
     environment: 
       name: staging
       url: https://staging-api.gitsink.com
@@ -763,10 +761,8 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [deploy-staging, performance-tests]
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.deploy-staging.result == 'success') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    needs: [code-quality, deploy-staging, performance-tests]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
     environment: 
       name: production
       url: https://api.gitsink.com
