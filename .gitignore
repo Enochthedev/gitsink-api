@@ -80,3 +80,6 @@ coverage/
 .agent/
 .claude/
 CLAUDE.md
+
+# Redis dump written when a local redis-server runs in this directory
+dump.rdb
