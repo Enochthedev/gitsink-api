@@ -1,4 +1,4 @@
-import { Injectable, Logger, ExecutionContext } from '@nestjs/common';
+import { Injectable, Logger, ExecutionContext, HttpException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { AxiosError } from 'axios';
 import { ThrottlerException } from '@nestjs/throttler';
@@ -60,6 +60,38 @@ export class ErrorHandlerService {
             return this.handleThrottlerError(error, requestId, userId);
         }
 
+        // Preserve NestJS HTTP exceptions: a guard throwing UnauthorizedException must
+        // stay a 401, not fall through to the generic 500 below.
+        if (error instanceof HttpException) {
+            const statusCode = error.getStatus();
+            const response = error.getResponse();
+            const raw =
+                typeof response === 'string'
+                    ? response
+                    : ((response as Record<string, unknown>)?.message ?? error.message);
+            const category =
+                statusCode === 401
+                    ? ErrorCategory.AUTHENTICATION
+                    : statusCode === 403
+                      ? ErrorCategory.AUTHORIZATION
+                      : statusCode >= 500
+                        ? ErrorCategory.SYSTEM
+                        : ErrorCategory.VALIDATION;
+            return new AppError({
+                message: Array.isArray(raw) ? raw.join(', ') : String(raw),
+                code: error.name
+                    .replace(/Exception$/, '')
+                    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+                    .toUpperCase() || 'HTTP_ERROR',
+                category,
+                statusCode,
+                retryable: statusCode >= 500,
+                requestId,
+                userId,
+                details: { originalError: error.name },
+            });
+        }
+
         // Handle validation errors from class-validator
         if (error.name === 'ValidationError' || error.message.includes('validation')) {
             return new ValidationError(
@@ -106,7 +138,8 @@ export class ErrorHandlerService {
             userId,
             details: {
                 originalError: error.name,
-                stack: error.stack,
+                // stack only outside production: responses must not leak internals
+                ...(process.env.NODE_ENV === 'production' ? {} : { stack: error.stack }),
             },
         });
     }
