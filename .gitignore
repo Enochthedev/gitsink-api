@@ -56,7 +56,7 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Coverage directory used by tools for prisma schema
-/prisma/migrations
+# NOTE: prisma/migrations must be committed - a deploy cannot build the schema without it
 /load-tests/results/
 /performance/k6/report
 /performance/k6/results
@@ -65,3 +65,18 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .kiro/
 .env.development
 .env.development.bak
+
+# Generated reports
+test-reports/
+security-audit-report.*
+coverage/
+
+# Local env files (.env.example is tracked)
+.env
+.env.*
+!.env.example
+
+# AI assistant config
+.agent/
+.claude/
+CLAUDE.md
