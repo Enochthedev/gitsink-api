@@ -1,15 +1,16 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SyncQueueService } from './sync-queue.service';
-import { PlatformRegistryService, PlatformDetectorService, UnifiedRepository } from '../platforms';
+import { PlatformDetectorService, PlatformRegistryService, UnifiedRepository } from '../platforms';
 import { PlatformCredentials, PlatformType } from '../platforms/types/platform.types';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
 import { Prisma, Project } from '@prisma/client';
 import { decrypt } from '../utils/encryption';
+import matter from 'gray-matter';
 
 /**
  * Enhanced ProjectsService with multi-platform support
@@ -270,7 +271,6 @@ export class EnhancedProjectsService {
             ? Buffer.from(profileResponse.data.content, 'base64').toString('utf8')
             : profileResponse.data.content;
 
-        const matter = require('gray-matter');
         const profileData = matter(content).data as Record<string, unknown>;
 
         return (
