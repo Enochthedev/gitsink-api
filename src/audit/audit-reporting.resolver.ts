@@ -1,17 +1,17 @@
-import { Resolver, Query, Args, Context } from '@nestjs/graphql';
+import { Args, Context, Query, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { AuditReportingService } from './audit-reporting.service';
 import { EnhancedJwtGuard } from '../auth/enhanced-jwt.guard';
 import {
-  SecurityReportEntity,
-  ComplianceReportEntity,
   ActivityReportEntity,
-  PerformanceReportEntity,
-  ExportResult,
-  SearchResult,
-  GenerateReportArgs,
+  ComplianceReportEntity,
   ExportAuditDataArgs,
+  ExportResult,
+  GenerateReportArgs,
+  PerformanceReportEntity,
   SearchAuditLogsArgs,
+  SearchResult,
+  SecurityReportEntity,
 } from './dto/audit-reporting.dto';
 
 @Resolver()

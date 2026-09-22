@@ -6,10 +6,10 @@ import { DescriptionGenerationService } from './description-generation.service';
 import { ProjectCategorizationService } from './project-categorization.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  AIAnalysisResult,
+  ProjectCategory,
   RepositoryContent,
   TechnologyStack,
-  ProjectCategory,
-  AIAnalysisResult,
 } from './interfaces/ai-enrichment.interface';
 
 describe('AIEnrichmentService', () => {

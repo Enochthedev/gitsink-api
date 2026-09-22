@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { LogAggregationService, LogQuery, LogEntry, AlertRule } from './log-aggregation.service';
+import { AlertRule, LogAggregationService, LogEntry, LogQuery } from './log-aggregation.service';
 import { LoggingService } from './logging.service';
 
 describe('LogAggregationService', () => {

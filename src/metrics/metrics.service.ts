@@ -1,6 +1,6 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter, Histogram, Gauge, register } from 'prom-client';
+import { Counter, Gauge, Histogram, register } from 'prom-client';
 
 export interface SecurityEvent {
   type:

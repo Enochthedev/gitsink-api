@@ -1,25 +1,25 @@
-import { Resolver, Query, Mutation, Args, Context, Subscription } from '@nestjs/graphql';
-import { UseGuards, NotFoundException, Inject } from '@nestjs/common';
+import { Args, Context, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { Inject, NotFoundException, UseGuards } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { ProfileCustomizationService } from './profile-customization.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileSettingsDto } from './dto/profile-settings.dto';
-import { UpdateThemeDto, ApplyThemePresetDto } from './dto/theme.dto';
-import { UpdateSocialLinksDto, AddSocialLinkDto } from './dto/social-links.dto';
+import { ApplyThemePresetDto, UpdateThemeDto } from './dto/theme.dto';
+import { AddSocialLinkDto, UpdateSocialLinksDto } from './dto/social-links.dto';
 import { UpdateCustomSectionsDto } from './dto/custom-sections.dto';
 import { PublicProfile } from './entities/public-profile.entity';
 import { EnhancedJwtGuard } from '../auth/enhanced-jwt.guard';
 import { PublicProfileGraphQL } from './entities/profile-graphql.entity';
 import {
   CreateProfileInput,
-  UpdateProfileInput,
-  ProfileSettingsInput,
-  ProfileSearchInput,
-  ProfileConnection,
-  SocialLinkInput,
   CustomSectionInput,
+  ProfileConnection,
+  ProfileSearchInput,
+  ProfileSettingsInput,
   ProfileThemeInput,
+  SocialLinkInput,
+  UpdateProfileInput,
 } from './dto/profile-graphql.dto';
 import { PubSub } from 'graphql-subscriptions';
 import { ProfileViewEvent } from '../common/dto/subscription.dto';

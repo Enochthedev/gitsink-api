@@ -2,11 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import matter from 'gray-matter';
 import { PortfolioMetadataSchema } from './types/portfolio.schema';
 import {
-  ParseResult,
-  ParserOptions,
   ParseError,
-  ParseWarning,
   ParseMetadata,
+  ParseResult,
+  ParseWarning,
+  ParserOptions,
   PortfolioMetadata,
   ValidationContext,
 } from './types/portfolio.types';
@@ -344,7 +344,7 @@ export class ParserService {
           this.setNestedValue(data, issue.path, arrayValue);
           return {
             success: true,
-            message: `converted comma-separated string to array`,
+            message: 'converted comma-separated string to array',
           };
         }
       }

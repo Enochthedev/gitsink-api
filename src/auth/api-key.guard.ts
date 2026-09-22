@@ -1,9 +1,9 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiKeyService } from './api-key.service';
@@ -17,7 +17,7 @@ export class ApiKeyGuard implements CanActivate {
     private readonly authService: AuthService,
     private readonly apiKeyService: ApiKeyService,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType<'http' | 'graphql'>();

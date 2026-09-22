@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryCacheService } from '../common/services/query-cache.service';
 import { DatabasePerformanceService } from '../common/services/database-performance.service';
@@ -529,7 +529,7 @@ export class OptimizedProjectsService {
     const baseWhere = this.buildWhereClause(userId, filter);
 
     // Build additional WHERE conditions for the raw query
-    const conditions: string[] = [`"ownerId" = $1`];
+    const conditions: string[] = ['"ownerId" = $1'];
     const params: any[] = [userId];
     let paramIndex = 2;
 
@@ -583,7 +583,7 @@ export class OptimizedProjectsService {
   ): Promise<number> {
     const baseWhere = this.buildWhereClause(userId, filter);
 
-    const conditions: string[] = [`"ownerId" = $1`];
+    const conditions: string[] = ['"ownerId" = $1'];
     const params: any[] = [userId];
     let paramIndex = 2;
 

@@ -1,22 +1,22 @@
 import { User } from '@prisma/client';
 import {
+  addTimingAttackDelay,
+  compareSecret,
   generateSecureApiKey,
   generateSecureToken,
   hashSecret,
-  compareSecret,
   simulateHashOperation,
-  addTimingAttackDelay,
 } from '../../common/utils/security.utils';
 import {
-  isValidEmail,
-  isPasswordStrong,
   calculatePasswordStrength,
+  isPasswordStrong,
+  isValidEmail,
   isValidUsername,
 } from '../../common/utils/validation.utils';
 import {
   AuthenticationError,
-  ValidationError,
   ConflictError,
+  ValidationError,
 } from '../../common/utils/error.utils';
 import { AUTH_CONSTANTS } from '../../common/constants';
 

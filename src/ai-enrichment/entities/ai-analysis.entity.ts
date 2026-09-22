@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, Float, Int } from '@nestjs/graphql';
+import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-type-json';
 
 @ObjectType()

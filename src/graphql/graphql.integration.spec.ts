@@ -1,14 +1,18 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import {
-  createTestApp,
-  closeTestApp,
+  GraphQLTestHelpers,
   TestContext,
   TestDataBuilder,
-  GraphQLTestHelpers,
+  closeTestApp,
   createAuthHeaders,
+  createTestApp,
 } from '../../test/test-utils/integration-helpers';
-import { createMockUser, createMockProject, createMockPublicProfile } from '../../test/test-utils/mocks';
+import {
+  createMockProject,
+  createMockPublicProfile,
+  createMockUser,
+} from '../../test/test-utils/mocks';
 
 describe('GraphQL API Integration Tests', () => {
   let context: TestContext;

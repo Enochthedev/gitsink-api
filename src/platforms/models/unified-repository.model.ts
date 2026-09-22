@@ -1,4 +1,4 @@
-import { Repository, PlatformType } from '../types/platform.types';
+import { PlatformType, Repository } from '../types/platform.types';
 import { Project } from '@prisma/client';
 
 /**

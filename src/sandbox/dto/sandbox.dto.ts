@@ -1,6 +1,6 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID, Min, Max } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Field, InputType, ObjectType, Int } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @InputType()
 export class StartSandboxSessionInput {

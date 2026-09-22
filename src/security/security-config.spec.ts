@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { SecurityTestHelper, DEFAULT_SECURITY_CONFIG } from './security-test-utils';
+import { DEFAULT_SECURITY_CONFIG, SecurityTestHelper } from './security-test-utils';
 
 describe('Security Configuration Tests', () => {
   let configService: ConfigService;

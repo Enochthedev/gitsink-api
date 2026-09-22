@@ -1,11 +1,11 @@
 import {
   WebhookEvent,
-  WebhookProcessingResult,
-  WebhookSignatureValidation,
   WebhookEventFilter,
   WebhookJobData,
-  WebhookProcessingOptions,
   WebhookMetrics,
+  WebhookProcessingOptions,
+  WebhookProcessingResult,
+  WebhookSignatureValidation,
 } from '../types/webhook.types';
 
 export interface IWebhookHandler {

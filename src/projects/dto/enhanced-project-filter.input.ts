@@ -1,5 +1,5 @@
-import { InputType, Field, Int, Float, registerEnumType } from '@nestjs/graphql';
-import { IsOptional, IsArray, IsString, IsBoolean, IsNumber, IsEnum } from 'class-validator';
+import { Field, Float, InputType, Int, registerEnumType } from '@nestjs/graphql';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export enum SortOrder {
   ASC = 'asc',

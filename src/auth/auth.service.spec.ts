@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
@@ -10,15 +10,15 @@ import { MetricsService } from '@metrics/metrics.service';
 import * as bcrypt from 'bcryptjs';
 import axios from 'axios';
 import {
-  createMockPrismaService,
+  createMockAxiosError,
+  createMockAxiosResponse,
   createMockConfigService,
+  createMockEnqueueService,
   createMockJwtService,
   createMockJwtTokenService,
-  createMockEnqueueService,
   createMockMetricsService,
+  createMockPrismaService,
   createMockUser,
-  createMockAxiosResponse,
-  createMockAxiosError,
 } from '../../test/test-utils/mocks';
 
 // Mock external dependencies

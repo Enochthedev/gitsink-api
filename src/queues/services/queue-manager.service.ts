@@ -1,10 +1,10 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { Queue, QueueEvents, Job } from 'bullmq';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Job, Queue, QueueEvents } from 'bullmq';
 import {
+  EnhancedJobOptions,
+  JobPriority,
   QueueConfigService,
   QueueType,
-  JobPriority,
-  EnhancedJobOptions,
 } from '../config/queue.config';
 import { MetricsService } from '../../metrics/metrics.service';
 

@@ -1,4 +1,4 @@
-import { Field, ObjectType, ID, registerEnumType } from '@nestjs/graphql';
+import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { AuditAction, AuditResource } from '../interfaces/audit.interface';
 
 // Register enums for GraphQL

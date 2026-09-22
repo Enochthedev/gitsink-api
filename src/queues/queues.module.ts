@@ -21,7 +21,7 @@ import { WorkerRegistryService } from './services/worker-registry.service';
     QueueCoreModule,
     MailModule,
     forwardRef(() => ProjectsModule),
-    forwardRef(() => AIEnrichmentModule)
+    forwardRef(() => AIEnrichmentModule),
   ],
   providers: [
     // Existing services
@@ -41,4 +41,4 @@ import { WorkerRegistryService } from './services/worker-registry.service';
     WorkerRegistryService,
   ],
 })
-export class QueuesModule { }
+export class QueuesModule {}

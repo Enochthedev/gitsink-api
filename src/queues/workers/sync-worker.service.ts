@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { BaseWorkerService, JobContext } from './base-worker.service';
 import { QueueConfigService, QueueType } from '../config/queue.config';
@@ -93,7 +93,9 @@ export class SyncWorkerService extends BaseWorkerService {
     }
   }
 
-  private async processSyncProject(job: Job<SyncJobData & { repoUrl?: string | null; branch?: string | null }>): Promise<SyncResult> {
+  private async processSyncProject(
+    job: Job<SyncJobData & { repoUrl?: string | null; branch?: string | null }>,
+  ): Promise<SyncResult> {
     const { userId, repositoryUrl, repoUrl, branch } = job.data;
     const finalRepoUrl = repositoryUrl || repoUrl;
     const finalBranch = branch || 'main';

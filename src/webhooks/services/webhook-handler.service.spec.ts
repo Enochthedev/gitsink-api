@@ -5,7 +5,7 @@ import { WebhookStorageService } from './webhook-storage.service';
 import { WebhookSignatureService } from './webhook-signature.service';
 import { WebhookQueueService } from './webhook-queue.service';
 import { WebhookProcessorService } from './webhook-processor.service';
-import { WebhookJobData, WebhookEvent } from '../types/webhook.types';
+import { WebhookEvent, WebhookJobData } from '../types/webhook.types';
 
 describe('WebhookHandlerService', () => {
   let service: WebhookHandlerService;

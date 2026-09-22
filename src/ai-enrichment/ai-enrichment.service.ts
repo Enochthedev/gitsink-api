@@ -5,11 +5,11 @@ import { TechnologyDetectionService } from './technology-detection.service';
 import { DescriptionGenerationService } from './description-generation.service';
 import { ProjectCategorizationService } from './project-categorization.service';
 import {
-  RepositoryContent,
   AIAnalysisResult,
   EnrichmentConfig,
-  TechnologyStack,
   ProjectCategory,
+  RepositoryContent,
+  TechnologyStack,
 } from './interfaces/ai-enrichment.interface';
 
 @Injectable()

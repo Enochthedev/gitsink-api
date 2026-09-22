@@ -5,9 +5,9 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    imports: [PrismaModule, forwardRef(() => AuthModule)],
-    controllers: [ApiKeysController],
-    providers: [ApiKeysService],
-    exports: [ApiKeysService],
+  imports: [PrismaModule, forwardRef(() => AuthModule)],
+  controllers: [ApiKeysController],
+  providers: [ApiKeysService],
+  exports: [ApiKeysService],
 })
-export class ApiKeysModule { }
+export class ApiKeysModule {}

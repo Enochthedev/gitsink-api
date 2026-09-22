@@ -1,6 +1,7 @@
+import { getToken } from '@willsoto/nestjs-prometheus';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MetricsService, SecurityEvent } from './metrics.service';
-import { Counter, Histogram, Gauge, register } from 'prom-client';
+import { Counter, Gauge, Histogram, register } from 'prom-client';
 
 // Mock prom-client
 jest.mock('prom-client', () => ({
@@ -55,32 +56,33 @@ describe('MetricsService', () => {
       providers: [
         MetricsService,
         {
-          provide: 'PROM_METRIC_http_requests_total',
+          provide: getToken('http_requests_total'),
           useValue: mockCounter,
         },
         {
-          provide: 'PROM_METRIC_http_request_duration_seconds',
+          provide: getToken('http_request_duration_seconds'),
           useValue: mockHistogram,
         },
         {
-          provide: 'PROM_METRIC_active_connections',
+          provide: getToken('active_connections'),
           useValue: mockGauge,
         },
         {
-          provide: 'PROM_METRIC_database_queries_total',
+          provide: getToken('database_queries_total'),
           useValue: mockCounter,
         },
         {
-          provide: 'PROM_METRIC_database_query_duration_seconds',
+          provide: getToken('database_query_duration_seconds'),
           useValue: mockHistogram,
         },
         {
-          provide: 'PROM_METRIC_memory_usage_bytes',
+          provide: getToken('memory_usage_bytes'),
           useValue: mockGauge,
         },
       ],
     }).compile();
 
+    await module.init(); // runs onModuleInit, which creates the custom metrics
     service = module.get<MetricsService>(MetricsService);
   });
 

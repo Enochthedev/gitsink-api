@@ -104,7 +104,7 @@ export class WebhookSyncService {
     const startTime = Date.now();
 
     try {
-      this.logger.debug(`Executing sync operation`, {
+      this.logger.debug('Executing sync operation', {
         eventId: syncData.eventId,
         repositoryUrl: syncData.repositoryUrl,
         platform: syncData.platform,
@@ -134,7 +134,7 @@ export class WebhookSyncService {
 
       const duration = Date.now() - startTime;
 
-      this.logger.log(`Sync operation completed successfully`, {
+      this.logger.log('Sync operation completed successfully', {
         eventId: syncData.eventId,
         repositoryUrl: syncData.repositoryUrl,
         projectId: result?.id,
@@ -150,7 +150,7 @@ export class WebhookSyncService {
     } catch (error) {
       const duration = Date.now() - startTime;
 
-      this.logger.error(`Sync operation failed`, {
+      this.logger.error('Sync operation failed', {
         eventId: syncData.eventId,
         repositoryUrl: syncData.repositoryUrl,
         error:

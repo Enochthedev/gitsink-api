@@ -71,7 +71,7 @@ export class SyncHistoryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
-  ) { }
+  ) {}
 
   /**
    * Start tracking a sync operation

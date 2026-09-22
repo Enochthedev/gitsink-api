@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  FrameworkInfo,
+  LanguageInfo,
   RepositoryContent,
   TechnologyStack,
-  LanguageInfo,
-  FrameworkInfo,
 } from './interfaces/ai-enrichment.interface';
 
 @Injectable()

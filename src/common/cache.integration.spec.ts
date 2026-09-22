@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CacheModule, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { redisStore } from 'cache-manager-ioredis';
 import { EnhancedCacheService } from '../queues/services/enhanced-cache.service';

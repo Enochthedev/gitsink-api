@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Queue, Job } from 'bullmq';
+import { Job, Queue } from 'bullmq';
 import { IWebhookQueue } from '../interfaces/webhook.interface';
 import { WebhookJobData, WebhookProcessingOptions } from '../types/webhook.types';
 import { QueueType } from '../../queues/config/queue.config';

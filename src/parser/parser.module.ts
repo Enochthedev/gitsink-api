@@ -11,4 +11,4 @@ import { AuthModule } from '../auth/auth.module';
   providers: [ParserService, MetadataService],
   exports: [ParserService, MetadataService],
 })
-export class ParserModule { }
+export class ParserModule {}

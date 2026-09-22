@@ -12,7 +12,11 @@ import { MetricsService } from '../metrics/metrics.service';
 import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
 import * as bcrypt from 'bcryptjs';
 import { createMockUser } from '../../test/test-utils/mocks';
-import { createTestApp, closeTestApp, TestContext } from '../../test/test-utils/integration-helpers';
+import {
+  TestContext,
+  closeTestApp,
+  createTestApp,
+} from '../../test/test-utils/integration-helpers';
 
 // Mock bcrypt for consistent testing
 jest.mock('bcryptjs');

@@ -1,4 +1,4 @@
-import { IsString, IsUrl, IsOptional, IsArray, ValidateNested, MaxLength } from 'class-validator';
+import { IsArray, IsOptional, IsString, IsUrl, MaxLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -61,7 +61,7 @@ export class UpdateSocialLinksDto {
   socialLinks!: SocialLinkDto[];
 }
 
-export class AddSocialLinkDto extends SocialLinkDto { }
+export class AddSocialLinkDto extends SocialLinkDto {}
 
 export class RemoveSocialLinkDto {
   @ApiProperty({

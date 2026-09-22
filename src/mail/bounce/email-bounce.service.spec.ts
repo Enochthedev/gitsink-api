@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import {
-  EmailBounceService,
   BounceEvent,
   ComplaintEvent,
   DeliveryEvent,
+  EmailBounceService,
 } from './email-bounce.service';
 import { PrismaService } from '../../prisma/prisma.service';
 

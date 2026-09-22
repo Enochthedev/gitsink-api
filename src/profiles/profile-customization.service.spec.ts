@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProfileCustomizationService } from './profile-customization.service';
 import { PrismaService } from '../prisma/prisma.service';
 

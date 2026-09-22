@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { GITHUB_CONSTANTS, SYNC_CONSTANTS } from '../../common/constants';
-import { ExternalServiceError, DatabaseError } from '../../common/utils/error.utils';
+import { DatabaseError, ExternalServiceError } from '../../common/utils/error.utils';
 import { GitHubRepo } from '../../types/github.types';
 import { parseGitHubRepoUrl } from '../../utils/github.utils';
 

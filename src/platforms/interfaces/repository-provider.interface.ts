@@ -1,11 +1,11 @@
 import {
-  PlatformCredentials,
   AuthResult,
-  Repository,
-  WebhookResult,
-  RepositoryContent,
   PlatformApiResponse,
+  PlatformCredentials,
   PlatformType,
+  Repository,
+  RepositoryContent,
+  WebhookResult,
 } from '../types/platform.types';
 
 export interface RepositoryProvider {

@@ -6,12 +6,12 @@ import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import request from 'supertest';
 import {
-  createMockPrismaService,
-  createMockConfigService,
   createMockCacheManager,
+  createMockConfigService,
   createMockLogger,
-  createMockUser,
+  createMockPrismaService,
   createMockProject,
+  createMockUser,
 } from './mocks';
 
 export interface TestContext {

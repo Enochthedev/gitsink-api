@@ -113,6 +113,7 @@ expect.extend({
 });
 
 // Declare global types for TypeScript
+/* eslint-disable @typescript-eslint/no-namespace, no-var -- jest matcher/global augmentation requires this form */
 declare global {
   namespace jest {
     interface Matchers<R> {

@@ -10,19 +10,14 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    imports: [
-        ConfigModule,
-        PrismaModule,
-        forwardRef(() => SubscriptionsModule),
-        forwardRef(() => AuthModule),
-    ],
-    controllers: [BillingController],
-    providers: [
-        BillingService,
-        StripeProvider,
-        PayPalProvider,
-        LemonSqueezyProvider,
-    ],
-    exports: [BillingService],
+  imports: [
+    ConfigModule,
+    PrismaModule,
+    forwardRef(() => SubscriptionsModule),
+    forwardRef(() => AuthModule),
+  ],
+  controllers: [BillingController],
+  providers: [BillingService, StripeProvider, PayPalProvider, LemonSqueezyProvider],
+  exports: [BillingService],
 })
-export class BillingModule { }
+export class BillingModule {}

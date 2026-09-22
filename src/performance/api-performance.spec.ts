@@ -1,13 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import {
-  createTestApp,
-  closeTestApp,
   TestContext,
-  createAuthHeaders,
+  closeTestApp,
   createApiKeyHeaders,
+  createAuthHeaders,
+  createTestApp,
 } from '../../test/test-utils/integration-helpers';
-import { createMockUser, createMockProject } from '../../test/test-utils/mocks';
+import { createMockProject, createMockUser } from '../../test/test-utils/mocks';
 
 describe('API Performance Tests', () => {
   let context: TestContext;

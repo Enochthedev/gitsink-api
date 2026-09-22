@@ -1,8 +1,8 @@
 import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
   BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -10,16 +10,16 @@ import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileSettingsDto } from './dto/profile-settings.dto';
 import {
-  PublicProfile,
-  ProfileStats,
-  SocialLink,
-  ProfileTheme,
   ProfileSettings,
+  ProfileStats,
+  ProfileTheme,
+  PublicProfile,
+  SocialLink,
 } from './entities/public-profile.entity';
 
 @Injectable()
 export class ProfilesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Create a new public profile for a user

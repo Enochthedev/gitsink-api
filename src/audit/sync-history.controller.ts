@@ -1,34 +1,34 @@
 import {
+  Body,
   Controller,
+  DefaultValuePipe,
   Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
-  Body,
-  Param,
-  UseGuards,
   Request,
-  HttpCode,
-  HttpStatus,
-  ParseIntPipe,
-  DefaultValuePipe,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
-  ApiQuery,
+  ApiOperation,
   ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { SyncHistoryService } from './sync-history.service';
 import { EnhancedJwtGuard } from '../auth/enhanced-jwt.guard';
 import {
-  SyncHistoryQueryDto,
-  StartSyncOperationInput,
   CompleteSyncOperationInput,
   FailSyncOperationInput,
+  StartSyncOperationInput,
+  SyncHistoryQueryDto,
 } from './dto/sync-history.dto';
 
 @ApiTags('sync-history')

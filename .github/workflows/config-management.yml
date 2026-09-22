@@ -49,7 +49,7 @@ jobs:
 
       - name: Detect configuration changes
         id: changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           filters: |
             env:

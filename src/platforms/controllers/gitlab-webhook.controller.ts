@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Headers, HttpStatus, Logger, Res } from '@nestjs/common';
+import { Body, Controller, Headers, HttpStatus, Logger, Post, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { PlatformRegistryService } from '../services/platform-registry.service';

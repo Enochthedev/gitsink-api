@@ -1,15 +1,19 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import {
-  createTestApp,
-  closeTestApp,
+  ApiTestHelpers,
   TestContext,
   TestDataBuilder,
-  ApiTestHelpers,
-  createAuthHeaders,
+  closeTestApp,
   createApiKeyHeaders,
+  createAuthHeaders,
+  createTestApp,
 } from '../../test/test-utils/integration-helpers';
-import { createMockUser, createMockProject, createMockGitHubRepo } from '../../test/test-utils/mocks';
+import {
+  createMockGitHubRepo,
+  createMockProject,
+  createMockUser,
+} from '../../test/test-utils/mocks';
 import axios from 'axios';
 
 // Mock external dependencies

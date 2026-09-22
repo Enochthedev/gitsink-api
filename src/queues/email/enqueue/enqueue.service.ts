@@ -8,7 +8,7 @@ export class EnqueueService {
   constructor(
     private readonly config: ConfigService,
     @InjectQueue('email') private queue: Queue,
-  ) { }
+  ) {}
   async enqueueEmail(jobData: any, options: any = {}) {
     const defaultOptions = {
       removeOnComplete: this.config.get<number>('EMAIL_REMOVE_ON_COMPLETE', 100),

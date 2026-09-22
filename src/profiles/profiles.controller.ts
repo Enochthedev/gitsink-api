@@ -1,28 +1,28 @@
 import {
+  BadRequestException,
+  Body,
   Controller,
+  Delete,
   Get,
+  NotFoundException,
+  Param,
   Post,
   Put,
-  Delete,
-  Body,
-  Param,
   Query,
-  UseGuards,
   Request,
-  NotFoundException,
-  BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfilesService } from './profiles.service';
 import { ProfileCustomizationService } from './profile-customization.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileSettingsDto } from './dto/profile-settings.dto';
-import { UpdateThemeDto, ApplyThemePresetDto } from './dto/theme.dto';
+import { ApplyThemePresetDto, UpdateThemeDto } from './dto/theme.dto';
 import {
-  UpdateSocialLinksDto,
   AddSocialLinkDto,
   RemoveSocialLinkDto,
+  UpdateSocialLinksDto,
 } from './dto/social-links.dto';
 import { UpdateCustomSectionsDto } from './dto/custom-sections.dto';
 import { PublicProfile } from './entities/public-profile.entity';

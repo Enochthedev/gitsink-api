@@ -1,5 +1,5 @@
-import { InputType, Field, ObjectType, Int } from '@nestjs/graphql';
-import { IsString, IsOptional, IsBoolean, IsArray } from 'class-validator';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class TriggerEnrichmentInput {

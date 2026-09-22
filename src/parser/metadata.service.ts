@@ -5,13 +5,14 @@ import { Inject } from '@nestjs/common';
 import type { Cache } from 'cache-manager';
 import {
   CustomMetadataEntry,
-  MetadataVersion,
-  MetadataValidationResult,
   MetadataSearchOptions,
   MetadataStatistics,
+  MetadataValidationResult,
+  MetadataVersion,
 } from './types/metadata.types';
 import { PortfolioMetadata } from './types/portfolio.types';
 import { Prisma } from '@prisma/client';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class MetadataService {
@@ -279,7 +280,7 @@ export class MetadataService {
           break;
         case 'exists':
           const existsProjects = await this.prisma.$queryRawUnsafe<{ id: string }[]>(
-            `SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata" ? $2`,
+            'SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata" ? $2',
             userId,
             field,
           );
@@ -289,7 +290,7 @@ export class MetadataService {
       // If no specific operator matched, return empty array
       return [];
     } catch (error) {
-      this.logger.error(`Failed to search by metadata:`, error);
+      this.logger.error('Failed to search by metadata:', error);
       throw error;
     }
   }
@@ -396,7 +397,7 @@ export class MetadataService {
 
       this.logger.log(`Deleted metadata version ${version} for project ${projectId}`);
     } catch (error) {
-      this.logger.error(`Failed to delete metadata version:`, error);
+      this.logger.error('Failed to delete metadata version:', error);
       throw error;
     }
   }
@@ -489,9 +490,8 @@ export class MetadataService {
    * Generate hash for metadata content
    */
   private generateMetadataHash(metadata: Record<string, any>): string {
-    const crypto = require('crypto');
     const content = JSON.stringify(metadata, Object.keys(metadata).sort());
-    return crypto.createHash('sha256').update(content).digest('hex');
+    return createHash('sha256').update(content).digest('hex');
   }
 
   /**

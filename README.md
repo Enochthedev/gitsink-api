@@ -1,204 +1,157 @@
 # Gitsink API
 
-**Gitsink** is a modular, performance-optimized GitHub sync API developed by [Wave](https://github.com/enochthedev). It powers project enrichment, metadata extraction, and real-time syncing for dev dashboards, bots, and automation workflows.
+**Turn your Git repositories into a portfolio API.** Gitsink syncs repos from GitHub, GitLab and Bitbucket, enriches them with a `Portfolio.md` file you commit next to your code, and serves the result over REST and GraphQL — so a personal site, a bot or a dashboard can render your projects without scraping anything.
 
----
+![NestJS](https://img.shields.io/badge/NestJS-TypeScript-E0234E?style=flat-square&logo=nestjs&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-PostgreSQL-2D3748?style=flat-square&logo=prisma&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-BullMQ-DC382D?style=flat-square&logo=redis&logoColor=white)
+![GraphQL](https://img.shields.io/badge/GraphQL-REST-E10098?style=flat-square&logo=graphql&logoColor=white)
 
-##  Features
+## Why this exists
 
-- GitHub repo syncing via OAuth
-- Enrichment using `Portfolio.md` and GitHub metadata
-- REST & GraphQL APIs with API key support
-- Healthcheck endpoints for container orchestration
-- Monitoring with Prometheus & Grafana
-- Docker-based deployment with Caddy proxy
-- Artillery + K9 performance testing suite
+Every developer portfolio ends up hand-maintaining the same project list: a title, a blurb, a stack, a screenshot — all of it already in the repo, all of it going stale the moment you push. Gitsink treats the repo as the source of truth. You commit a `Portfolio.md`, Gitsink parses it, merges it with platform metadata (language, stars, topics, activity), keeps it in sync through webhooks, and exposes it behind an API key. The portfolio updates itself.
 
----
+## What it does
 
-##  Stack
+- **Multi-platform sync.** OAuth for GitHub, GitLab and Bitbucket; webhooks per platform keep projects fresh, with background sync through BullMQ.
+- **`Portfolio.md` enrichment.** A front-matter parser with error recovery and versioned metadata, so you can diff and roll back what a repo published (`/metadata/{projectId}/history`, `/compare/{v1}/{v2}`).
+- **REST + GraphQL.** 135 documented REST endpoints and a GraphQL schema over the same data.
+- **API keys and quotas.** Per-key auth, subscription tiers and billing hooks.
+- **Public profiles.** Featured profiles and public project pages built from synced data.
+- **Audit and compliance.** Audit logs, activity and compliance reports, exportable.
+- **Operations built in.** Health checks (`/health`, `/health/detailed`, `/health/database`), Prometheus metrics at `/metrics`, structured logging, rate limiting and a sandbox mode for trying the API safely.
 
-- **Backend**: NestJS + Prisma + TypeScript
-- **Database**: PostgreSQL
-- **Cache/Queue**: Redis
-- **Secrets Management**: [Phase](https://phase.dev)
-- **Containerization**: Docker + Docker Compose
-- **Reverse Proxy**: Caddy (auto TLS support)
-- **Monitoring**: Prometheus + Grafana + Sentry
-- **Testing**: Jest, Artillery, K6
+## Architecture
 
----
-
-##  Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) v18+
-- [Docker](https://www.docker.com/) & Docker Compose
-- [Phase CLI](https://phase.dev) for secrets management
-
-### 1. Clone & Install
-
-```bash
-git clone https://github.com/enochthedev/gitsink-api.git
-cd gitsink-api
-npm install
+```mermaid
+flowchart LR
+    C["Clients<br/>site · bot · dashboard"] -->|"REST + GraphQL<br/>x-api-key"| API
+    subgraph API["NestJS API"]
+        AU["Auth<br/>OAuth + API keys"]
+        PR["Projects"]
+        PA["Parser<br/>Portfolio.md"]
+        EN["AI enrichment"]
+        BI["Billing · subscriptions"]
+        AD["Audit"]
+    end
+    GH["GitHub / GitLab / Bitbucket"] -->|webhooks| API
+    API -->|"sync jobs"| Q["BullMQ queue (Redis)"]
+    Q -->|"fetch repo + Portfolio.md"| GH
+    Q --> DB
+    API --> DB[("PostgreSQL<br/>via Prisma · 24 tables")]
+    API --> RC[("Redis cache")]
+    API --> PM["Prometheus → Grafana"]
 ```
 
-### 2. Install Phase CLI
+## Getting started
+
+**Requirements:** Node 20+, PostgreSQL 15, Redis 7.
 
 ```bash
-# macOS
-brew install phasehq/cli/phase
-
-# Or via npm
-npm install -g @phasehq/cli
-
-# Login to Phase
-phase auth
+npm ci
+cp .env.example .env          # then edit: DATABASE_URL, REDIS_URL, JWT_SECRET, TOKEN_ENCRYPTION_KEY
+npx prisma migrate deploy     # creates all 24 tables
+npx prisma generate
+npm run build && npm start    # or: npm run start:dev
 ```
 
-### 3. Configure Secrets in Phase
+- Health: <http://localhost:3000/health>
+- Swagger UI: <http://localhost:3000/api-docs> (OpenAPI JSON at `/api-docs-json`)
+- GraphQL: <http://localhost:3000/graphql>
+- Metrics: <http://localhost:3000/metrics>
 
-You'll need to set up the following secrets in Phase under your `Gitsink_API` app:
+> **Existing databases:** migrations were previously untracked, so a database built before this change needs baselining once: `npx prisma migrate resolve --applied 0_init`.
 
-| Secret | Description | How to Get |
-|--------|-------------|------------|
-| `DATABASE_URL` | PostgreSQL connection string | Docker provides: `postgresql://gitsink:password@postgres:5432/gitsink_dev` |
-| `JWT_SECRET` | JWT signing key (32+ chars) | Generate: `openssl rand -base64 32` |
-| `TOKEN_ENCRYPTION_KEY` | Token encryption key (32+ chars) | Generate: `openssl rand -base64 32` |
-| `GITHUB_CLIENT_ID` | GitHub OAuth Client ID | [GitHub Developer Settings](https://github.com/settings/developers) |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth Client Secret | Same as above |
-| `GITHUB_CALLBACK_URL` | OAuth callback URL | `http://localhost:3000/auth/github/callback` |
-| `REDIS_URL` | Redis connection | `redis://localhost:6379` |
-| `PORT` | API port | `3000` |
-| `NODE_ENV` | Environment | `development` |
-| `SENTRY_DSN` | Sentry error tracking (optional) | [Sentry.io](https://sentry.io) - Create Node.js project |
-
-**Quick setup with Phase CLI:**
+### Docker
 
 ```bash
-# List current secrets
-phase secrets list --app Gitsink_API --env development
-
-# Create a secret
-printf "your_value" | phase secrets create SECRET_NAME --app Gitsink_API --env development
-
-# Update a secret
-printf "new_value" | phase secrets update SECRET_NAME --app Gitsink_API --env development
+docker compose up -d          # API, Postgres, Redis, Caddy, Prometheus, Grafana
 ```
 
-### 4. Start Infrastructure with Docker
+Compose files per environment: `docker-compose.yaml` (base), `.dev`, `.staging`, `.prod`.
+
+### Secrets with Phase (optional)
+
+The repo is set up for [Phase](https://phase.dev) if you'd rather not keep a local `.env`:
 
 ```bash
-# Start PostgreSQL and Redis
-docker-compose -f docker-compose.dev.yml up -d postgres redis
+brew install phasehq/cli/phase && phase auth
+npm run phase:dev             # same as start:dev, with secrets injected
 ```
 
-### 5. Run Database Migrations
+A plain `.env` works fine without it.
+
+### Key environment variables
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` / `REDIS_HOST` / `REDIS_PORT` | Cache + BullMQ queues |
+| `JWT_SECRET` | JWT signing (32+ chars) |
+| `TOKEN_ENCRYPTION_KEY` | Encrypts stored platform tokens (32+ chars) |
+| `LOCAL_API_KEY` | Development API key for local requests |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` / `GITHUB_CALLBACK_URL` | GitHub OAuth app |
+| `GITLAB_API_URL` / `BITBUCKET_API_URL` | Other platforms |
+| `SMTP_*` | Transactional email |
+
+Full list in [`.env.example`](.env.example).
+
+## Usage
 
 ```bash
-npm run phase:prisma:generate
-npm run phase:prisma:migrate
+API=http://localhost:3000
+
+# List synced projects (paginated)
+curl $API/projects -H "x-api-key: $LOCAL_API_KEY"
 ```
 
-### 6. Start the API
+```json
+{
+  "data": [],
+  "meta": { "page": 1, "limit": 20, "total": 0, "totalPages": 0, "hasNextPage": false, "hasPreviousPage": false }
+}
+```
 
 ```bash
-# Development with hot reload (recommended)
-npm run phase:dev
-
-# Or with debug mode
-npm run phase:debug
-
-# For production
-npm run phase:prod
+# GraphQL
+curl -X POST $API/graphql -H 'Content-Type: application/json' \
+  -d '{"query":"{ enhancedProjects { id name description } }"}'
 ```
 
-###  Run Everything with Docker
+Without a key you get a clean `401`:
+
+```json
+{ "success": false, "error": { "code": "UNAUTHORIZED", "message": "API key missing", "category": "authentication" } }
+```
+
+## Testing
 
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+npm test                 # unit tests (jest)
+npm run test:e2e         # end-to-end (needs Postgres + Redis)
+npm run test:perf        # k6 / artillery load tests
+npm run lint             # eslint
+npm run build            # nest build
 ```
 
-Available services:
+## Project status
 
-| Service | URL |
-| ------- | --- |
-| API | http://localhost:3000 |
-| Swagger UI | http://localhost:3000/api-docs |
-| GraphQL Playground | http://localhost:3000/graphql |
-| Redis Commander | http://localhost:8081 (with `--profile tools`) |
-| pgAdmin | http://localhost:8080 (with `--profile tools`) |
+- ✅ Builds, boots and serves REST + GraphQL + metrics; all health checks green against Postgres 15 and Redis 7.
+- ✅ `prisma migrate deploy` creates the full 24-table schema from the committed baseline (verified with no drift).
+- 🟡 **Unit tests: ~803 of 928 passing.** The rest are stale specs (test modules missing providers the services gained, assertions that drifted) rather than product failures.
+- 🟡 **Lint passes with ~7,000 warnings**, mostly `no-unsafe-*` in specs. Kept visible rather than switched off.
+- 🟡 Specs and scripts carry ~400 pre-existing TypeScript errors. CI type-checks the shipped code (`tsconfig.build.json`, clean).
+- ⚠️ CI had **never run**: the workflow file was invalid (the `env` context is not allowed in `services`). It runs now, and the deploy jobs are manual-only until the deployment target is real.
+- *Unverified:* Caddy/Prometheus/Grafana compose stacks and the k6/artillery suites were not executed during this pass.
 
-###  Access Swagger UI
+## Tech stack
 
-Visit [http://localhost:3000/api-docs](http://localhost:3000/api-docs) to explore the API documentation.
+NestJS · TypeScript · Prisma · PostgreSQL · Redis + BullMQ · GraphQL (Apollo) · Jest · Docker + Caddy · Prometheus + Grafana · Sentry · Phase (secrets) · k6 + Artillery
 
-### 📈 Performance Testing
+## Docs
 
-Artillery
+[System documentation](docs/system-documentation.md) · [API reference](docs/api-reference.md) · [Public API](docs/public-api-reference.md) · [Metadata management](docs/metadata-management.md) · [Deployment](docs/deployment-guide.md) · [Railway](docs/RAILWAY_DEPLOYMENT.md) · [Disaster recovery](docs/disaster-recovery-plan.md) · [Redis configuration](docs/redis-configuration.md)
 
-```bash
-npm run test:perf:artillery:{ModuleName}
-```
+## License
 
-### K9 (k6-compatible)
-
-```bash
-npm run test:perf:k6:{ModuleName}
-```
-
-Use results to analyze latency, throughput, and request bottlenecks.
-
-### 🔍 Monitoring
-
-- **Prometheus**: Scrapes metrics from the API and Redis
-- **Grafana**: Pre-configured dashboards for API performance, Redis health, and more
-- Useful dashboards: API Latency, Request Rate, DB/Redis health
-- **Caddy**: Reverse proxy with automatic TLS for secure access
-
-###  Testing & CI
-
-**With Phase CLI (recommended):**
-
-```bash
-# Run unit tests
-npm run phase:test
-
-# Run E2E tests
-npm run phase:test:e2e
-```
-
-**Without Phase (requires .env file):**
-
-- **Unit Tests**: Run with `npm run test`
-- **E2E Tests**: Run with `npm run test:e2e`
-- **Test Coverage**: Use `npm run test:cov` to generate coverage reports
-
-**Code Quality:**
-
-- **Linting**: `npm run lint` and `npm run lint:fix`
-- **Formatting**: `npm run format` and `npm run format:check`
-
-**CI/CD**: Integrate with GitHub Actions for automated testing and deployment
-
-###  Author
-
-Developed by Wave.
-Built to help devs expose, sync, and enrich their GitHub project data with speed and clarity.
-
-###  License
-
-This project is licensed under the **Business Source License 1.1 (BSL-1.1)**.
-
--  You may **view the source code**.
--  You **may not** use it for commercial purposes **until** the Change Date.
--  On the Change Date, this project will be automatically released under the **Apache 2.0** license.
-
-**Change Date**: August 2, 2028  
-**Licensor**: Enoch Omosebi (Wave)
-
-For commercial licensing, contact: [wavedidwhat@gmail.com](mailto:wavedidwhat@gmail.com)
-
----
+[Business Source License 1.1](LICENSE) — source-available, not OSI open source. Built by [Enoch (Enochthedev)](https://github.com/Enochthedev).

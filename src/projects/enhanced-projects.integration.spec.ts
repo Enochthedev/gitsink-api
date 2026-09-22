@@ -5,7 +5,7 @@ import { EnhancedProjectsService } from './enhanced-projects.service';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SyncQueueService } from './sync-queue.service';
-import { PlatformRegistryService, PlatformDetectorService } from '../platforms';
+import { PlatformDetectorService, PlatformRegistryService } from '../platforms';
 
 describe('EnhancedProjectsService Integration', () => {
   let service: EnhancedProjectsService;

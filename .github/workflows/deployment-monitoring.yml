@@ -176,7 +176,6 @@ jobs:
         with:
           status: failure
           channel: '#alerts'
-          webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
           custom_payload: |
             {
@@ -304,7 +303,6 @@ jobs:
         with:
           status: warning
           channel: '#dev-alerts'
-          webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
           custom_payload: |
             {

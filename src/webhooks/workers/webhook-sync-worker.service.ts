@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { WebhookSyncService, SyncJobData } from '../services/webhook-sync.service';
+import { SyncJobData, WebhookSyncService } from '../services/webhook-sync.service';
 import { QueueType } from '../../queues/config/queue.config';
 
 @Injectable()

@@ -72,7 +72,7 @@ export class HealthService implements OnModuleInit {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectQueue('sync') private readonly syncQueue: Queue,
     @InjectQueue('email') private readonly emailQueue: Queue,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.startHealthCheckScheduler();

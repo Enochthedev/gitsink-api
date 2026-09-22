@@ -68,7 +68,7 @@ describe('MetadataService', () => {
       });
 
       expect(prismaService.$queryRawUnsafe).toHaveBeenCalledWith(
-        `SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata"->>'category' = $2`,
+        'SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata"->>\'category\' = $2',
         'user1',
         'web',
       );
@@ -86,7 +86,7 @@ describe('MetadataService', () => {
       });
 
       expect(prismaService.$queryRawUnsafe).toHaveBeenCalledWith(
-        `SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata"->>'tags' IN ($2,$3)`,
+        'SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata"->>\'tags\' IN ($2,$3)',
         'user1',
         'react',
         'typescript',
@@ -105,7 +105,7 @@ describe('MetadataService', () => {
       });
 
       expect(prismaService.$queryRawUnsafe).toHaveBeenCalledWith(
-        `SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata" ? $2`,
+        'SELECT id FROM "Project" WHERE "ownerId" = $1 AND "customMetadata" ? $2',
         'user1',
         'customField',
       );

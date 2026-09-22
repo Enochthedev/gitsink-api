@@ -9,29 +9,29 @@ import { EnqueueService } from '../../queues/email/enqueue/enqueue.service';
 import { MetricsService } from '../../metrics/metrics.service';
 import { StandardizedLoggerService } from '../../common/services/standardized-logger.service';
 import {
-  validateSignupData,
-  validateSigninData,
-  generateUserCredentials,
-  validateUserCredentials,
+  ClientInfo,
+  SignupData,
+  SignupResult,
+  checkUserConflicts,
+  createUserData,
+  createUserResponse,
   findUserByApiKey,
   generateMagicLinkToken,
   generatePasswordResetToken,
-  validatePasswordResetToken,
-  checkUserConflicts,
+  generateUserCredentials,
   getPasswordStrengthMetric,
-  createUserData,
-  createUserResponse,
+  validatePasswordResetToken,
   validateRefreshTokenPayload,
   validateRefreshTokenUsage,
-  SignupData,
-  ClientInfo,
-  SignupResult,
+  validateSigninData,
+  validateSignupData,
+  validateUserCredentials,
 } from '../utils/auth-operations.utils';
 import {
   AuthenticationError,
-  ValidationError,
   ConflictError,
   DatabaseError,
+  ValidationError,
 } from '../../common/utils/error.utils';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../common/utils/code-cleanup.utils';
 import { AUTH_CONSTANTS } from '../../common/constants';
