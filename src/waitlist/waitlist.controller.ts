@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WaitlistService } from './waitlist.service';
 import { JoinWaitlistDto } from './dto/waitlist.dto';
 import { Throttle } from '@nestjs/throttler';
@@ -7,11 +7,14 @@ import { Throttle } from '@nestjs/throttler';
 @ApiTags('Waitlist')
 @Controller('waitlist')
 export class WaitlistController {
-  constructor(private readonly waitlist: WaitlistService) { }
+  constructor(private readonly waitlist: WaitlistService) {}
 
   @Throttle({ short: { limit: 1, ttl: 5000 } })
   @Post()
-  @ApiOperation({ summary: 'Join the waitlist', description: 'Add an email to the GitSink waitlist to receive early access notifications' })
+  @ApiOperation({
+    summary: 'Join the waitlist',
+    description: 'Add an email to the GitSink waitlist to receive early access notifications',
+  })
   @ApiBody({ type: JoinWaitlistDto })
   @ApiResponse({
     status: 201,
@@ -21,9 +24,9 @@ export class WaitlistController {
         success: true,
         message: 'You have been added to the waitlist',
         email: 'user@example.com',
-        position: 42
-      }
-    }
+        position: 42,
+      },
+    },
   })
   @ApiResponse({ status: 400, description: 'Invalid email format' })
   @ApiResponse({ status: 429, description: 'Too many requests - rate limited' })

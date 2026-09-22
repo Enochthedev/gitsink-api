@@ -1,7 +1,7 @@
 import {
   makeCounterProvider,
-  makeHistogramProvider,
   makeGaugeProvider,
+  makeHistogramProvider,
 } from '@willsoto/nestjs-prometheus';
 
 export const metricsProviders = [

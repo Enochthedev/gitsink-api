@@ -20,7 +20,6 @@ import { AuthController } from '@auth/auth.controller';
 import { GithubController } from './github.controller';
 import { QueueCoreModule } from '../queues/queue-core.module';
 
-
 @Module({
   imports: [
     PrismaModule,
@@ -51,7 +50,6 @@ import { QueueCoreModule } from '../queues/queue-core.module';
     JwtStrategy,
     ApiKeyGuard,
     EnhancedJwtGuard,
-
   ],
   controllers: [AuthController, GithubController],
   exports: [
@@ -63,4 +61,4 @@ import { QueueCoreModule } from '../queues/queue-core.module';
     JwtTokenService,
   ],
 })
-export class AuthModule { }
+export class AuthModule {}

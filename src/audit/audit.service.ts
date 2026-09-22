@@ -4,13 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
   AuditAction,
-  AuditResource,
-  CreateAuditLogDto,
+  AuditEventDetails,
   AuditLogFilters,
   AuditLogSummary,
+  AuditResource,
   AuditRetentionPolicy,
+  CreateAuditLogDto,
   SecurityEvent,
-  AuditEventDetails,
 } from './interfaces/audit.interface';
 import { AuditLogEntity } from './entities/audit-log.entity';
 

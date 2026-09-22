@@ -21,9 +21,17 @@ describe('ProjectsController', () => {
         {
           provide: EnhancedLoggerService,
           useValue: {
-            log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn(), verbose: jest.fn(),
-            logBusinessEvent: jest.fn(), logPerformance: jest.fn(), logSecurityEvent: jest.fn(),
-            logDatabaseQuery: jest.fn(), logExternalApiCall: jest.fn(), setContext: jest.fn(),
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            verbose: jest.fn(),
+            logBusinessEvent: jest.fn(),
+            logPerformance: jest.fn(),
+            logSecurityEvent: jest.fn(),
+            logDatabaseQuery: jest.fn(),
+            logExternalApiCall: jest.fn(),
+            setContext: jest.fn(),
           },
         },
         ProjectsService,
@@ -45,7 +53,9 @@ describe('ProjectsController', () => {
     })
       .overrideGuard(ApiKeyGuard)
       .useValue({ canActivate: jest.fn().mockReturnValue(true) })
-      .useMocker((token) => (typeof token === 'function' ? new Proxy({}, { get: () => jest.fn() }) : undefined))
+      .useMocker(token =>
+        typeof token === 'function' ? new Proxy({}, { get: () => jest.fn() }) : undefined,
+      )
       .compile();
 
     controller = module.get<ProjectsController>(ProjectsController);

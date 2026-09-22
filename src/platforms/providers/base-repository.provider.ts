@@ -3,14 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { RepositoryProvider } from '../interfaces/repository-provider.interface';
 import {
-  PlatformCredentials,
   AuthResult,
-  Repository,
-  WebhookResult,
-  RepositoryContent,
   PlatformApiResponse,
-  PlatformType,
+  PlatformCredentials,
   PlatformRateLimit,
+  PlatformType,
+  Repository,
+  RepositoryContent,
+  WebhookResult,
 } from '../types/platform.types';
 
 @Injectable()

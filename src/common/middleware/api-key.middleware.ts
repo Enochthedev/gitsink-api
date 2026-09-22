@@ -1,5 +1,5 @@
-import { Injectable, NestMiddleware, UnauthorizedException, Logger } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '@auth/auth.service';
 import { MetricsService } from '@metrics/metrics.service';
 import { Counter } from 'prom-client';

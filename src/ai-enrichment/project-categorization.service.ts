@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RepositoryContent, ProjectCategory } from './interfaces/ai-enrichment.interface';
+import { ProjectCategory, RepositoryContent } from './interfaces/ai-enrichment.interface';
 
 @Injectable()
 export class ProjectCategorizationService {

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 
@@ -78,7 +78,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       });
     });
 
-    this.logger.log(`Database connection pool configured with enhanced settings`, {
+    this.logger.log('Database connection pool configured with enhanced settings', {
       connectionLimit,
       connectionTimeout,
       poolTimeout,

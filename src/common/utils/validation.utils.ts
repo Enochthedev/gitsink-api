@@ -1,4 +1,4 @@
-import { VALIDATION_CONSTANTS, AUTH_CONSTANTS, DB_CONSTANTS } from '../constants';
+import { AUTH_CONSTANTS, DB_CONSTANTS, VALIDATION_CONSTANTS } from '../constants';
 
 /**
  * Validation utility functions

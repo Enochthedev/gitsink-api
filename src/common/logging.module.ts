@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LoggingService } from './services/logging.service';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';

@@ -8,17 +8,17 @@ import { PinoLogger } from 'nestjs-pino';
 import { SyncQueueService } from './sync-queue.service';
 import axios from 'axios';
 import {
-  createMockPrismaService,
-  createMockParserService,
-  createMockConfigService,
-  createMockLogger,
-  createMockSyncQueueService,
-  createMockCacheManager,
-  createMockProject,
-  createMockUser,
-  createMockGitHubRepo,
-  createMockAxiosResponse,
   createMockAxiosError,
+  createMockAxiosResponse,
+  createMockCacheManager,
+  createMockConfigService,
+  createMockGitHubRepo,
+  createMockLogger,
+  createMockParserService,
+  createMockPrismaService,
+  createMockProject,
+  createMockSyncQueueService,
+  createMockUser,
 } from '../../test/test-utils/mocks';
 
 // Mock external dependencies

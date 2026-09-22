@@ -139,7 +139,7 @@ export class CacheInvalidationService {
 
       return invalidated;
     } catch (error) {
-      this.logger.error(`Pattern invalidation failed:`, error);
+      this.logger.error('Pattern invalidation failed:', error);
       throw error;
     }
   }

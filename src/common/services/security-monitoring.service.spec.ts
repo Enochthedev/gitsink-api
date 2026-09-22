@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import {
-  SecurityMonitoringService,
   SecurityEventType,
+  SecurityMonitoringService,
   SecuritySeverity,
 } from './security-monitoring.service';
 import { PrismaService } from '@prisma/prisma.service';

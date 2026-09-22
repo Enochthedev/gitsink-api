@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { MetricsService } from '../metrics/metrics.service';
 import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
-import { UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
 // Mock bcrypt for consistent testing

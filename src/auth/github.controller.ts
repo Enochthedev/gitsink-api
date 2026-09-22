@@ -1,14 +1,14 @@
 import {
+  BadRequestException,
   Controller,
   Get,
+  InternalServerErrorException,
+  Logger,
   Req,
   Res,
   UseGuards,
-  Logger,
-  InternalServerErrorException,
-  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -36,7 +36,7 @@ export class GithubController {
     private readonly authService: AuthService,
     private readonly jwtTokenService: JwtTokenService,
     private readonly queueManager: QueueManagerService,
-  ) { }
+  ) {}
 
   @Get('github')
   @UseGuards(AuthGuard('github'))

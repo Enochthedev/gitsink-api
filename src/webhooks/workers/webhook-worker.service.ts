@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { WebhookHandlerService } from '../services/webhook-handler.service';
 import { WebhookJobData } from '../types/webhook.types';

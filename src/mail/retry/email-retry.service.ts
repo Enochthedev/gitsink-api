@@ -62,7 +62,7 @@ export class EmailRetryService {
 
       this.logger.log(`Recorded failed email for retry: ${email} - ${type}`);
     } catch (recordError) {
-      this.logger.error(`Failed to record failed email:`, recordError);
+      this.logger.error('Failed to record failed email:', recordError);
     }
   }
 

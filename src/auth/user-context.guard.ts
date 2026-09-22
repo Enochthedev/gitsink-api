@@ -1,11 +1,11 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { RequestWithUser } from '@auth/request-with-user';
 
 @Injectable()
 export class UserContextGuard implements CanActivate {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType<'http' | 'graphql'>();

@@ -1,16 +1,16 @@
-import { Resolver, Mutation, Args, Query, Context, Subscription } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { SyncProjectInput } from './dto/sync-project.input';
-import { UseGuards, Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { ProjectFilterInput } from './dto/project-filter.input';
 import {
   EnhancedProjectFilterInput,
-  ProjectSortInput,
   PaginationInput,
+  ProjectSortInput,
 } from './dto/enhanced-project-filter.input';
-import { ProjectConnection, ProjectAggregation } from './dto/project-connection.output';
+import { ProjectAggregation, ProjectConnection } from './dto/project-connection.output';
 import { PubSub } from 'graphql-subscriptions';
 import { SyncStatusUpdate } from '../common/dto/subscription.dto';
 
@@ -20,7 +20,7 @@ export class ProjectsResolver {
   constructor(
     private readonly projectsService: ProjectsService,
     @Inject('PUB_SUB') private pubSub: PubSub,
-  ) { }
+  ) {}
 
   @Mutation(() => Project, { name: 'syncProject' })
   async syncProject(

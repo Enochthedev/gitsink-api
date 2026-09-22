@@ -1,24 +1,24 @@
 import {
+  BadRequestException,
   Body,
   Controller,
-  Post,
-  UnauthorizedException,
-  Logger,
-  HttpStatus,
-  HttpCode,
-  BadRequestException,
-  Req,
   Get,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Post,
+  Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOkResponse,
-  ApiUnauthorizedResponse,
+  ApiBearerAuth,
   ApiBody,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
+  ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { MagicLinkService } from './magic-link.service';
@@ -49,7 +49,7 @@ export class AuthController {
     private readonly magicLinkService: MagicLinkService,
     private readonly apiKeyService: ApiKeyService,
     private readonly jwtTokenService: JwtTokenService,
-  ) { }
+  ) {}
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
@@ -346,7 +346,12 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'GitHub account connected' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  @ApiBody({ schema: { type: 'object', properties: { code: { type: 'string', example: 'gh_oauth_code_123' } } } })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { code: { type: 'string', example: 'gh_oauth_code_123' } },
+    },
+  })
   async connectGitHub(@Req() req: RequestWithUser, @Body() body: { code: string }) {
     const user = req.user;
     const { code } = body || {};
@@ -519,7 +524,7 @@ export class AuthController {
     // In a real app, you'd check if user is admin
     const count = await this.magicLinkService.cleanupExpiredTokens();
 
-    this.logger.log(`Manual cleanup of expired magic link tokens completed`, {
+    this.logger.log('Manual cleanup of expired magic link tokens completed', {
       userId: req.user.id,
       count,
     });
@@ -559,9 +564,9 @@ export class AuthController {
 
     const timeRange = body?.timeRange
       ? {
-        from: new Date(body.timeRange.from),
-        to: new Date(body.timeRange.to),
-      }
+          from: new Date(body.timeRange.from),
+          to: new Date(body.timeRange.to),
+        }
       : undefined;
 
     const stats = await this.apiKeyService.getApiKeyStats(timeRange);

@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   UnauthorizedException,
-  BadRequestException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
@@ -11,8 +11,8 @@ import { JwtService } from '@nestjs/jwt';
 import { MetricsService } from '../metrics/metrics.service';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcryptjs';
-import { User, RefreshToken } from '@prisma/client';
-import { Counter, Histogram, Gauge } from 'prom-client';
+import { RefreshToken, User } from '@prisma/client';
+import { Counter, Gauge, Histogram } from 'prom-client';
 
 export interface TokenPair {
   accessToken: string;
@@ -555,7 +555,7 @@ export class JwtTokenService {
       });
       this.tokenOperationDuration.observe({ operation }, operationDuration);
 
-      this.logger.log(`Token blacklisted`, {
+      this.logger.log('Token blacklisted', {
         jti: payload.jti,
         tokenType: payload.type,
         userId: payload.sub,

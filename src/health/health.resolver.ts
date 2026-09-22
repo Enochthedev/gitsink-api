@@ -1,7 +1,7 @@
-import { Resolver, Query, Subscription } from '@nestjs/graphql';
+import { Query, Resolver, Subscription } from '@nestjs/graphql';
 import { Inject, Logger } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { SystemHealthStatus, ServiceHealthStatus } from '../common/dto/subscription.dto';
+import { ServiceHealthStatus, SystemHealthStatus } from '../common/dto/subscription.dto';
 import { HealthService } from './health.service';
 
 @Resolver()

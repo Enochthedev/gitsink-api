@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { ParserService } from '../parser/parser.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PortfolioMetadata } from '../parser/types/portfolio.types';
@@ -15,21 +15,21 @@ import { decrypt } from '../utils/encryption';
 import { PinoLogger } from 'nestjs-pino';
 import { SyncQueueService } from './sync-queue.service';
 import {
-  ExternalServiceError,
+  BusinessLogicError,
   DatabaseError,
+  ExternalServiceError,
   ValidationError,
-  BusinessLogicError
 } from '../common/exceptions/app-error';
 import {
   DatabaseErrorBoundary,
   ExternalServiceErrorBoundary,
-  ValidationErrorBoundary
+  ValidationErrorBoundary,
 } from '../common/decorators/error-boundary.decorator';
 import { EnhancedLoggerService } from '../common/services/enhanced-logger.service';
 import { SyncEventsService } from '../sync/sync-events.service';
 import { QueueManagerService } from '../queues/services/queue-manager.service';
 import { QueueType } from '../queues/config/queue.config';
-import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
+import { PaginatedResult, PaginationDto } from '../common/dto/pagination.dto';
 
 /**
  * Service encapsulating all project-related persistence logic. It handles
@@ -84,7 +84,7 @@ export class ProjectsService {
     const operationStart = Date.now();
     const syncId = `${userId}-${repoUrl}-${Date.now()}`;
 
-    this.logger.info(`Starting GitHub sync operation`, {
+    this.logger.info('Starting GitHub sync operation', {
       syncId,
       userId,
       repoUrl,
@@ -110,14 +110,14 @@ export class ProjectsService {
         });
         repoData = repoResponse.data;
 
-        this.logger.debug(`Successfully fetched repository data`, {
+        this.logger.debug('Successfully fetched repository data', {
           syncId,
           repoName: repoData.name,
           repoId: repoData.id,
           isPrivate: repoData.private,
         });
       } catch (error) {
-        this.logger.error(`Failed to fetch repository data from GitHub API`, {
+        this.logger.error('Failed to fetch repository data from GitHub API', {
           syncId,
           githubApiBase,
           error: error instanceof Error ? error.message : String(error),
@@ -132,7 +132,7 @@ export class ProjectsService {
               `Access denied to repository: ${repoUrl}. Check GitHub token permissions.`,
             );
           } else if (error.response?.status === 401) {
-            throw new Error(`GitHub authentication failed. Check GitHub token validity.`);
+            throw new Error('GitHub authentication failed. Check GitHub token validity.');
           } else if (error.code === 'ECONNABORTED') {
             throw new Error(`GitHub API request timeout for repository: ${repoUrl}`);
           }
@@ -170,13 +170,13 @@ export class ProjectsService {
             data['allowed'] === false
           ) {
             blacklisted = true;
-            this.logger.debug(`Repository marked as blacklisted via Portfolio.md`, { syncId });
+            this.logger.debug('Repository marked as blacklisted via Portfolio.md', { syncId });
           }
         } catch (e) {
           // Ignore matter errors
         }
 
-        this.logger.debug(`Successfully fetched Portfolio.md`, {
+        this.logger.debug('Successfully fetched Portfolio.md', {
           syncId,
           contentLength: mdRaw.length,
         });
@@ -186,7 +186,7 @@ export class ProjectsService {
           const result = this.parser.parseMarkdown(mdRaw);
           if (result.valid) {
             parsedMd = result.data;
-            this.logger.debug(`Successfully parsed Portfolio.md`, {
+            this.logger.debug('Successfully parsed Portfolio.md', {
               syncId,
               title: parsedMd?.title,
               tags: parsedMd?.tags?.length || 0,
@@ -196,7 +196,7 @@ export class ProjectsService {
             validationErrors = result.errors.map(error =>
               error instanceof Error ? error.message : String(error),
             );
-            this.logger.warn(`Portfolio.md validation failed`, {
+            this.logger.warn('Portfolio.md validation failed', {
               syncId,
               validationErrors,
             });
@@ -206,7 +206,7 @@ export class ProjectsService {
           const errorMessage =
             parseError instanceof Error ? parseError.message : String(parseError);
           validationErrors = [`Markdown parsing failed: ${errorMessage}`];
-          this.logger.error(`Failed to parse Portfolio.md`, {
+          this.logger.error('Failed to parse Portfolio.md', {
             syncId,
             parseError: errorMessage,
           });
@@ -280,7 +280,7 @@ export class ProjectsService {
         if (existingProject?.syncedAt) {
           const timeSinceLastSync = Date.now() - existingProject.syncedAt.getTime();
           if (timeSinceLastSync < 30000) {
-            this.logger.warn(`Skipping sync - another sync completed recently`, {
+            this.logger.warn('Skipping sync - another sync completed recently', {
               syncId,
               timeSinceLastSync,
               lastSyncAt: existingProject.syncedAt,
@@ -390,14 +390,14 @@ export class ProjectsService {
           ]);
           await this.cache.set(cacheKey, project);
 
-          this.logger.debug(`Cache invalidated successfully`, {
+          this.logger.debug('Cache invalidated successfully', {
             syncId,
             cacheKey,
           });
         }
       } catch (cacheError) {
         // Don't fail the sync if cache operations fail
-        this.logger.warn(`Cache operations failed`, {
+        this.logger.warn('Cache operations failed', {
           syncId,
           error: cacheError instanceof Error ? cacheError.message : String(cacheError),
         });
@@ -406,26 +406,22 @@ export class ProjectsService {
       // Trigger AI enrichment
       try {
         if (project && !project.blacklisted && !project.deletedAt) {
-          await this.queueManager.addJob(
-            QueueType.AI_ENRICHMENT,
-            'enrich-project',
-            {
-              repositoryId: project.id,
-              userId: project.ownerId,
-              repositoryUrl: project.repoUrl,
-              enrichmentType: 'full',
-              options: {
-                forceRegenerate: false,
-                includeReadme: true,
-                analyzeCode: true,
-                generateTags: true,
-              },
-            }
-          );
+          await this.queueManager.addJob(QueueType.AI_ENRICHMENT, 'enrich-project', {
+            repositoryId: project.id,
+            userId: project.ownerId,
+            repositoryUrl: project.repoUrl,
+            enrichmentType: 'full',
+            options: {
+              forceRegenerate: false,
+              includeReadme: true,
+              analyzeCode: true,
+              generateTags: true,
+            },
+          });
           this.logger.debug(`Queued AI enrichment for project ${project.id}`, { syncId });
         }
       } catch (error) {
-        this.logger.warn(`Failed to queue AI enrichment`, {
+        this.logger.warn('Failed to queue AI enrichment', {
           syncId,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -433,7 +429,7 @@ export class ProjectsService {
 
       const operationDuration = Date.now() - operationStart;
       if (project) {
-        this.logger.info(`GitHub sync operation completed successfully`, {
+        this.logger.info('GitHub sync operation completed successfully', {
           syncId,
           projectId: project.id,
           title: project.title,
@@ -449,7 +445,7 @@ export class ProjectsService {
       }
     } catch (error) {
       const operationDuration = Date.now() - operationStart;
-      this.logger.error(`GitHub sync operation failed`, {
+      this.logger.error('GitHub sync operation failed', {
         syncId,
         userId,
         repoUrl,
@@ -479,7 +475,7 @@ export class ProjectsService {
     try {
       const cached = await this.cache.get<Project[]>(cacheKey);
       if (cached) {
-        this.logger.debug(`Cache hit for user projects`, {
+        this.logger.debug('Cache hit for user projects', {
           userId,
           cacheKey,
           includeDeleted,
@@ -487,7 +483,7 @@ export class ProjectsService {
         return cached;
       }
     } catch (cacheError) {
-      this.logger.warn(`Cache get failed for user projects`, {
+      this.logger.warn('Cache get failed for user projects', {
         userId,
         cacheKey,
         error: cacheError instanceof Error ? cacheError.message : String(cacheError),
@@ -532,7 +528,7 @@ export class ProjectsService {
 
       return projects;
     } catch (dbError) {
-      this.logger.error(`Database query failed for user projects`, {
+      this.logger.error('Database query failed for user projects', {
         userId,
         includeDeleted,
         error: dbError instanceof Error ? dbError.message : String(dbError),
@@ -557,7 +553,7 @@ export class ProjectsService {
     try {
       const cached = await this.cache.get<PaginatedResult<Project>>(cacheKey);
       if (cached) return cached;
-    } catch (e) { }
+    } catch (e) {}
 
     const whereClause: Prisma.ProjectWhereInput = {
       ownerId: userId,
@@ -569,11 +565,7 @@ export class ProjectsService {
     if (sortBy) {
       orderBy = { [sortBy]: sortDirection };
     } else {
-      orderBy = [
-        { featured: 'desc' },
-        { published: 'desc' },
-        { updatedAt: 'desc' },
-      ];
+      orderBy = [{ featured: 'desc' }, { published: 'desc' }, { updatedAt: 'desc' }];
     }
 
     try {
@@ -592,10 +584,10 @@ export class ProjectsService {
                 id: true,
                 confidence: true,
                 createdAt: true,
-              }
-            }
-          }
-        })
+              },
+            },
+          },
+        }),
       ]);
 
       const totalPages = Math.ceil(total / limit);
@@ -608,14 +600,15 @@ export class ProjectsService {
           totalPages,
           hasNextPage: page < totalPages,
           hasPreviousPage: page > 1,
-        }
+        },
       };
 
       await this.cache.set(cacheKey, result, 300000);
       return result;
-
     } catch (error) {
-      throw new DatabaseError(`Failed to fetch paginated projects: ${error instanceof Error ? error.message : String(error)}`);
+      throw new DatabaseError(
+        `Failed to fetch paginated projects: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -726,7 +719,12 @@ export class ProjectsService {
       let processedCount = 0;
 
       // 2. Upsert all repositories immediately as placeholders
-      await this.syncEvents.publishSyncProgress(userId, 0, totalRepos, 'Creating project placeholders...');
+      await this.syncEvents.publishSyncProgress(
+        userId,
+        0,
+        totalRepos,
+        'Creating project placeholders...',
+      );
 
       for (const repo of repos.data) {
         processedCount++;
@@ -807,7 +805,6 @@ export class ProjectsService {
 
       // Publish sync completed event (placeholders created)
       await this.syncEvents.publishSyncCompleted(userId, syncedProjects, duration);
-
     } catch (error) {
       const duration = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -1331,13 +1328,13 @@ export class ProjectsService {
 
       await Promise.all(deletePromises);
 
-      this.logger.debug(`Cache invalidation completed`, {
+      this.logger.debug('Cache invalidation completed', {
         userId,
         repoUrl,
         keysInvalidated: cacheKeys.length,
       });
     } catch (error) {
-      this.logger.error(`Cache invalidation failed`, {
+      this.logger.error('Cache invalidation failed', {
         userId,
         repoUrl,
         error: error instanceof Error ? error.message : String(error),
@@ -1362,7 +1359,7 @@ export class ProjectsService {
       // Try to acquire lock (simplified - in production use Redis SET NX EX)
       const existingLock = await this.cache.get(lockKey);
       if (existingLock) {
-        this.logger.warn(`Sync already in progress for repository`, {
+        this.logger.warn('Sync already in progress for repository', {
           userId,
           repoUrl,
           lockKey,
@@ -1386,7 +1383,7 @@ export class ProjectsService {
         await this.cache.del(lockKey);
       }
     } catch (error) {
-      this.logger.error(`Safe sync failed for repository`, {
+      this.logger.error('Safe sync failed for repository', {
         userId,
         repoUrl,
         error: error instanceof Error ? error.message : String(error),

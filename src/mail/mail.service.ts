@@ -4,7 +4,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
-import { EmailTemplateService, EmailTemplateData } from './templates/email-template.service';
+import { EmailTemplateData, EmailTemplateService } from './templates/email-template.service';
 import { EmailBounceService } from './bounce/email-bounce.service';
 
 interface MailPayload {

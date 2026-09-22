@@ -18,7 +18,6 @@ import { ErrorHandlingModule } from '../common/error-handling.module';
 import { PubSubProvider } from '../common/providers/pubsub.provider';
 import { SyncEventsModule } from '../sync/sync-events.module';
 
-
 @Module({
   imports: [
     PrismaModule,
@@ -28,10 +27,7 @@ import { SyncEventsModule } from '../sync/sync-events.module';
     PlatformsModule,
     ErrorHandlingModule,
     SyncEventsModule,
-    BullModule.registerQueue(
-      { name: 'sync' },
-      { name: 'sync-dead-letter' }
-    ),
+    BullModule.registerQueue({ name: 'sync' }, { name: 'sync-dead-letter' }),
   ],
   controllers: [ProjectsController, GitHubWebhookController],
   providers: [
@@ -45,4 +41,4 @@ import { SyncEventsModule } from '../sync/sync-events.module';
   ],
   exports: [ProjectsService, EnhancedProjectsService, SyncQueueService],
 })
-export class ProjectsModule { }
+export class ProjectsModule {}

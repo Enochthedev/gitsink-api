@@ -1,10 +1,10 @@
-import { Injectable, NestMiddleware, Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { HttpException, HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
 import { Counter } from 'prom-client';
 import { MetricsService } from '@metrics/metrics.service';
 import {
-  SecurityMonitoringService,
   SecurityEventType,
+  SecurityMonitoringService,
   SecuritySeverity,
 } from '../services/security-monitoring.service';
 

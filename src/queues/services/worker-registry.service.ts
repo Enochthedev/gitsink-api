@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseWorkerService, WorkerMetrics } from '../workers/base-worker.service';
 import { EmailWorkerService } from '../workers/email-worker.service';

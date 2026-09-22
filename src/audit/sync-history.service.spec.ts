@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SyncHistoryService, SyncOperation, ChangeRecord } from './sync-history.service';
+import { ChangeRecord, SyncHistoryService, SyncOperation } from './sync-history.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from './audit.service';
 import { AuditAction, AuditResource } from './interfaces/audit.interface';

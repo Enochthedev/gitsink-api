@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
 import { Project } from '../entities/project.entity';
 import { PageInfo } from '../../common/dto/graphql-common.dto';
 

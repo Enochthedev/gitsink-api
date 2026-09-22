@@ -1,5 +1,5 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { Worker, Job, WorkerOptions } from 'bullmq';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Job, Worker, WorkerOptions } from 'bullmq';
 import { QueueConfigService, QueueType } from '../config/queue.config';
 import { MetricsService } from '../../metrics/metrics.service';
 
@@ -146,7 +146,7 @@ export abstract class BaseWorkerService implements OnModuleInit, OnModuleDestroy
     });
 
     this.worker.on('error', err => {
-      this.logger.error(`Worker error:`, err);
+      this.logger.error('Worker error:', err);
     });
 
     this.worker.on('ready', () => {

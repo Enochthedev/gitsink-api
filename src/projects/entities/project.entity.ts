@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, Int, Float } from '@nestjs/graphql';
+import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-type-json';
 import { AIAnalysisResult } from '../../ai-enrichment/entities/ai-analysis.entity';
 import { UnifiedRepositoryEntity } from '../../platforms/entities/platform-connection.entity';

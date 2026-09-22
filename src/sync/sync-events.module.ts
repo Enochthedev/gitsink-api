@@ -4,7 +4,7 @@ import { SyncEventsService } from './sync-events.service';
 import { PubSubProvider } from '../common/providers/pubsub.provider';
 
 @Module({
-    providers: [SyncEventsResolver, SyncEventsService, PubSubProvider],
-    exports: [SyncEventsService],
+  providers: [SyncEventsResolver, SyncEventsService, PubSubProvider],
+  exports: [SyncEventsService],
 })
-export class SyncEventsModule { }
+export class SyncEventsModule {}

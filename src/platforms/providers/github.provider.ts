@@ -3,14 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { BaseRepositoryProvider } from './base-repository.provider';
 import {
-  PlatformCredentials,
   AuthResult,
-  Repository,
-  WebhookResult,
-  RepositoryContent,
   PlatformApiResponse,
+  PlatformCredentials,
   PlatformType,
+  Repository,
+  RepositoryContent,
   RepositoryOwner,
+  WebhookResult,
 } from '../types/platform.types';
 
 interface GitHubUser {

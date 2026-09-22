@@ -1,10 +1,10 @@
-import { Controller, Post, Body, Headers, Logger, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Body, Controller, Headers, HttpCode, HttpStatus, Logger, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-  EmailBounceService,
   BounceEvent,
   ComplaintEvent,
   DeliveryEvent,
+  EmailBounceService,
 } from './email-bounce.service';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';

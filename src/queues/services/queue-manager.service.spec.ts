@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QueueManagerService } from './queue-manager.service';
-import { QueueConfigService, QueueType, JobPriority } from '../config/queue.config';
+import { JobPriority, QueueConfigService, QueueType } from '../config/queue.config';
 import { MetricsService } from '../../metrics/metrics.service';
-import { Queue, QueueEvents, Job } from 'bullmq';
+import { Job, Queue, QueueEvents } from 'bullmq';
 
 // Mock BullMQ
 jest.mock('bullmq', () => ({

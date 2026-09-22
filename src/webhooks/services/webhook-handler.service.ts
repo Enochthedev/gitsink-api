@@ -7,13 +7,13 @@ import { WebhookQueueService } from './webhook-queue.service';
 import { WebhookProcessorService } from './webhook-processor.service';
 import {
   WebhookEvent,
-  WebhookProcessingResult,
-  WebhookSignatureValidation,
   WebhookEventFilter,
   WebhookJobData,
-  WebhookProcessingOptions,
   WebhookMetrics,
+  WebhookProcessingOptions,
+  WebhookProcessingResult,
   WebhookRetryConfig,
+  WebhookSignatureValidation,
 } from '../types/webhook.types';
 
 @Injectable()
@@ -156,7 +156,7 @@ export class WebhookHandlerService implements IWebhookHandler {
       // Queue for processing
       await this.queue.addJob(updatedEventData, options);
 
-      this.logger.debug(`Queued webhook for processing`, {
+      this.logger.debug('Queued webhook for processing', {
         eventId: storedEvent.id,
         platform: eventData.platform,
         eventType: eventData.eventType,

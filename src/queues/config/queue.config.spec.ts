@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { QueueConfigService, QueueType, JobPriority } from './queue.config';
+import { JobPriority, QueueConfigService, QueueType } from './queue.config';
 
 describe('QueueConfigService', () => {
   let service: QueueConfigService;

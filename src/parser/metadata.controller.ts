@@ -1,31 +1,31 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
   Put,
-  Delete,
-  Body,
-  Param,
   Query,
-  UseGuards,
   Request,
-  HttpStatus,
-  HttpException,
-  ParseIntPipe,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MetadataService } from './metadata.service';
 import { EnhancedJwtGuard } from '../auth/enhanced-jwt.guard';
 import {
   CreateMetadataRequest,
-  UpdateMetadataRequest,
-  MetadataResponse,
-  MetadataHistoryResponse,
   MetadataComparisonResponse,
+  MetadataHistoryResponse,
+  MetadataResponse,
+  MetadataSearchOptions,
   MetadataSearchResponse,
   MetadataStatisticsResponse,
-  MetadataSearchOptions,
+  UpdateMetadataRequest,
 } from './types/metadata.types';
 import { RequestWithUser } from '../auth/request-with-user';
 

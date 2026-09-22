@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { buildSchema, GraphQLSchema, isObjectType, isEnumType, isScalarType } from 'graphql';
+import { GraphQLSchema, buildSchema, isEnumType, isObjectType, isScalarType } from 'graphql';
 import * as fs from 'fs';
 import * as path from 'path';
 

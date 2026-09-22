@@ -1,7 +1,7 @@
 import { getToken } from '@willsoto/nestjs-prometheus';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MetricsService, SecurityEvent } from './metrics.service';
-import { Counter, Histogram, Gauge, register } from 'prom-client';
+import { Counter, Gauge, Histogram, register } from 'prom-client';
 
 // Mock prom-client
 jest.mock('prom-client', () => ({

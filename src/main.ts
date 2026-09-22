@@ -3,7 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { HttpErrorFilter } from './utils/http-error.filter';
 import { AppModule } from './app.module';
 import { EnhancedValidationPipe } from './common/validation/enhanced-validation.pipe';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet, { HelmetOptions } from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { Logger } from 'nestjs-pino';
@@ -78,7 +78,7 @@ async function bootstrap() {
   logger.log(`Health check available at: http://localhost:${port}/health`);
 }
 
-void bootstrap().catch((error) => {
+void bootstrap().catch(error => {
   console.error('Failed to start application:', error);
   process.exit(1);
 });

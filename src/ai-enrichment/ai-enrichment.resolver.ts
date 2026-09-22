@@ -1,13 +1,13 @@
-import { Resolver, Query, Mutation, Args, Context, Subscription } from '@nestjs/graphql';
-import { UseGuards, Inject } from '@nestjs/common';
+import { Args, Context, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { Inject, UseGuards } from '@nestjs/common';
 import { AIEnrichmentService } from './ai-enrichment.service';
 import { EnhancedJwtGuard } from '../auth/enhanced-jwt.guard';
 import { AIAnalysisResult } from './entities/ai-analysis.entity';
 import {
-  TriggerEnrichmentInput,
   BulkEnrichmentInput,
-  EnrichmentJob,
   BulkEnrichmentResult,
+  EnrichmentJob,
+  TriggerEnrichmentInput,
 } from './dto/enrichment-graphql.dto';
 import { PubSub } from 'graphql-subscriptions';
 import { EnrichmentStatusUpdate } from '../common/dto/subscription.dto';

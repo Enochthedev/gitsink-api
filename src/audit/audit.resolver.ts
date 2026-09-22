@@ -1,10 +1,10 @@
-import { Resolver, Query, Args, Context, ResolveField, Parent } from '@nestjs/graphql';
+import { Args, Context, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { EnhancedJwtGuard } from '../auth/enhanced-jwt.guard';
 import {
-  AuditLogEntity,
   AuditLogConnection,
+  AuditLogEntity,
   AuditSummaryEntity,
 } from './entities/audit-log.entity';
 import { AuditLogFiltersArgs, AuditSummaryArgs } from './dto/audit-log.dto';

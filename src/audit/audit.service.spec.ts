@@ -4,9 +4,9 @@ import { AuditService } from './audit.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AuditAction,
+  AuditLogFilters,
   AuditResource,
   CreateAuditLogDto,
-  AuditLogFilters,
   SecurityEvent,
 } from './interfaces/audit.interface';
 

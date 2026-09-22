@@ -1,12 +1,12 @@
 import { Controller, Get, Redirect } from '@nestjs/common';
-import { ApiTags, ApiOkResponse, ApiExcludeEndpoint } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { ParseResult } from './parser/types/portfolio.types';
 
 @ApiTags('app')
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   @ApiOkResponse({ description: 'Parsed Portfolio markdown' })

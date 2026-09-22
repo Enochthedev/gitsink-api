@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags, ApiBody, ApiOkResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { ConfigService } from '@nestjs/config';
 import { GitHubWebhookPayload } from './dto/github-webhook.payload';

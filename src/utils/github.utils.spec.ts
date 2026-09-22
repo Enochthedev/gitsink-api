@@ -1,10 +1,10 @@
 import {
-  parseGitHubRepoUrl,
+  buildGitHubApiUrl,
+  buildGitHubRawUrl,
   buildGitHubRepoUrl,
   isValidGitHubRepoUrl,
   parseGitHubApiUrl,
-  buildGitHubRawUrl,
-  buildGitHubApiUrl,
+  parseGitHubRepoUrl,
 } from './github.utils';
 
 describe('GitHub Utils', () => {

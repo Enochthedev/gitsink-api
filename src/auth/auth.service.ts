@@ -1,10 +1,10 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
-  UnauthorizedException,
-  BadRequestException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
@@ -1190,7 +1190,7 @@ export class AuthService {
 
       // GitHub doesn't support refresh tokens in their OAuth flow
       // This is a placeholder for future implementation if GitHub adds support
-      this.logger.log(`GitHub refresh token mechanism not supported by GitHub OAuth`);
+      this.logger.log('GitHub refresh token mechanism not supported by GitHub OAuth');
 
       this.authOperationsCounter.inc({
         operation,

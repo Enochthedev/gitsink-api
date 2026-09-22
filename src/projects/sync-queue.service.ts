@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
@@ -14,11 +14,10 @@ export class SyncQueueService {
     private readonly projectsService: ProjectsService,
     @InjectQueue('sync') private readonly queue: Queue,
     @InjectQueue('sync-dead-letter') private readonly deadLetterQueue: Queue,
-  ) { }
+  ) {}
 
   // Worker initialization removed to prevent duplicate processing and connection exhaustion.
   // Processing is handled by SyncWorkerService in QueuesModule.
-
 
   async addJob(
     userId: string,
@@ -42,7 +41,7 @@ export class SyncQueueService {
     try {
       const job = await this.queue.add('sync', jobData, jobOptions);
 
-      this.logger.log(`Sync job queued`, {
+      this.logger.log('Sync job queued', {
         jobId: job.id,
         userId,
         repoUrl,
@@ -53,7 +52,7 @@ export class SyncQueueService {
 
       return job;
     } catch (error) {
-      this.logger.error(`Failed to queue sync job`, {
+      this.logger.error('Failed to queue sync job', {
         userId,
         repoUrl,
         branch,
@@ -176,6 +175,4 @@ export class SyncQueueService {
       });
     }
   }
-
-
 }

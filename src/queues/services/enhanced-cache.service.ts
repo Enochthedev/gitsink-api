@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { Inject } from '@nestjs/common';
@@ -191,7 +191,7 @@ export class EnhancedCacheService implements OnModuleInit, OnModuleDestroy {
       this.logger.log(`Cleared ${cleared} cache entries by tags: ${tags.join(', ')}`);
       return cleared;
     } catch (error) {
-      this.logger.error(`Error clearing cache by tags:`, error);
+      this.logger.error('Error clearing cache by tags:', error);
       return cleared;
     }
   }
@@ -363,7 +363,7 @@ export class EnhancedCacheService implements OnModuleInit, OnModuleDestroy {
 
       return this.deserialize<T>(data);
     } catch (error) {
-      this.logger.error(`L2 cache get error:`, error);
+      this.logger.error('L2 cache get error:', error);
       return null;
     }
   }
@@ -413,7 +413,7 @@ export class EnhancedCacheService implements OnModuleInit, OnModuleDestroy {
         }
       }
     } catch (error) {
-      this.logger.error(`L2 cache set error:`, error);
+      this.logger.error('L2 cache set error:', error);
       throw error;
     }
   }

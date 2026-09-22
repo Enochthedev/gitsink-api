@@ -4,9 +4,9 @@ import { AuditService } from './audit.service';
 import { SyncHistoryService } from './sync-history.service';
 import {
   AuditAction,
-  AuditResource,
   AuditLogFilters,
   AuditLogSummary,
+  AuditResource,
 } from './interfaces/audit.interface';
 
 export interface AuditReport {

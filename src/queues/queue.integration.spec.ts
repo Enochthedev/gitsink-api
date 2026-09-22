@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BullModule } from '@nestjs/bullmq';
-import { Queue, Worker, Job } from 'bullmq';
+import { Job, Queue, Worker } from 'bullmq';
 import { QueueManagerService } from './services/queue-manager.service';
 import { EmailWorkerService } from './workers/email-worker.service';
 import { SyncWorkerService } from './workers/sync-worker.service';

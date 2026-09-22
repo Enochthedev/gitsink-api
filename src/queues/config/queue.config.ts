@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { QueueOptions, WorkerOptions, JobsOptions } from 'bullmq';
+import { JobsOptions, QueueOptions, WorkerOptions } from 'bullmq';
 import { Redis } from 'ioredis';
 
 export enum JobPriority {
@@ -32,7 +32,7 @@ export interface EnhancedJobOptions extends JobsOptions {
 export class QueueConfigService implements OnModuleDestroy {
   private redisConnection: Redis | null = null;
 
-  constructor(private readonly configService: ConfigService) { }
+  constructor(private readonly configService: ConfigService) {}
 
   onModuleDestroy() {
     if (this.redisConnection) {
@@ -104,7 +104,7 @@ export class QueueConfigService implements OnModuleDestroy {
       console.log('[QueueConfig] Shared Redis connection ready');
     });
 
-    this.redisConnection.on('error', (err) => {
+    this.redisConnection.on('error', err => {
       console.error('[QueueConfig] Shared Redis connection error:', err.message);
       // Don't log full stack trace for "max clients" errors to reduce noise
       if (!err.message.includes('max number of clients')) {

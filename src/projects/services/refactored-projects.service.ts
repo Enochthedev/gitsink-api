@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma, Project } from '@prisma/client';
 
@@ -9,14 +9,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SyncQueueService } from '../sync-queue.service';
 import { StandardizedLoggerService } from '../../common/services/standardized-logger.service';
 import {
-  fetchGitHubRepoData,
-  fetchAndParsePortfolioMd,
-  buildProjectData,
-  shouldSkipConcurrentSync,
-  generateProjectCacheKeys,
-  validateSyncParameters,
-  generateSyncId,
   GitHubSyncContext,
+  buildProjectData,
+  fetchAndParsePortfolioMd,
+  fetchGitHubRepoData,
+  generateProjectCacheKeys,
+  generateSyncId,
+  shouldSkipConcurrentSync,
+  validateSyncParameters,
 } from '../utils/github-sync.utils';
 import { CACHE_CONSTANTS, DB_CONSTANTS, GITHUB_CONSTANTS } from '../../common/constants';
 import { DatabaseError, ExternalServiceError } from '../../common/utils/error.utils';

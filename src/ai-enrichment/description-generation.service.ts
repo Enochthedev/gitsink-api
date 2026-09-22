@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { RepositoryContent, AIServiceResponse } from './interfaces/ai-enrichment.interface';
+import { AIServiceResponse, RepositoryContent } from './interfaces/ai-enrichment.interface';
 
 @Injectable()
 export class DescriptionGenerationService {
@@ -164,7 +164,10 @@ export class DescriptionGenerationService {
     const maxRetries = 3;
     let lastError: Error | null = null;
     const model = this.configService.get<string>('AI_MODEL', 'openai/gpt-3.5-turbo');
-    const isChatCompletion = this.aiServiceUrl.includes('openrouter') || this.aiServiceUrl.includes('openai') || this.aiServiceUrl.includes('v1');
+    const isChatCompletion =
+      this.aiServiceUrl.includes('openrouter') ||
+      this.aiServiceUrl.includes('openai') ||
+      this.aiServiceUrl.includes('v1');
 
     // Construct endpoint URL correctly
     let endpoint = this.aiServiceUrl;
@@ -201,23 +204,20 @@ export class DescriptionGenerationService {
           messages: [
             {
               role: 'system',
-              content: 'You are an expert technical writer and software architect. Analyze the provided repository information and generate a concise, professional description. Return only the description text.'
+              content:
+                'You are an expert technical writer and software architect. Analyze the provided repository information and generate a concise, professional description. Return only the description text.',
             },
             {
               role: 'user',
-              content: prompt
-            }
+              content: prompt,
+            },
           ],
           max_tokens: 300,
           temperature: 0.7,
         };
 
         const response = await firstValueFrom(
-          this.httpService.post<any>(
-            endpoint,
-            body,
-            { headers, timeout },
-          ),
+          this.httpService.post<any>(endpoint, body, { headers, timeout }),
         );
 
         // Handle Chat Completion response
@@ -225,11 +225,12 @@ export class DescriptionGenerationService {
 
         // Fallback for legacy format if needed
         if (!description) {
-          const legacyDesc = response.data?.description || response.data?.text || response.data?.content;
+          const legacyDesc =
+            response.data?.description || response.data?.text || response.data?.content;
           if (legacyDesc) {
             return {
               description: legacyDesc,
-              confidence: response.data?.confidence || 0.8
+              confidence: response.data?.confidence || 0.8,
             };
           }
           throw new Error('No description in AI service response');

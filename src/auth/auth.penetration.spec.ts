@@ -6,7 +6,11 @@ import { MagicLinkService } from './magic-link.service';
 import { ApiKeyService } from './api-key.service';
 import { JwtTokenService } from './jwt-token.service';
 import { createMockUser } from '../../test/test-utils/mocks';
-import { createTestApp, closeTestApp, TestContext } from '../../test/test-utils/integration-helpers';
+import {
+  TestContext,
+  closeTestApp,
+  createTestApp,
+} from '../../test/test-utils/integration-helpers';
 import * as bcrypt from 'bcryptjs';
 
 // Mock bcrypt for consistent testing

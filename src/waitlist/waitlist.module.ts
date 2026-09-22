@@ -9,4 +9,4 @@ import { QueueCoreModule } from '../queues/queue-core.module';
   controllers: [WaitlistController],
   providers: [WaitlistService],
 })
-export class WaitlistModule { }
+export class WaitlistModule {}

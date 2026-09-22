@@ -1,33 +1,33 @@
 import {
+  Body,
   Controller,
+  DefaultValuePipe,
   Get,
+  ParseIntPipe,
   Post,
   Query,
-  Body,
   Req,
   UseGuards,
   UseInterceptors,
-  ParseIntPipe,
-  DefaultValuePipe,
   ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiSecurity,
   ApiBody,
   ApiOkResponse,
-  ApiQuery,
   ApiOperation,
   ApiProperty,
+  ApiQuery,
+  ApiSecurity,
+  ApiTags,
 } from '@nestjs/swagger';
 import { OptimizedProjectsService } from './optimized-projects.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { RequestWithUser } from '../auth/request-with-user';
 import {
-  ResponseOptimizationInterceptor,
   CacheResponse,
   CompressResponse,
   LazyLoad,
+  ResponseOptimizationInterceptor,
 } from '../common/interceptors/response-optimization.interceptor';
 import { Project } from './entities/project.entity';
 

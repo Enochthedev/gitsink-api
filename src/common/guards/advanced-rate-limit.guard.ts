@@ -1,15 +1,15 @@
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Injectable,
   Logger,
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { RateLimitingService, RateLimitResult } from '../services/rate-limiting.service';
+import { RateLimitResult, RateLimitingService } from '../services/rate-limiting.service';
 import { RequestWithUser } from '@auth/request-with-user';
 
 export interface AdvancedRateLimitOptions {

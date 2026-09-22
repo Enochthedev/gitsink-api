@@ -1,5 +1,5 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { Worker, Job } from 'bullmq';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Job, Worker } from 'bullmq';
 import { MailService } from '@mail/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { MailJob } from '@type/queue.types';
@@ -14,7 +14,7 @@ export class ProcessorService implements OnModuleInit, OnModuleDestroy {
     private readonly mailService: MailService,
     private readonly config: ConfigService,
     private readonly emailBounceService: EmailBounceService,
-  ) { }
+  ) {}
   onModuleInit() {
     const host = this.config.get<string>('REDIS_HOST') || 'localhost';
     const port = this.config.get<number>('REDIS_PORT') || 6379;

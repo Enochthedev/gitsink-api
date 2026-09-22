@@ -1,5 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, catchError, tap, throwError } from 'rxjs';
 import { LoggingService } from '../services/logging.service';
 import { v4 as uuidv4 } from 'uuid';
 

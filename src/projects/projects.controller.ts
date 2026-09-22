@@ -1,11 +1,19 @@
-import { Controller, Get, Param, Post, Body, Req, UseGuards, Query } from '@nestjs/common';
-import { ApiTags, ApiSecurity, ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { SyncProjectInput } from './dto/sync-project.input';
 import { Project } from './entities/project.entity';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { RequestWithUser } from '../auth/request-with-user';
-import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
+import { PaginatedResult, PaginationDto } from '../common/dto/pagination.dto';
 
 @UseGuards(ApiKeyGuard)
 @ApiTags('Projects')
@@ -13,13 +21,17 @@ import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) { }
+  constructor(private readonly projectsService: ProjectsService) {}
 
   /**
    * Retrieve all projects for the authenticated user.
    */
   @Get()
-  @ApiOperation({ summary: 'Get all projects', description: 'Retrieve a paginated list of all projects associated with the authenticated user.' })
+  @ApiOperation({
+    summary: 'Get all projects',
+    description:
+      'Retrieve a paginated list of all projects associated with the authenticated user.',
+  })
   @ApiOkResponse({
     description: 'Paginated list of projects retrieved successfully',
   })
@@ -33,7 +45,10 @@ export class ProjectsController {
   }
 
   @Get(':repoUrl')
-  @ApiOperation({ summary: 'Get project by URL', description: 'Retrieve detailed information about a specific project by its repository URL.' })
+  @ApiOperation({
+    summary: 'Get project by URL',
+    description: 'Retrieve detailed information about a specific project by its repository URL.',
+  })
   @ApiOkResponse({ description: 'Project data retrieved successfully', type: Project })
   @ApiResponse({ status: 404, description: 'Project not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -50,14 +65,18 @@ export class ProjectsController {
    * Synchronize a single repository. The branch is optional and defaults to
    * `main` if not provided.
    */
-  @ApiOperation({ summary: 'Sync a project', description: 'Trigger a synchronization job for a specific repository. This is an asynchronous operation.' })
+  @ApiOperation({
+    summary: 'Sync a project',
+    description:
+      'Trigger a synchronization job for a specific repository. This is an asynchronous operation.',
+  })
   @ApiBody({
     type: SyncProjectInput,
     description: 'Repository URL and optional branch to sync',
   })
   @ApiOkResponse({
     description: 'Sync job enqueued successfully',
-    schema: { example: { enqueued: true } }
+    schema: { example: { enqueued: true } },
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -74,15 +93,18 @@ export class ProjectsController {
   /**
    * Synchronize every GitHub repository linked to the authenticated user.
    */
-  @ApiOperation({ summary: 'Sync all projects', description: 'Trigger synchronization for all repositories linked to the user account.' })
+  @ApiOperation({
+    summary: 'Sync all projects',
+    description: 'Trigger synchronization for all repositories linked to the user account.',
+  })
   @ApiBody({
     description: 'No body required',
     required: false,
-    schema: { type: 'object', nullable: true }
+    schema: { type: 'object', nullable: true },
   })
   @ApiOkResponse({
     description: 'Sync all jobs enqueued successfully',
-    schema: { example: { queued: true } }
+    schema: { example: { queued: true } },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Too many requests' })

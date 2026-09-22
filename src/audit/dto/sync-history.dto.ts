@@ -1,15 +1,15 @@
 import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsNumber,
   IsOptional,
   IsString,
-  IsEnum,
-  IsDateString,
-  IsNumber,
-  Min,
   Max,
-  IsArray,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Field, InputType, ArgsType, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 export enum SyncOperationType {
   CREATE = 'create',

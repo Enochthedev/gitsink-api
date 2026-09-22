@@ -1,6 +1,6 @@
-import { IsOptional, IsString, IsEnum, IsDateString, IsBoolean, IsArray } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Field, InputType, ArgsType, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 export enum ReportType {
   SECURITY = 'security',

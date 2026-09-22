@@ -17,14 +17,18 @@ import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_FILTER, APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { UserContextGuard } from './auth/user-context.guard';
 import { Request, Response } from 'express';
 import { LoggerModule } from 'nestjs-pino';
 import { QueuesModule } from './queues/queues.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { SecurityMiddleware } from './common/middleware/security.middleware';
-import { RequestContextMiddleware, UserContextMiddleware, PerformanceTrackingMiddleware } from './common/middleware/request-context.middleware';
+import {
+  PerformanceTrackingMiddleware,
+  RequestContextMiddleware,
+  UserContextMiddleware,
+} from './common/middleware/request-context.middleware';
 import { LoggingModule } from './common/logging.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
@@ -47,7 +51,6 @@ import { ApiKeysModule } from './api-keys/api-keys.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { BillingModule } from './billing/billing.module';
 import { SyncEventsModule } from './sync/sync-events.module';
-
 
 @Module({
   imports: [
@@ -186,7 +189,7 @@ export class AppModule implements NestModule {
         UserContextMiddleware,
         PerformanceTrackingMiddleware,
         SecurityMiddleware,
-        LoggerMiddleware
+        LoggerMiddleware,
       )
       .forRoutes('*');
   }

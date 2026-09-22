@@ -27,4 +27,4 @@ import { PubSubProvider } from '../common/providers/pubsub.provider';
     ProjectCategorizationService,
   ],
 })
-export class AIEnrichmentModule { }
+export class AIEnrichmentModule {}

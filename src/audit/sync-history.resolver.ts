@@ -1,17 +1,17 @@
-import { Resolver, Query, Mutation, Args, Context, ResolveField, Parent } from '@nestjs/graphql';
+import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { SyncHistoryService } from './sync-history.service';
 import { EnhancedJwtGuard } from '../auth/enhanced-jwt.guard';
 import {
-  SyncOperationEntity,
-  SyncHistoryConnection,
-  SyncHistoryStatsEntity,
-  FailureAnalysis,
-  SyncHistoryFiltersArgs,
-  SyncHistoryStatsArgs,
-  StartSyncOperationInput,
   CompleteSyncOperationInput,
   FailSyncOperationInput,
+  FailureAnalysis,
+  StartSyncOperationInput,
+  SyncHistoryConnection,
+  SyncHistoryFiltersArgs,
+  SyncHistoryStatsArgs,
+  SyncHistoryStatsEntity,
+  SyncOperationEntity,
   SyncOperationType,
   SyncStatus,
 } from './dto/sync-history.dto';

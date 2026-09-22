@@ -1,4 +1,4 @@
-import { Injectable, LoggerService, LogLevel } from '@nestjs/common';
+import { Injectable, LogLevel, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as winston from 'winston';
 // // const DailyRotateFile = require('winston-daily-rotate-file');
@@ -309,7 +309,7 @@ export class LoggingService implements LoggerService {
   }
 
   logDatabaseQuery(query: string, duration: number, context?: LogContext) {
-    this.logPerformance(`Database query executed`, {
+    this.logPerformance('Database query executed', {
       operation: 'database_query',
       duration,
       metadata: { query: this.sanitizeQuery(query) },

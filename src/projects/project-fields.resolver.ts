@@ -1,4 +1,4 @@
-import { Resolver, ResolveField, Parent, Args } from '@nestjs/graphql';
+import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { Project } from './entities/project.entity';
 
 @Resolver(() => Project)

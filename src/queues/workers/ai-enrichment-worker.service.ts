@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { BaseWorkerService, JobContext } from './base-worker.service';
 import { QueueConfigService, QueueType } from '../config/queue.config';
@@ -110,11 +110,14 @@ export class AIEnrichmentWorkerService extends BaseWorkerService {
     }
   }
 
-  private async getRepositoryContent(projectId: string, userId: string): Promise<RepositoryContent> {
+  private async getRepositoryContent(
+    projectId: string,
+    userId: string,
+  ): Promise<RepositoryContent> {
     // Fetch project from DB using ProjectsService
     // We access Prisma through projects service's internal method or assume accessing DB directly but we can't here easily.
-    // Instead we'll use access to the projects cache/db from ProjectsService if exposed, 
-    // or just assume we have access to PrismaService if we injected it. 
+    // Instead we'll use access to the projects cache/db from ProjectsService if exposed,
+    // or just assume we have access to PrismaService if we injected it.
     // Since we didn't inject PrismaService, let's use a workaround or best effort.
     // Actually, ProjectsService has getAllProjectsForUser methods. We can use that or rely on `any` cast to get raw access.
 
@@ -144,7 +147,7 @@ export class AIEnrichmentWorkerService extends BaseWorkerService {
           extension: 'md',
           size: project.markdown?.length || 0,
           content: project.markdown || '',
-        }
+        },
       ],
       packageJson: {}, // We don't have this stored
       languages,

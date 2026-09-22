@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   UnauthorizedException,
-  BadRequestException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
@@ -12,7 +12,7 @@ import { EnqueueService } from '../queues/email/enqueue/enqueue.service';
 import { MetricsService } from '../metrics/metrics.service';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcryptjs';
-import { User, MagicLinkToken } from '@prisma/client';
+import { MagicLinkToken, User } from '@prisma/client';
 import { Counter, Histogram } from 'prom-client';
 
 export interface MagicLinkValidationResult {

@@ -1,18 +1,18 @@
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   UnauthorizedException,
-  BadRequestException,
-  InternalServerErrorException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { MetricsService } from '../metrics/metrics.service';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcryptjs';
-import { User, ApiUsage } from '@prisma/client';
-import { Counter, Histogram, Gauge } from 'prom-client';
+import { ApiUsage, User } from '@prisma/client';
+import { Counter, Gauge, Histogram } from 'prom-client';
 
 export interface ApiKeyValidationResult {
   user: User;

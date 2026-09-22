@@ -1,5 +1,5 @@
-import { InputType, Field, ObjectType, Int } from '@nestjs/graphql';
-import { IsString, IsOptional, IsBoolean, IsArray, IsUrl, IsEmail } from 'class-validator';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { IsArray, IsBoolean, IsEmail, IsOptional, IsString, IsUrl } from 'class-validator';
 import { PublicProfileGraphQL } from '../entities/profile-graphql.entity';
 import { PageInfo } from '../../common/dto/graphql-common.dto';
 

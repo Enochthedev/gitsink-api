@@ -1,14 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import {
-  createTestApp,
-  closeTestApp,
+  ApiTestHelpers,
   TestContext,
   TestDataBuilder,
-  ApiTestHelpers,
+  closeTestApp,
   createAuthHeaders,
+  createTestApp,
 } from '../../test/test-utils/integration-helpers';
-import { createMockUser, createMockGitHubRepo } from '../../test/test-utils/mocks';
+import { createMockGitHubRepo, createMockUser } from '../../test/test-utils/mocks';
 import axios from 'axios';
 import * as bcrypt from 'bcryptjs';
 
