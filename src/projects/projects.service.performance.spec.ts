@@ -1,3 +1,4 @@
+import { EnhancedLoggerService } from '../common/services/enhanced-logger.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsService } from './projects.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -50,6 +51,14 @@ describe('ProjectsService Performance Tests', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        {
+          provide: EnhancedLoggerService,
+          useValue: {
+            log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn(), verbose: jest.fn(),
+            logBusinessEvent: jest.fn(), logPerformance: jest.fn(), logSecurityEvent: jest.fn(),
+            logDatabaseQuery: jest.fn(), logExternalApiCall: jest.fn(), setContext: jest.fn(),
+          },
+        },
         ProjectsService,
         {
           provide: PrismaService,
@@ -76,7 +85,10 @@ describe('ProjectsService Performance Tests', () => {
           useValue: mockSyncQueueService,
         },
       ],
-    }).compile();
+    })
+      // auto-mock any provider the spec does not define explicitly
+      .useMocker((token) => (typeof token === 'function' ? new Proxy({}, { get: () => jest.fn() }) : undefined))
+      .compile();
 
     service = module.get<ProjectsService>(ProjectsService);
     prismaService = module.get<PrismaService>(PrismaService);
