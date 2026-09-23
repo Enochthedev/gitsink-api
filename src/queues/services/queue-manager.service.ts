@@ -179,6 +179,11 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
   /**
    * Get queue metrics for monitoring
    */
+  /** The Queue instance for a type, if it has been registered. */
+  getQueue(queueType: QueueType): Queue | undefined {
+    return this.queues.get(queueType);
+  }
+
   async getQueueMetrics(queueType: QueueType): Promise<QueueMetrics> {
     const queue = this.queues.get(queueType);
     if (!queue) {

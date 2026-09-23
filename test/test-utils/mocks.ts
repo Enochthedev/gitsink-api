@@ -66,20 +66,23 @@ export const createMockPrismaService = () => ({
 });
 
 // Mock Config Service
-export const createMockConfigService = () => ({
-  get: jest.fn((key: string) => {
-    const config = {
+export const createMockConfigService = (overrides: Record<string, unknown> = {}) => ({
+  get: jest.fn((key: string, defaultValue?: unknown) => {
+    const config: Record<string, unknown> = {
       GITHUB_API_BASE: 'https://api.github.com/repos',
       GITHUB_MD_URL: 'https://raw.githubusercontent.com',
       TOKEN_ENCRYPTION_KEY: 'test-encryption-key',
       JWT_SECRET: 'test-jwt-secret',
       GITHUB_CLIENT_ID: 'test-client-id',
       GITHUB_CLIENT_SECRET: 'test-client-secret',
-      REDIS_HOST: 'localhost',
-      REDIS_PORT: 6379,
-      DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
+      REDIS_HOST: process.env.REDIS_HOST ?? 'localhost',
+      REDIS_PORT: Number(process.env.REDIS_PORT ?? 6379),
+      // Integration suites talk to a real database, so honour the environment.
+      DATABASE_URL: process.env.DATABASE_URL ?? 'postgresql://test:test@localhost:5432/test',
+      ...overrides,
     };
-    return config[key];
+    // ConfigService.get(key, default) falls back to the default when unset.
+    return key in config ? config[key] : defaultValue;
   }),
 });
 

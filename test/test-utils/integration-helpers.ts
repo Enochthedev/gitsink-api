@@ -5,6 +5,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import request from 'supertest';
+
+// supertest 7 dropped the SuperTest<Test> type in favour of TestAgent
+type TestRequest = ReturnType<typeof request>;
 import {
   createMockCacheManager,
   createMockConfigService,
@@ -19,7 +22,7 @@ export interface TestContext {
   prismaService: ReturnType<typeof createMockPrismaService>;
   configService: ReturnType<typeof createMockConfigService>;
   cacheManager: ReturnType<typeof createMockCacheManager>;
-  request: request.SuperTest<request.Test>;
+  request: TestRequest;
 }
 
 export async function createTestApp(): Promise<TestContext> {
