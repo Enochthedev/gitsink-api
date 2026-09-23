@@ -58,10 +58,17 @@ class TestReporter {
 
                 fs.writeFileSync(mergedLcov, mergedContent);
 
-                // Generate HTML report from merged LCOV
-                execSync(`npx genhtml ${mergedLcov} --output-directory ${mergedDir}/html`, {
-                    stdio: 'inherit'
-                });
+                // Generate HTML report from merged LCOV. genhtml ships with
+                // lcov (a Perl tool), not npm — skip the HTML step when it is
+                // not installed instead of failing the whole report.
+                try {
+                    execSync('command -v genhtml', { stdio: 'ignore' });
+                    execSync(`genhtml ${mergedLcov} --output-directory ${mergedDir}/html`, {
+                        stdio: 'inherit'
+                    });
+                } catch {
+                    console.log('ℹ️  genhtml not installed — skipping the HTML coverage report');
+                }
 
                 // Generate coverage summary
                 this.generateCoverageSummary(mergedDir);
