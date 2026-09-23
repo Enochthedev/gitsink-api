@@ -394,7 +394,7 @@ jobs:
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
@@ -428,12 +428,10 @@ jobs:
         continue-on-error: true
         run: npm run security:penetration
 
-      - name: OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.7.0
-        with:
-          target: 'http://localhost:3000'
-          rules_file_name: '.zap/rules.tsv'
-          cmd_options: '-a'
+      # A ZAP baseline scan needs a running target. Nothing starts the API in
+      # this job, so it pointed at an empty http://localhost:3000 and failed on
+      # every run. DAST belongs against a deployed environment — re-add it to
+      # the staging deploy (rules live in .zap/rules.tsv) once that exists.
 
       - name: Upload security test results
         uses: actions/upload-artifact@v4
@@ -467,7 +465,7 @@ jobs:
           output: 'container-scan-results.sarif'
 
       - name: Upload container scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'container-scan-results.sarif'
