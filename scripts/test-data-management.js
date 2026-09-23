@@ -94,36 +94,32 @@ class TestDataManager {
                 data: {
                     title: 'Test Project 1',
                     description: 'A test project for unit testing',
-                    repositoryUrl: 'https://github.com/testuser/test-project-1',
-                    githubId: 'test-repo-1',
+                    repoUrl: 'https://github.com/testuser/test-project-1',
+                    platformId: 'test-repo-1',
                     language: 'TypeScript',
                     topics: ['testing', 'nodejs'],
                     published: true,
                     featured: false,
                     ownerId: testUsers[0].id,
-                    metadata: {
-                        stars: 10,
-                        forks: 2,
-                        issues: 1
-                    }
+                    starCount: 10,
+                    forkCount: 2,
+                    openIssues: 1
                 }
             }),
             this.prisma.project.create({
                 data: {
                     title: 'Test Project 2',
                     description: 'Another test project',
-                    repositoryUrl: 'https://github.com/testuser/test-project-2',
-                    githubId: 'test-repo-2',
+                    repoUrl: 'https://github.com/testuser/test-project-2',
+                    platformId: 'test-repo-2',
                     language: 'JavaScript',
                     topics: ['web', 'frontend'],
                     published: false,
                     featured: true,
                     ownerId: testUsers[0].id,
-                    metadata: {
-                        stars: 25,
-                        forks: 5,
-                        issues: 3
-                    }
+                    starCount: 25,
+                    forkCount: 5,
+                    openIssues: 3
                 }
             })
         ]);
@@ -240,40 +236,34 @@ class TestDataManager {
                 data: {
                     title: 'E2E React App',
                     description: 'A React application for E2E testing',
-                    repositoryUrl: 'https://github.com/e2euser1/react-app',
-                    githubId: 'e2e-react-repo',
+                    repoUrl: 'https://github.com/e2euser1/react-app',
+                    platformId: 'e2e-react-repo',
                     language: 'JavaScript',
                     topics: ['react', 'frontend', 'e2e'],
                     published: true,
                     featured: true,
                     ownerId: e2eUsers[0].id,
-                    metadata: {
-                        stars: 100,
-                        forks: 20,
-                        issues: 5,
-                        framework: 'React',
-                        complexity: 'moderate'
-                    }
+                    starCount: 100,
+                    forkCount: 20,
+                    openIssues: 5,
+                    githubMetadata: { framework: 'React', complexity: 'moderate' }
                 }
             }),
             this.prisma.project.create({
                 data: {
                     title: 'E2E API Service',
                     description: 'A Node.js API service for E2E testing',
-                    repositoryUrl: 'https://github.com/e2euser2/api-service',
-                    githubId: 'e2e-api-repo',
+                    repoUrl: 'https://github.com/e2euser2/api-service',
+                    platformId: 'e2e-api-repo',
                     language: 'TypeScript',
                     topics: ['nodejs', 'api', 'backend'],
                     published: true,
                     featured: false,
                     ownerId: e2eUsers[1].id,
-                    metadata: {
-                        stars: 50,
-                        forks: 10,
-                        issues: 2,
-                        framework: 'NestJS',
-                        complexity: 'complex'
-                    }
+                    starCount: 50,
+                    forkCount: 10,
+                    openIssues: 2,
+                    githubMetadata: { framework: 'NestJS', complexity: 'complex' }
                 }
             })
         ]);

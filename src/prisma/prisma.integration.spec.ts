@@ -48,7 +48,6 @@ describe('Prisma Database Integration Tests', () => {
       expect(user.email).toBe(userData.email);
       expect(user.username).toBe(userData.username);
       expect(user.createdAt).toBeInstanceOf(Date);
-      expect(user.updatedAt).toBeInstanceOf(Date);
     });
 
     it('should enforce unique email constraint', async () => {
@@ -104,7 +103,8 @@ describe('Prisma Database Integration Tests', () => {
 
       expect(updatedUser.username).toBe('updateduser');
       expect(updatedUser.lastLoginAt).toBeInstanceOf(Date);
-      expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(user.updatedAt.getTime());
+      // User has no updatedAt column; lastLoginAt is what the update touches.
+      expect(updatedUser.lastLoginAt!.getTime()).toBeGreaterThanOrEqual(user.createdAt.getTime());
     });
 
     it('should delete user and cascade to related records', async () => {

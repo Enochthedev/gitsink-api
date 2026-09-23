@@ -72,7 +72,7 @@ describe('Cache Integration Tests', () => {
 
     // Reset cache before each test
     mockRedis.flushall.mockResolvedValue('OK');
-    await cacheManager.reset();
+    await cacheManager.clear(); // cache-manager v5 renamed reset() to clear()
   });
 
   describe('Basic Cache Operations', () => {

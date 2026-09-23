@@ -165,12 +165,13 @@ This is a test project for integration testing.
 
       (projectsService as any).parser.parseMarkdown.mockReturnValue(mockParseResult);
       prismaService.$transaction.mockImplementation(async callback => {
+        // partial tx client: the code under test only touches project.*
         return callback({
           project: {
             findUnique: jest.fn().mockResolvedValue(null),
             upsert: jest.fn().mockResolvedValue(mockProject),
           },
-        });
+        } as never);
       });
 
       // Execute sync
@@ -215,12 +216,13 @@ This is a test project for integration testing.
       };
 
       prismaService.$transaction.mockImplementation(async callback => {
+        // partial tx client: the code under test only touches project.*
         return callback({
           project: {
             findUnique: jest.fn().mockResolvedValue(null),
             upsert: jest.fn().mockResolvedValue(mockProject),
           },
-        });
+        } as never);
       });
 
       // Execute sync
@@ -312,12 +314,13 @@ This is a test project for integration testing.
 
       (projectsService as any).parser.parseMarkdown.mockReturnValue(mockParseResult);
       prismaService.$transaction.mockImplementation(async callback => {
+        // partial tx client: the code under test only touches project.*
         return callback({
           project: {
             findUnique: jest.fn().mockResolvedValue(null),
             upsert: jest.fn().mockResolvedValue(mockProject),
           },
-        });
+        } as never);
       });
 
       // Execute sync
@@ -431,12 +434,13 @@ This is a test project for integration testing.
 
       (projectsService as any).parser.parseMarkdown.mockReturnValue(mockParseResult);
       prismaService.$transaction.mockImplementation(async callback => {
+        // partial tx client: the code under test only touches project.*
         return callback({
           project: {
             findUnique: jest.fn().mockResolvedValue(null),
             upsert: jest.fn().mockResolvedValue(mockProject),
           },
-        });
+        } as never);
       });
 
       // Execute sync
@@ -478,12 +482,13 @@ This is a test project for integration testing.
 
       (projectsService as any).parser.parseMarkdown.mockReturnValue(mockParseResult);
       prismaService.$transaction.mockImplementation(async callback => {
+        // partial tx client: the code under test only touches project.*
         return callback({
           project: {
             findUnique: jest.fn().mockResolvedValue(null),
             upsert: jest.fn().mockResolvedValue(mockProject),
           },
-        });
+        } as never);
       });
 
       // Make cache operations fail

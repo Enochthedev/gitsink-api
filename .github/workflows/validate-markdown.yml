@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'docs/portfolio.md'
-      - '.github/workflows/validate-md.yml'
+      - '.github/workflows/validate-markdown.yml'
       - 'src/parser/**'
 
 jobs:
