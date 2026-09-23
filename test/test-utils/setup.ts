@@ -55,7 +55,10 @@ process.env.GITHUB_CLIENT_ID = 'test-github-client-id';
 process.env.GITHUB_CLIENT_SECRET = 'test-github-client-secret';
 process.env.REDIS_HOST = 'localhost';
 process.env.REDIS_PORT = '6379';
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
+// Only a fallback: integration/database suites need the real URL that CI
+// (or a local .env) provides, otherwise they authenticate as user "test".
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL ?? 'postgresql://test:test@localhost:5432/test';
 
 // Global error handler for unhandled promises
 process.on('unhandledRejection', (reason, promise) => {
