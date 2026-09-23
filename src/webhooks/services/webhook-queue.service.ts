@@ -124,7 +124,8 @@ export class WebhookQueueService implements IWebhookQueue {
    */
   async getJob(jobId: string): Promise<Job | null> {
     try {
-      return await this.webhookQueue.getJob(jobId);
+      // bullmq returns undefined when the job is gone; this API promises null
+      return (await this.webhookQueue.getJob(jobId)) ?? null;
     } catch (error) {
       this.logger.error(`Failed to get job ${jobId}:`, error);
       return null;
